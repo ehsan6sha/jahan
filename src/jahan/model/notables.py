@@ -7,16 +7,21 @@ and the sources for every stance.  Roles and permitted actions live in ``data/ro
 from __future__ import annotations
 
 import datetime as dt
+import math
 from pathlib import Path
 from typing import Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from jahan.model.country import DataError
+from jahan.model.country import CAMP_TAU, CountrySpec, DataError, Politics, load_country
 from jahan.model.enums import TOPIC_NAMES, VALUE_NAMES
+from jahan.model.mentions import script_of
 
 SIMULATED_LABEL = "[simulated]"
+# The script a country's main language is written in; its figures need at least one alias in that script.
+NATIVE_SCRIPT = {"fa": "arabic", "ar": "arabic", "ur": "arabic", "zh": "cjk", "hi": "devanagari", "mr": "devanagari"}
+Confidence = Literal["high", "medium", "low", "provisional", "placeholder"]
 
 
 class Approval(BaseModel):
@@ -47,6 +52,18 @@ class Stance(BaseModel):
         return v
 
 
+class CampApproval(BaseModel):
+    """Approval of a figure within each political camp of their country (polls by party or camp)."""
+
+    model_config = ConfigDict(extra="forbid")
+    aligned: float | None = Field(None, ge=0.0, le=1.0)
+    neutral: float | None = Field(None, ge=0.0, le=1.0)
+    opposed: float | None = Field(None, ge=0.0, le=1.0)
+    source: str
+    url: str | None = None
+    confidence: Confidence = "low"
+
+
 class NotableEntry(BaseModel):
     model_config = ConfigDict(extra="forbid")
     key: str
@@ -60,12 +77,23 @@ class NotableEntry(BaseModel):
     visibility: float = Field(ge=0.0, le=10.0)
     audience_note: str = ""
     approval: Approval
+    aliases: list[str] = Field(default_factory=list)  # names that count as "naming" the figure in the news
+    alignment: float = Field(0.0, ge=-1.0, le=1.0)  # position on the country's political axis
+    approval_by_camp: CampApproval | None = None
     platforms: list[str] = Field(default_factory=list)
     languages: list[str] = Field(default_factory=list)
     values: dict[str, float]
     stances: list[Stance] = Field(default_factory=list)
     communication_style: str = ""
-    confidence: Literal["high", "medium", "low", "provisional", "placeholder"] = "low"
+    confidence: Confidence = "low"
+
+    @model_validator(mode="after")
+    def _camps(self) -> NotableEntry:
+        if self.approval_by_camp is not None and abs(self.alignment) < CAMP_TAU:
+            raise ValueError("a non-partisan figure (|alignment| < 1/3) cannot have approval by camp")
+        if any(len(a.strip()) < 2 for a in self.aliases):
+            raise ValueError("aliases need at least two characters")
+        return self
 
     @field_validator("values")
     @classmethod
@@ -121,6 +149,101 @@ class RoleSpec(BaseModel):
     policies: dict[str, PolicySpec] = Field(default_factory=dict)
 
 
+CampStatus = Literal["sourced", "sourced_shifted", "derived", "template", "placeholder", "non_partisan"]
+CAMPS = ("aligned", "neutral", "opposed")
+# HEURISTIC: the partisan gap borrowed for figures without approval by camp (Gallup, October 2025, Trump:
+# Republicans 91%, independents 33%, Democrats 6%), shifted to each figure's own approval.  It is used in
+# full in the country it was measured in; elsewhere the log-odds distances from the neutral camp are halved,
+# because US polarisation is unusually high and multiparty systems see more cross-camp approval.
+CAMP_TEMPLATE = {"aligned": 0.91, "neutral": 0.33, "opposed": 0.06}
+TEMPLATE_HOME = "USA"
+TEMPLATE_GAP_ELSEWHERE = 0.5
+
+
+def camp_shares(politics: Politics | None, alignment: float) -> dict[str, float] | None:
+    """Adult shares of the camps relative to a figure: aligned with them, neutral, opposed (None if non-partisan)."""
+    if politics is None or abs(alignment) < CAMP_TAU:
+        return None
+    camps = politics.camps
+    if alignment > 0:
+        return {"aligned": camps["pos"], "neutral": camps["neutral"], "opposed": camps["neg"]}
+    return {"aligned": camps["neg"], "neutral": camps["neutral"], "opposed": camps["pos"]}
+
+
+def _sigmoid(x: float) -> float:
+    return 1.0 / (1.0 + math.exp(-x))
+
+
+def _logit(p: float) -> float:
+    p = min(max(p, 1e-6), 1 - 1e-6)
+    return math.log(p / (1 - p))
+
+
+def camp_template(spec: CountrySpec) -> dict[str, float] | None:
+    """The borrowed partisan gap for this country, or None where camp shares are a placeholder (a borrowed
+    gap on placeholder camps would invent structure)."""
+    if spec.politics is None or spec.politics.placeholder:
+        return None
+    scale = 1.0 if spec.iso3 == TEMPLATE_HOME else TEMPLATE_GAP_ELSEWHERE
+    mid = _logit(CAMP_TEMPLATE["neutral"])
+    return {c: _sigmoid(mid + scale * (_logit(v) - mid)) for c, v in CAMP_TEMPLATE.items()}
+
+
+def _shift_to(topline: float, shares: dict[str, float], camps: dict[str, float]) -> tuple[dict[str, float], float]:
+    """One common log-odds shift of ``camps`` so the camp-weighted mean equals ``topline`` (bisection)."""
+    lo, hi = -10.0, 10.0
+    for _ in range(100):
+        mid = (lo + hi) / 2
+        m = sum(shares[c] * _sigmoid(_logit(camps[c]) + mid) for c in CAMPS)
+        lo, hi = (mid, hi) if m < topline else (lo, mid)
+    delta = (lo + hi) / 2
+    return {c: _sigmoid(_logit(camps[c]) + delta) for c in CAMPS}, delta
+
+
+def camp_priors(
+    topline: float,
+    shares: dict[str, float] | None,
+    given: CampApproval | None,
+    template: dict[str, float] | None = None,
+) -> tuple[dict[str, float], float, CampStatus]:
+    """Approval of a figure in each camp, consistent with the topline (camp-weighted mean = topline).
+
+    - ``non_partisan``: no camp shares (the figure sits in the neutral band, or the country has no axis).
+    - ``template``: no camp data; ``template`` (from ``camp_template``) shifted to the topline.
+    - ``placeholder``: no camp data and no template, every camp gets the topline.
+    - ``sourced``: all three given and their weighted mean is within 0.02 of the topline.
+    - ``sourced_shifted``: all three given but from a different moment; one common log-odds shift is solved
+      so the weighted mean equals the current topline (the shift is returned).
+    - ``derived``: some camps given; the rest share one value solved from the topline (ValueError if it
+      falls outside [0, 1]).
+    """
+    flat = {c: topline for c in CAMPS}
+    if shares is None:
+        return flat, 0.0, "non_partisan"
+    vals = {c: getattr(given, c) for c in CAMPS} if given is not None else {}
+    known = {c: v for c, v in vals.items() if v is not None}
+    if not known:
+        if template is not None:
+            prior, delta = _shift_to(topline, shares, template)
+            return prior, delta, "template"
+        return flat, 0.0, "placeholder"
+    if len(known) == 3:
+        mean = sum(shares[c] * known[c] for c in CAMPS)
+        if abs(mean - topline) <= 0.02:
+            return {c: float(known[c]) for c in CAMPS}, 0.0, "sourced"
+        prior, delta = _shift_to(topline, shares, {c: float(known[c]) for c in CAMPS})
+        return prior, delta, "sourced_shifted"
+    rest = [c for c in CAMPS if c not in known]
+    rest_share = sum(shares[c] for c in rest)
+    value = (topline - sum(shares[c] * known[c] for c in known)) / max(rest_share, 1e-12)
+    if not (0.0 <= value <= 1.0):
+        raise ValueError(
+            f"camp approvals {known} cannot average to the topline {topline:.3f} "
+            f"(the other camps would need {value:.3f})"
+        )
+    return {c: float(known.get(c, value)) for c in CAMPS}, 0.0, "derived"
+
+
 def load_roster(data_dir: Path, iso3: str) -> NotableRoster | None:
     path = data_dir / "notables" / f"{iso3}.yaml"
     if not path.exists():
@@ -156,6 +279,15 @@ def validate_rosters(data_dir: Path, countries: list[str], start_date: dt.date |
             continue
         if roster is None:
             continue
+        try:
+            spec = load_country(data_dir, iso)
+            politics, script, template = (
+                spec.politics,
+                NATIVE_SCRIPT.get(spec.languages_official[0]),
+                camp_template(spec),
+            )
+        except Exception:  # the country file's own problems are reported by validate_data
+            politics, script, template = None, None, None
         if start_date is not None and roster.as_of > start_date:
             problems.append(f"notables/{iso}: as_of {roster.as_of} is after the world start date {start_date}")
         for entry in roster.entries:
@@ -166,6 +298,19 @@ def validate_rosters(data_dir: Path, countries: list[str], start_date: dt.date |
             keys.add(entry.key)
             if not entry.key.startswith(f"{iso}."):
                 problems.append(f"notables/{iso}: key {entry.key} must start with '{iso}.'")
+            if not entry.aliases:
+                problems.append(f"notables/{iso}: {entry.key} needs at least one alias (how the news names them)")
+            elif script is not None and not any(script_of(a) == script for a in entry.aliases):
+                problems.append(f"notables/{iso}: {entry.key} needs an alias written in {script} script")
+            try:
+                camp_priors(
+                    entry.approval.value,
+                    camp_shares(politics, entry.alignment),
+                    entry.approval_by_camp,
+                    template,
+                )
+            except ValueError as e:
+                problems.append(f"notables/{iso}: {entry.key}: {e}")
     return problems
 
 

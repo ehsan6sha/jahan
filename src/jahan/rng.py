@@ -56,6 +56,8 @@ class Stream(IntEnum):
     SAMPLE = 16  # report sampling of narratives
     ACTION = 17  # delivery and acceptance of actions by human-controlled and notable agents
     AUTONOMY = 18  # tie-breaks among notable autonomy triggers
+    ALIGNMENT = 19  # political alignment at generation (DOMAIN_GEN) and at birth
+    SOCIAL = 20  # social media: reposts by ordinary people
 
 
 def mix_int(x: int) -> int:

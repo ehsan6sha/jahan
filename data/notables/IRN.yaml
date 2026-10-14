@@ -16,6 +16,8 @@ entries:
       - https://en.wikipedia.org/wiki/2026_Iranian_supreme_leader_election
     visibility: 7.9
     approval: {value: 0.35, source: "placeholder; no reliable poll (GAMAAN surveys report low trust in the system)"}
+    aliases: ["Mojtaba Khamenei", "Khamenei", "Ayatollah Khamenei", "مجتبی خامنه‌ای", "خامنه‌ای", "مجتبى خامنئي"]
+    alignment: 1.0
     platforms: [state_tv, official_website]
     languages: [fa, ar]
     values: {self: 0.10, money: 0.08, culture: 0.30, freedom: 0.05, family: 0.17, security: 0.30}
@@ -34,6 +36,8 @@ entries:
       - https://www.aljazeera.com/economy/2026/9/5/iran-president-pezeshkian-calls-for-unity-as-us-ramps-up-economic-pressure
     visibility: 7.5
     approval: {value: 0.4, source: "placeholder; no reliable poll"}
+    aliases: ["Pezeshkian", "Masoud Pezeshkian", "President Pezeshkian", "پزشکیان", "بزشكيان", "@drpezeshkian"]
+    alignment: 0.5
     platforms: [state_tv, x]
     languages: [fa, az]
     values: {self: 0.10, money: 0.15, culture: 0.20, freedom: 0.12, family: 0.20, security: 0.23}
@@ -53,6 +57,8 @@ entries:
       - https://www.iranintl.com/en/202610076990
     visibility: 6.3
     approval: {value: 0.35, source: "placeholder; no reliable poll"}
+    aliases: ["Hemmati", "Abdolnaser Hemmati", "همتی"]
+    alignment: 0.0
     platforms: [state_tv, press]
     languages: [fa]
     values: {self: 0.10, money: 0.30, culture: 0.12, freedom: 0.10, family: 0.13, security: 0.25}
@@ -71,6 +77,8 @@ entries:
       - https://www.aljazeera.com/news/2026/3/18/killing-of-larijani-will-not-destabilise-iranian-political-system-minister
     visibility: 6.8
     approval: {value: 0.4, source: "placeholder; no reliable poll"}
+    aliases: ["Araghchi", "Abbas Araghchi", "عراقچی", "عراقجي", "@araghchi"]
+    alignment: 0.6
     platforms: [x, state_tv]
     languages: [fa, en]
     values: {self: 0.10, money: 0.12, culture: 0.18, freedom: 0.10, family: 0.15, security: 0.35}
@@ -88,6 +96,8 @@ entries:
       - https://en.wikipedia.org/wiki/Mohammad_Bagher_Ghalibaf
     visibility: 6.5
     approval: {value: 0.35, source: "placeholder; no reliable poll"}
+    aliases: ["Ghalibaf", "Qalibaf", "Mohammad Bagher Ghalibaf", "قالیباف"]
+    alignment: 0.9
     platforms: [state_tv, x]
     languages: [fa]
     values: {self: 0.12, money: 0.12, culture: 0.22, freedom: 0.06, family: 0.18, security: 0.30}

@@ -168,3 +168,16 @@ media:
 names:
   source: ind.names
   file: names/IND.yaml
+
+politics:   # one axis per country: +1 = the head of government's camp at the roster date, -1 = the main opposition
+  source: ind.politics
+  axis: {pos: the BJP-led NDA camp, neg: the INDIA-bloc camp}
+  camps: {pos: 28.1, neutral: 45.1, neg: 26.8}   # ECI 2024 votes over the electorate; others and non-voters neutral
+  shifts:   # language community as a proxy for region (Ipsos IndiaBus Feb 2025: north 86%, west 74%, south 32% vs 68%)
+    - {by: ethnicity, key: hindi, logit: 1.06, source: ind.politics_region}
+    - {by: ethnicity, key: marathi, logit: 0.29, source: ind.politics_region}
+    - {by: ethnicity, key: gujarati, logit: 0.29, source: ind.politics_region}
+    - {by: ethnicity, key: tamil, logit: -1.51, source: ind.politics_region}
+    - {by: ethnicity, key: telugu, logit: -1.51, source: ind.politics_region}
+    - {by: ethnicity, key: kannada, logit: -1.51, source: ind.politics_region}
+    - {by: ethnicity, key: malayalam, logit: -1.51, source: ind.politics_region}

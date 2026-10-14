@@ -11,7 +11,9 @@ entries:
     sources:
       - https://tribuneindia.com/news/asean-india/pm-modi-thanks-global-leaders-for-congratulatory-wishes-on-completing-25-years-in-governance
     visibility: 8.4
-    approval: {value: 0.6, source: "placeholder; global leader-approval trackers not verified this session"}
+    approval: {value: 0.57, source: "India Today Mood of the Nation, January 2026 (57% rate his performance good or outstanding), via the Wikipedia summary of opinion polling", url: "https://en.wikipedia.org/wiki/Opinion_polling_on_the_Narendra_Modi_premiership"}
+    aliases: ["Modi", "Narendra Modi", "PM Modi", "नरेंद्र मोदी", "मोदी", "莫迪", "مودی", "@narendramodi"]
+    alignment: 0.9
     platforms: [x, tv, radio]
     languages: [hi, en]
     values: {self: 0.12, money: 0.18, culture: 0.25, freedom: 0.08, family: 0.15, security: 0.22}
@@ -28,6 +30,8 @@ entries:
       - https://vajiramandravi.com/current-affairs/rbi-governors-list/
     visibility: 6.2
     approval: {value: 0.5, source: "placeholder"}
+    aliases: ["Sanjay Malhotra", "Governor Malhotra", "संजय मल्होत्रा"]
+    alignment: 0.0
     platforms: [press, tv]
     languages: [hi, en]
     values: {self: 0.10, money: 0.30, culture: 0.12, freedom: 0.12, family: 0.12, security: 0.24}

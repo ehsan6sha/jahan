@@ -142,3 +142,10 @@ media:
 names:
   source: bra.names
   file: names/BRA.yaml
+
+politics:   # one axis per country: +1 = the head of government's camp at the roster date, -1 = the main opposition
+  source: bra.politics
+  axis: {pos: the Lula/PT camp, neg: the Bolsonaro camp}
+  camps: {pos: 45.2, neutral: 7.8, neg: 47.0}   # 2026 first-round valid votes
+  shifts:
+    - {by: religion, key: evangelical, logit: -0.05, source: bra.politics_religion, note: "Datafolha 2025: 27% vs 28% approval among Catholics"}

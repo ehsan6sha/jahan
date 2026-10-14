@@ -12,7 +12,9 @@ entries:
       - https://www.npr.org/2026/10/04/nx-s1-5981181/brazil-presidential-lula-bolsonaro
       - https://en.wikipedia.org/wiki/2026_Brazilian_general_election
     visibility: 7.8
-    approval: {value: 0.45, source: "first-round vote share 45.2% used as a proxy, not an approval poll"}
+    approval: {value: 0.48, source: "Datafolha, 17-18 June 2026 (n 2,004): 48% approve, 49% disapprove of the government", url: "https://www.ocafezinho.com/2026/06/20/aprovacao-de-lula-e-de-48-e-reprovacao-de-49-aponta-datafolha/"}
+    aliases: ["Lula", "Lula da Silva", "Luiz Inácio Lula da Silva", "Presidente Lula", "@LulaOficial"]
+    alignment: 0.9
     platforms: [tv, x, instagram]
     languages: [pt]
     values: {self: 0.10, money: 0.15, culture: 0.15, freedom: 0.15, family: 0.20, security: 0.25}
@@ -31,6 +33,8 @@ entries:
       - https://www.americasquarterly.org/article/reaction-flavio-bolsonaro-and-lula-advance-to-brazils-presidential-runoff/
     visibility: 7.4
     approval: {value: 0.47, source: "first-round vote share used as a proxy"}
+    aliases: ["Flávio Bolsonaro", "Senador Flávio", "@FlavioBolsonaro"]
+    alignment: -0.9
     platforms: [x, instagram, tv]
     languages: [pt]
     values: {self: 0.15, money: 0.18, culture: 0.20, freedom: 0.17, family: 0.18, security: 0.12}
@@ -48,6 +52,8 @@ entries:
       - https://www.rba.gov.au/media-releases/2026/mr-26-01.html
     visibility: 6.0
     approval: {value: 0.5, source: "placeholder"}
+    aliases: ["Galípolo", "Gabriel Galípolo"]
+    alignment: 0.0
     platforms: [press, tv]
     languages: [pt]
     values: {self: 0.10, money: 0.30, culture: 0.10, freedom: 0.15, family: 0.10, security: 0.25}

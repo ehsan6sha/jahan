@@ -17,6 +17,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from jahan.gen.names import sample_first_names
+from jahan.gen.politics_gen import inherit_alignment
 from jahan.gen.population_gen import EDU_GROUPS, EMP_ORDER, edu_group_of, internet_probability, match_rows
 from jahan.gen.sampler import categorical_rows, sigmoid
 from jahan.model.country import AgeRow, CountrySpec
@@ -138,6 +139,13 @@ def _give_birth(world: World, mother: int, log: EventLog) -> int:
     lang = np.full(3, -1, np.int16)
     lang[0] = pop["lang"][mother, 0]
     prof = np.array([1.0, 0, 0], np.float32)
+    ids = np.array([child_id], np.int64)
+    alignment = inherit_alignment(
+        pop["alignment"][[mother]],
+        u01(world.sim_seed, Stream.ALIGNMENT, world.day, ids, k=0),
+        u01(world.sim_seed, Stream.ALIGNMENT, world.day, ids, k=1),
+        spec.politics,
+    )
     surname_src = father if father >= 0 else mother
     world.pop.append(
         1,
@@ -170,6 +178,7 @@ def _give_birth(world: World, mother: int, log: EventLog) -> int:
         values=values[None, :],
         interests=interests[None, :],
         wants_kids=float(sigmoid(0.8 + 6.0 * (values[4] - vmean[4]))),
+        alignment=float(alignment[0]),
         risk_tolerance=float(sigmoid(0.5 * big5[0] - 0.4 * big5[4] + 0.4 * rng.standard_normal())),
         discernment=0.2,
         honesty=float(sigmoid(1.6 + 0.6 * big5[3] + 0.4 * big5[1] + 0.4 * rng.standard_normal())),

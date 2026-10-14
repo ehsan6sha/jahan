@@ -156,8 +156,11 @@ uv run jahan play --run runs/demo --days 7 < examples/sessions/president_trade.t
   state the turn was played on. If either check fails, replay stops.
 - **Public figures on their own.** With an LLM, each figure nobody controls gets a decision turn when
   something salient happens. Triggers are a relevant story spreading in their country, market news, being
-  named in the news, or a scheduled meeting such as a central bank's. Each figure gets at most two turns a
-  week, and the whole world at most twenty. The model picks from the role's permitted actions and the
+  named in the news, a top headline on one of their role's topics in their country, or a scheduled meeting
+  such as a central bank's. "Named" uses each figure's aliases from the roster: surnames, titles, handles
+  and spellings in Persian, Arabic, Chinese and Hindi script. Common surnames (Modi, Lula, Hemmati) also
+  match other people with that name. Each figure gets at most two turns a week, and the whole world at most
+  twenty. Under a flood of headlines, scheduled meetings can lose their turn to more salient stories. The model picks from the role's permitted actions and the
   engine validates them. Experiments do not re-run these decisions inside their branches, and reports say
   so.
 - **Drafting a real person.** `notables-draft` fetches an encyclopedia summary and news about a real person
@@ -182,6 +185,20 @@ launch as prompt 1, run some days, inject the dollar rise as prompt 2, and run t
   labour force surveys. Households, marriages, children, divorces, job moves and deaths follow those rates.
 - **Trust.** Each tie carries a Beta posterior over a prior built from tie type, reputation, homophily and
   an attractiveness halo that fades as evidence accumulates. Bad outcomes weigh 2.5 times good ones.
+- **Political camps.** Each country has one political axis: +1 is the camp of the head of government on
+  the roster date, -1 the main opposition (`politics:` in each country file). Adults are spread over the
+  camps in sourced shares: US party identification (Gallup), the German Sonntagsfrage, and election results
+  for Brazil, India, Indonesia and Nigeria, where non-voters count as neutral. Iran and China use
+  placeholder thirds. Sourced group differences move people along the axis; so far these are Indian
+  language communities (a stand-in for region) and a near-zero religion effect in Brazil. Children keep a
+  parent's camp about 70% of the time. Trust in a public figure starts from their approval within the
+  person's camp. Trump's comes from Gallup's party breakdown, and Merz's from the share of CDU/CSU
+  supporters satisfied with him. Figures without a breakdown borrow the US gap between camps, shifted to
+  their own approval. Outside the US the gap is halved on the log-odds scale, because the US is unusually
+  polarised. In every case the population average equals the figure's overall approval. A
+  leader's statement still reaches opponents, who mostly stay unconvinced. In a test, two weeks after an
+  upbeat presidential statement, the people who had heard it held an average view of 0.76 among supporters
+  and 0.58 among opponents (0.5 is undecided).
 - **Information.** Media channels reach agents by information habits, language and internet access.
   Agents share what they believe; dishonest agents exaggerate; well-informed receivers pull claims toward
   the truth; acceptance depends on trust and a bounded-confidence window. Buzz fades with novelty.
@@ -199,10 +216,13 @@ media habits, names) are `provisional` or `low` and say what source should repla
 values are placeholders. Reports list these caveats. `uv run jahan validate-data --strict` fails until they
 are replaced. Sourced country data is the most valuable contribution you can make; see `CONTRIBUTING.md`.
 
-Known limitations: trust in a public figure is drawn around their approval rating for everyone in the
-country (a president with 35% approval is trusted at about 0.30–0.41 by every citizen), so there are no
-committed supporters or opponents yet; without polygyny, countries with large spousal age gaps leave some
-older women unmarried; behavioural coefficients are uncalibrated priors tuned to plausible ranges. Vital-event counts in
+Known limitations: political camps are one axis per country, so Germany's AfD, Greens and Left share one
+opposition camp; outside the US and Germany the gap between camps is borrowed from US polling and halved,
+which is a guess, not a measurement; in Nigeria, India and Indonesia people who did not vote count as
+neutral, although many of them are disaffected rather than moderate; Iran and China
+have placeholder camps and flat trust within the country; diaspora agents take their residence country's
+camps; backlash (opponents moving away from a leader's claim) is not modelled; without polygyny,
+countries with large spousal age gaps leave some older women unmarried; behavioural coefficients are uncalibrated priors tuned to plausible ranges. Vital-event counts in
 small country samples (600–2,000 agents) are noisy; the mechanisms reproduce their input rates over long or
 large runs (checked: births, deaths, marriages, divorces). Media reach was tuned on product launches; for
 ingested top national headlines (without LLM labels) it gives about 1–8% awareness within three days,
@@ -214,8 +234,14 @@ Several numbers for player actions and public-figure autonomy are heuristics, no
 - the community reach of a post;
 - the daily message and post limits;
 - the awareness level that triggers a public figure;
+- the headline salience (0.7) that triggers one;
 - the weekly turn caps;
-- every policy elasticity in `roles.yaml`.
+- every policy elasticity in `roles.yaml`;
+- the camp band (a lean beyond ±1/3 counts as a camp), the weight of value similarity in trust (1.5 on
+  the log-odds scale) and the discount for foreign figures (0.8);
+- the US gap between camps borrowed for figures without a breakdown, and halving it outside the US.
+
+Worlds created before political camps existed (snapshot schema 5) cannot be opened; create a new world.
 
 Each distinct message or post occupies one tracked-item slot for about a week. A very talkative session
 can fill the `max_slots` pool (64 by default). Further claims are then skipped and logged as such.

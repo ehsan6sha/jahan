@@ -9,8 +9,15 @@ from typing import Literal
 import yaml
 from pydantic import BaseModel
 
-from jahan.model.country import DataError, load_country
-from jahan.model.notables import load_roles, validate_rosters
+from jahan.model.country import CountrySpec, DataError, load_country
+from jahan.model.notables import (
+    camp_priors,
+    camp_shares,
+    camp_template,
+    load_roles,
+    load_roster,
+    validate_rosters,
+)
 
 Confidence = Literal["high", "medium", "low", "provisional", "placeholder"]
 WEAK = {"provisional", "placeholder"}
@@ -41,6 +48,40 @@ def load_registry(data_dir: Path) -> dict[str, RegistryEntry]:
     return out
 
 
+def _politics_placeholders(data_dir: Path, iso: str, spec: CountrySpec) -> list[str]:
+    """Strict mode: camp shares and per-camp approvals that have no source."""
+    out = []
+    if spec.politics is None:
+        out.append(
+            f"{iso}: no politics block; every resident trusts public figures from the same starting point (strict mode)"
+        )
+    elif spec.politics.placeholder:
+        out.append(f"{iso}: political camp shares are a placeholder (strict mode)")
+    try:
+        roster = load_roster(data_dir, iso)
+    except DataError:
+        return out  # reported by validate_rosters
+    for e in roster.entries if roster is not None else []:
+        try:
+            _, _, status = camp_priors(
+                e.approval.value,
+                camp_shares(spec.politics, e.alignment),
+                e.approval_by_camp,
+                camp_template(spec),
+            )
+        except ValueError:
+            continue  # reported by validate_rosters
+        if status == "placeholder":
+            out.append(
+                f"notables/{iso}: {e.key} has no approval by camp; every camp starts at the topline (strict mode)"
+            )
+        elif status == "template":
+            out.append(
+                f"notables/{iso}: {e.key} has no approval by camp; a gap borrowed from US polling is used (strict mode)"
+            )
+    return out
+
+
 def validate_data(
     data_dir: Path, countries: list[str], strict: bool = False, start_date: dt.date | None = None
 ) -> list[str]:
@@ -65,6 +106,8 @@ def validate_data(
         names_path = data_dir / spec.names.file
         if not names_path.exists():
             problems.append(f"{iso}: names file {names_path} missing")
+        if strict:
+            problems += _politics_placeholders(data_dir, iso, spec)
     if strict:
         try:
             roles = load_roles(data_dir)

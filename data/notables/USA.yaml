@@ -16,6 +16,9 @@ entries:
       - https://fiftyplusone.news/polls/approval/president
     visibility: 8.7
     approval: {value: 0.346, source: "FiftyPlusOne average, 2026-10-12 (approve 34.6%, disapprove 62.0%)", url: "https://fiftyplusone.news/polls/approval/president"}
+    aliases: ["Trump", "Donald Trump", "President Trump", "@realDonaldTrump", "@POTUS", "特朗普", "川普", "ترامپ", "ترامب", "ट्रंप", "ट्रम्प"]
+    alignment: 0.9
+    approval_by_camp: {aligned: 0.91, neutral: 0.33, opposed: 0.06, source: "Gallup, October 1-16 2025 (n about 1,000): Republicans 91%, independents 33%, Democrats 6% approve; reported in news coverage, primary release not opened", confidence: low}
     platforms: [truth_social, x, tv]
     languages: [en]
     values: {self: 0.22, money: 0.22, culture: 0.16, freedom: 0.10, family: 0.10, security: 0.20}
@@ -35,6 +38,8 @@ entries:
       - https://www.cnbc.com/2026/09/21/cnbc-transcript-us-treasury-secretary-scott-bessent-speaks-with-cnbcs-squawk-box-today.html
     visibility: 6.8
     approval: {value: 0.5, source: "no verified poll; placeholder"}
+    aliases: ["Bessent", "Scott Bessent", "Secretary Bessent", "@SecScottBessent"]
+    alignment: 0.8
     platforms: [x, tv]
     languages: [en]
     values: {self: 0.15, money: 0.30, culture: 0.10, freedom: 0.15, family: 0.10, security: 0.20}
@@ -54,6 +59,8 @@ entries:
       - https://spectrumlocalnews.com/us/snplus/politics/2026/05/15/jerome-powell-term-chair-kevin-warsh-president-trump-interest-rates-criticim-
     visibility: 6.5
     approval: {value: 0.5, source: "no verified poll; placeholder"}
+    aliases: ["Warsh", "Kevin Warsh", "Chair Warsh"]
+    alignment: 0.0
     platforms: [tv, press]
     languages: [en]
     values: {self: 0.12, money: 0.30, culture: 0.08, freedom: 0.20, family: 0.10, security: 0.20}
@@ -74,6 +81,8 @@ entries:
     visibility: 8.3
     audience_note: "Very large X following; exact 2026 follower count not verified"
     approval: {value: 0.45, source: "no verified 2026 favourability poll; placeholder"}
+    aliases: ["Musk", "Elon Musk", "@elonmusk", "马斯克", "ماسک", "मस्क"]
+    alignment: 0.6
     platforms: [x]
     languages: [en]
     values: {self: 0.26, money: 0.18, culture: 0.08, freedom: 0.28, family: 0.08, security: 0.12}

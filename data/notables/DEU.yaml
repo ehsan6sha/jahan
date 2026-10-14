@@ -11,7 +11,10 @@ entries:
     sources:
       - https://www.gov.uk/government/news/pm-meeting-with-chancellor-merz-of-germany-8-october-2026
     visibility: 7.3
-    approval: {value: 0.4, source: "placeholder; no verified 2026 poll"}
+    approval: {value: 0.10, source: "ARD-DeutschlandTrend October 2026 (10% satisfied with the chancellor)", url: "https://www.stuttgarter-zeitung.de/politik/ard-deutschlandtrend-merz-im-rekordtief-nur-10-prozent-zufrieden-mit-kanzler-79524641.html"}
+    aliases: ["Merz", "Friedrich Merz", "Kanzler Merz", "Bundeskanzler Merz", "Chancellor Merz", "@_FriedrichMerz"]
+    alignment: 0.9
+    approval_by_camp: {aligned: 0.40, source: "ARD-DeutschlandTrend October 2026: 40% of CDU/CSU supporters satisfied with Merz", url: "https://www.stuttgarter-zeitung.de/politik/ard-deutschlandtrend-merz-im-rekordtief-nur-10-prozent-zufrieden-mit-kanzler-79524641.html", confidence: low}
     platforms: [tv, x]
     languages: [de, en]
     values: {self: 0.12, money: 0.22, culture: 0.14, freedom: 0.20, family: 0.14, security: 0.18}
@@ -28,6 +31,8 @@ entries:
       - https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.pr260510~e8a674e2fb.en.html
     visibility: 6.8
     approval: {value: 0.5, source: "placeholder"}
+    aliases: ["Lagarde", "Christine Lagarde", "@Lagarde"]
+    alignment: 0.0
     platforms: [press, tv]
     languages: [fr, en]
     values: {self: 0.10, money: 0.30, culture: 0.10, freedom: 0.18, family: 0.10, security: 0.22}

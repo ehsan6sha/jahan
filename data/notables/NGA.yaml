@@ -7,11 +7,14 @@ entries:
     holder_name: Bola Ahmed Tinubu
     sex: M
     birth_year: 1952
-    verified: "Statement from the Nigerian Presidency reported 2026-10-07"
+    verified: "Scheduled to address the nation on Independence Day, 2026-10-01; APC re-election campaign starts 2026-10-24"
     sources:
-      - https://tribuneindia.com/news/asean-india/pm-modi-thanks-global-leaders-for-congratulatory-wishes-on-completing-25-years-in-governance
+      - https://blueprint.ng/?p=849361
+      - https://blueprint.ng/?p=852042
     visibility: 7.4
-    approval: {value: 0.4, source: "placeholder; no verified 2026 poll"}
+    approval: {value: 0.30, source: "NOIPolls government approval survey, 2026 (30% after three years in office), as reported in news coverage; primary release not opened"}
+    aliases: ["Tinubu", "Bola Tinubu", "Bola Ahmed Tinubu", "President Tinubu", "@officialABAT"]
+    alignment: 0.9
     platforms: [tv, radio, x]
     languages: [en, yo]
     values: {self: 0.15, money: 0.22, culture: 0.15, freedom: 0.10, family: 0.18, security: 0.20}

@@ -33,6 +33,7 @@
   const quote = (s) => "'" + String(s).replace(/'/g, "") + "'";
   // Free text passed as an option value must not start with a dash (the server refuses option-like values).
   const clean = (s) => String(s).replace(/^[\s-]+/, "").trim();
+  const LEANS = [["", "From a resident"], ["0.8", "Firmly with the governing camp"], ["0.5", "Leans to the governing camp"], ["0", "No strong lean"], ["-0.5", "Leans to the opposition"], ["-0.8", "Firmly with the opposition"]];
 
   // ------------------------------------------------------------------ state
   const S = {
@@ -61,6 +62,7 @@
     seed: "A starting point for chance. Different seeds give different but equally plausible histories; several of them show the spread.",
     "information level": "How much news someone follows: minimal, major news, well informed or specialist.",
     visibility: "How many people someone's public statements can reach, on a log scale: 1 is family, 8 is a head of state.",
+    "political lean": "Where someone stands on their country's main political divide: with the camp of the current head of government, with the main opposition, or neither. It sets how much they trust each public figure to begin with. Camp sizes come from polls or election results; Iran and China use placeholders.",
     trust: "How much one person believes another (0 to 1). It grows when their advice works out and falls faster when it does not.",
     autopilot: "While you are not acting, the simulator decides for your character the way it does for everyone else.",
     "public figure": "A real office holder or opinion leader under their real name. Everything generated for them is labelled [simulated] and is not a real quote.",
@@ -998,7 +1000,7 @@
 
   function createPersonCard(st) {
     const box = h("div", {});
-    const f = { country: st.countries[0].iso3, sex: "", age: "", first: "", last: "", region: "", education: "", income: "", languages: "", visibility: "", friends: 5, acquaintances: 5, describe: "", role: "", office: "", possess: true };
+    const f = { country: st.countries[0].iso3, sex: "", age: "", first: "", last: "", region: "", education: "", income: "", languages: "", visibility: "", alignment: "", friends: 5, acquaintances: 5, describe: "", role: "", office: "", possess: true };
     const set = (k) => (e) => (f[k] = e.target ? (e.target.type === "checkbox" ? e.target.checked : e.target.value) : e);
     const submit = async () => {
       const argv = ["create-agent", "--run", S.world, "--country", f.country];
@@ -1006,6 +1008,8 @@
       opt("--sex", f.sex); opt("--age", f.age); opt("--first-name", f.first); opt("--last-name", f.last); opt("--region", f.region);
       opt("--education", f.education); opt("--income", f.income); opt("--languages", f.languages); opt("--visibility", f.visibility);
       opt("--friends", f.friends); opt("--acquaintances", f.acquaintances);
+      // A fixed list of values; one "--alignment=-0.5" token because clean() would strip a leading minus.
+      if (LEANS.some(([v]) => v !== "" && v === f.alignment)) argv.push(`--alignment=${f.alignment}`);
       if (clean(f.describe)) argv.push("--describe", clean(f.describe));
       if (f.role) { argv.push("--notable-role", f.role); opt("--office", f.office); }
       if (f.possess) argv.push("--possess");
@@ -1024,6 +1028,7 @@
         field("Monthly income", h("input", { type: "number", min: 0, oninput: set("income") }), "In local currency"),
         field("Languages", h("input", { placeholder: "fa,en", oninput: set("languages") })),
         field(h("span", {}, term("visibility", "Visibility")), h("input", { type: "number", min: 0, max: 9, step: 0.5, oninput: set("visibility") }), "1 family … 8 head of state"),
+        field(h("span", {}, term("political lean", "Political lean")), select(LEANS, "", (v) => (f.alignment = v)), "Each country names its camps on people's cards"),
         field("Friends", h("input", { type: "number", min: 0, max: 50, value: f.friends, oninput: set("friends") })),
         field("Acquaintances", h("input", { type: "number", min: 0, max: 50, value: f.acquaintances, oninput: set("acquaintances") }))),
       field("Describe them (optional, uses Claude)", h("textarea", { placeholder: "a nurse in Tabriz who follows the news closely", oninput: set("describe") })),

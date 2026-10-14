@@ -12,7 +12,9 @@ entries:
       - https://en.wikipedia.org/wiki/List_of_international_presidential_trips_made_by_Prabowo_Subianto
       - https://en.wikipedia.org/wiki/2026_G20_Miami_summit
     visibility: 7.7
-    approval: {value: 0.6, source: "placeholder; no verified 2026 poll"}
+    approval: {value: 0.511, source: "SMRC survey, July 2026 (51.1% approve)", url: "https://www.idnfinancials.com/news/66615/president-prabowos-approval-rating-falls-to-51-1-survey-finds"}
+    aliases: ["Prabowo", "Prabowo Subianto", "Presiden Prabowo", "@prabowo"]
+    alignment: 0.9
     platforms: [tv, instagram, x]
     languages: [id]
     values: {self: 0.12, money: 0.18, culture: 0.20, freedom: 0.08, family: 0.17, security: 0.25}
@@ -30,6 +32,8 @@ entries:
       - https://www.centralbanking.com/central-banks/governance/people/7976720/people-july-to-september-2026
     visibility: 6.0
     approval: {value: 0.5, source: "placeholder"}
+    aliases: ["Destry Damayanti", "Destry"]
+    alignment: 0.0
     platforms: [press, tv]
     languages: [id, en]
     values: {self: 0.10, money: 0.30, culture: 0.12, freedom: 0.10, family: 0.12, security: 0.26}

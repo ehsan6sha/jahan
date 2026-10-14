@@ -174,6 +174,10 @@ def create_agent_cmd(
     visibility: Annotated[
         float | None, typer.Option(help="log10 of reachable audience (1 family .. 8 head of state)")
     ] = None,
+    alignment: Annotated[
+        float | None,
+        typer.Option(help="Political lean, -1..1 (+1 = the incumbent's camp; see the country's politics block)"),
+    ] = None,
     friends: Annotated[int, typer.Option()] = 5,
     acquaintances: Annotated[int, typer.Option()] = 5,
     household_of: Annotated[int | None, typer.Option(help="Join this agent's household")] = None,
@@ -201,6 +205,7 @@ def create_agent_cmd(
         "income_month": income,
         "languages": [x.strip() for x in languages.split(",")] if languages else None,
         "visibility": visibility,
+        "alignment": alignment,
         "household_of": household_of,
         "notable_role": notable_role,
         "office": office,

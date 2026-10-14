@@ -5,7 +5,10 @@ At the start of each simulated day the engine looks for triggers, from world sta
 * a live tracked item on a topic the figure's role cares about crosses ``AWARE_TRIGGER`` of the
   figure's country (once per item);
 * a market-move headline in the figure's country appeared yesterday (economic roles);
-* the figure is named in an item created yesterday by someone else;
+* the figure is named in an item created yesterday by someone else: any roster alias (surname, title,
+  handle, native-script name; model/mentions.py) or an @-mention of one of their handles in a social post;
+* a news headline created yesterday on one of the role's topics, salience at least ``HEADLINE_TRIGGER``,
+  pushed in the figure's country;
 * the role's scheduled decision day (``meeting_every_days`` in roles.yaml, e.g. a central bank).
 
 At most ``TURNS_PER_NOTABLE_PER_WEEK`` turns per figure and ``TURNS_PER_WEEK`` in the whole world per
@@ -28,6 +31,7 @@ from jahan.actors.policy import PolicyError, compile_policy
 from jahan.llm.provider import LLMClient, extract_json
 from jahan.llm.recordings import MissingRecording
 from jahan.model.enums import TOPIC_NAMES, EventKind, OriginKind, Topic
+from jahan.model.mentions import mentions
 from jahan.model.notables import SIMULATED_LABEL
 from jahan.model.world import World
 from jahan.scenario.inject import apply_scenario
@@ -37,6 +41,10 @@ from jahan.store.eventlog import EventLog
 TURNS_PER_NOTABLE_PER_WEEK = 2
 TURNS_PER_WEEK = 20
 AWARE_TRIGGER = 0.2  # HEURISTIC share of the figure's country aware of an item
+# HEURISTIC: a fresh headline this salient, on a role topic and pushed in the figure's country, is a trigger.
+# Unlabelled feeds give 0.75 - 0.05 * rank, so roughly the top two stories of each feed qualify.
+HEADLINE_TRIGGER = 0.7
+HEADLINE_ORIGINS = {int(OriginKind.WEB), int(OriginKind.USER_FEED), int(OriginKind.SCENARIO)}
 ECONOMIC_ROLES = {"head_of_state", "finance_minister", "central_bank_governor", "business_leader"}
 ROLE_TOPICS: dict[str, set[str]] = {
     "head_of_state": {"politics", "economy", "world", "health"},
@@ -85,6 +93,7 @@ def triggers(world: World) -> list[dict[str, Any]]:
     aware = world.beliefs.m["aware"][:n][:, slots].astype(np.float64)
     shares = (wc_all @ aware) / tot[:, None]
     pushed_to = {item: _countries_pushed(world, item) for item in live}
+    product_items = {int(x) for x in world.products["item_id"]}
     cands: list[dict[str, Any]] = []
     for col, entry in enumerate(world.notables):
         aid = int(entry["agent_id"])
@@ -105,15 +114,21 @@ def triggers(world: World) -> list[dict[str, Any]]:
             share = float(shares[c, j])
             created = int(items["created_day"][item])
             in_country = c in pushed_to[item]
-            if (
+            origin = int(items["origin_kind"][item])
+            salience = float(items["salience"][item])
+            if created == yesterday and origin == OriginKind.MACRO and role in ECONOMIC_ROLES and in_country:
+                reasons.append((0.8, key, f"market news in your country: {label}"))
+            elif created == yesterday and _named(world, entry, item, label):
+                reasons.append((0.9, key, f"you were named: {label}"))
+            elif (
                 created == yesterday
-                and int(items["origin_kind"][item]) == OriginKind.MACRO
-                and role in ECONOMIC_ROLES
+                and origin in HEADLINE_ORIGINS
+                and item not in product_items
+                and int(items["topic"][item]) in topics
+                and salience >= HEADLINE_TRIGGER
                 and in_country
             ):
-                reasons.append((0.8, key, f"market news in your country: {label}"))
-            elif created == yesterday and str(entry["holder_name"]).lower() in label.lower():
-                reasons.append((0.9, key, f"you were named: {label}"))
+                reasons.append((0.8 * salience, key, f"top headline in your country: {label}"))
             elif int(items["topic"][item]) in topics and share >= AWARE_TRIGGER:
                 reasons.append(
                     (float(items["salience"][item]) * share, key, f"{share:.0%} of your country now knows: {label}")
@@ -141,6 +156,17 @@ def triggers(world: World) -> list[dict[str, Any]]:
         st["seen"].extend(r[1] for r in cand["reasons"])
     st["seen"] = st["seen"][-5000:]
     return chosen
+
+
+def _named(world: World, entry: dict[str, Any], item: int, label: str) -> bool:
+    """The item names the figure: any roster alias in its text, or an @-mention of one of their handles."""
+    aliases = [str(entry["holder_name"]), *[str(a) for a in entry.get("aliases", [])]]
+    if mentions(label, aliases):
+        return True
+    social = world.macro.get("social", {}).get("items", {}).get(str(item), {})
+    tagged = {str(m).lstrip("@").casefold() for m in social.get("mentions", [])}
+    handles = {a.lstrip("@").casefold() for a in aliases if a.startswith("@")}
+    return bool(tagged & handles)
 
 
 def _countries_pushed(world: World, item: int) -> set[int]:

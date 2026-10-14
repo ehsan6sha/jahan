@@ -175,3 +175,9 @@ media:
 names:
   source: chn.names
   file: names/CHN.yaml
+
+politics:   # one axis per country: +1 = the head of government's camp at the roster date, -1 = the main opposition
+  source: chn.politics
+  axis: {pos: supporters of the national leadership, neg: critics of the national leadership}
+  camps: {pos: 33.3, neutral: 33.4, neg: 33.3}
+  placeholder: true   # no free, reliable polling

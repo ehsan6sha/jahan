@@ -9,7 +9,7 @@ from __future__ import annotations
 from jahan.model.enums import N_TOPICS, N_VALUES
 from jahan.soa import Col
 
-SCHEMA_VERSION = 5
+SCHEMA_VERSION = 6
 MAX_LANGS = 3
 
 AGENT_COLUMNS: dict[str, Col] = {
@@ -46,6 +46,7 @@ AGENT_COLUMNS: dict[str, Col] = {
     "risk_tolerance": Col("f4", default=0.5),
     "values": Col("f4", (N_VALUES,)),  # simplex weights
     "wants_kids": Col("f4", default=0.5),
+    "alignment": Col("f4", default=0.0),  # lean on the country's main political axis, -1..1 (gen/politics_gen.py)
     "interests": Col("f4", (N_TOPICS,)),  # simplex weights
     "discernment": Col("f4", default=0.5),
     "honesty": Col("f4", default=0.8),

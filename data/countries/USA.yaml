@@ -153,3 +153,8 @@ media:
 names:
   source: usa.names
   file: names/USA.yaml
+
+politics:   # one axis per country: +1 = the head of government's camp at the roster date, -1 = the main opposition
+  source: usa.politics
+  axis: {pos: the Republican camp, neg: the Democratic camp}
+  camps: {pos: 27, neutral: 45, neg: 27}   # Gallup party ID 2025; independents (incl. leaners) neutral

@@ -13,8 +13,12 @@ import numpy as np
 from numpy.typing import NDArray
 
 from jahan.gen.sampler import logit, sigmoid
+from jahan.model.country import CAMP_TAU
+from jahan.model.enums import ValueDim
 from jahan.model.world import World
 from jahan.sim.params import SimParams
+
+_VALUE_KEYS = [e.name.lower() for e in ValueDim]
 
 
 def effective_trust(world: World, rows: NDArray[np.int64] | slice, params: SimParams) -> NDArray[np.float64]:
@@ -98,13 +102,30 @@ def _apply_parasocial(
 
 
 def parasocial_prior(world: World, rows: NDArray[np.int64], col: int) -> NDArray[np.float64]:
-    """Prior trust of agents in notable ``col``: approval, value alignment, foreign-leader discount."""
+    """Prior trust of agents in notable ``col``.
+
+    Base: the figure's approval within the agent's political camp for residents of the figure's country
+    (``camp_prior`` from model/notables.py::camp_priors, so the camp-weighted mean is the topline), else
+    the topline approval.  Plus a value-similarity spread, centred on the agent's country mean so it
+    averages out (HEURISTIC weight 1.5), minus a foreign-figure discount (HEURISTIC 0.8 on the logit).
+    """
     entry = world.notables[col]
     j = int(entry["agent_id"])
     pop = world.pop
-    align = pop["values"][rows].astype(np.float64) @ pop["values"][j].astype(np.float64) * pop["values"].shape[1] - 1.0
-    foreign = (pop["country"][rows] != int(entry["country"])).astype(np.float64)
-    return sigmoid(logit(float(entry["approval"]["value"])) + 1.5 * align - 0.8 * foreign)
+    home = pop["country"][rows].astype(np.int64)
+    values = pop["values"][rows].astype(np.float64)
+    mu = np.array([[s.values.mean[k] for k in _VALUE_KEYS] for s in world.countries], np.float64)
+    spread = (values - mu[home]) @ pop["values"][j].astype(np.float64) * values.shape[1]
+    foreign = home != int(entry["country"])
+    base = np.full(home.shape[0], float(logit(float(entry["approval"]["value"]))))
+    prior = entry.get("camp_prior")
+    if prior and entry.get("camp_status") != "non_partisan" and abs(float(entry.get("alignment", 0.0))) >= CAMP_TAU:
+        rel = pop["alignment"][rows].astype(np.float64) * (1.0 if float(entry["alignment"]) > 0 else -1.0)
+        camp_p = np.where(
+            rel > CAMP_TAU, prior["aligned"], np.where(rel < -CAMP_TAU, prior["opposed"], prior["neutral"])
+        )
+        base = np.where(foreign, base, logit(camp_p))
+    return sigmoid(base + 1.5 * spread - 0.8 * foreign.astype(np.float64))
 
 
 def parasocial_trust(world: World, rows: NDArray[np.int64], col: int, params: SimParams) -> NDArray[np.float64]:

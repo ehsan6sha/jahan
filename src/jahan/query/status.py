@@ -45,6 +45,7 @@ def agent_summary(world: World, i: int) -> dict[str, Any]:
         "alive": bool(pop["alive"][i]),
         "public_figure": None if entry is None else {"key": entry["key"], "office": entry["office"]},
         "controlled_by": int(pop["controlled_by"][i]),
+        "alignment": round(float(pop["alignment"][i]), 3),
     }
 
 
@@ -127,6 +128,14 @@ def world_status(rd: RunDir, world: World) -> dict[str, Any]:
                 "languages": sorted(
                     {world.languages[int(x)] for x in np.unique(pop["lang"][alive & (pop["country"] == k)]) if x >= 0}
                 ),
+                "politics": None
+                if c.politics is None
+                else {
+                    "pos": c.politics.axis.pos,
+                    "neg": c.politics.axis.neg,
+                    "camps": c.politics.camps,
+                    "placeholder": c.politics.placeholder,
+                },
             }
             for k, c in enumerate(world.countries)
         ],
@@ -169,6 +178,8 @@ def world_status(rd: RunDir, world: World) -> dict[str, Any]:
                 "role": e["role"],
                 "country": world.countries[int(e["country"])].iso3,
                 "agent_id": int(e["agent_id"]),
+                "alignment": float(e.get("alignment", 0.0)),
+                "camp_status": e.get("camp_status", "placeholder"),
             }
             for e in world.notables
         ],

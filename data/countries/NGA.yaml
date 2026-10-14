@@ -160,3 +160,8 @@ media:
 names:
   source: nga.names
   file: names/NGA.yaml
+
+politics:   # one axis per country: +1 = the head of government's camp at the roster date, -1 = the main opposition
+  source: nga.politics
+  axis: {pos: the APC/Tinubu camp, neg: "the opposition camps (PDP, Labour, NNPP)"}
+  camps: {pos: 9.4, neutral: 74.3, neg: 16.3}   # INEC 2023 votes over registered voters; non-voters neutral

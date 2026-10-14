@@ -129,11 +129,19 @@ def draft_entry(
     if final_sex not in ("F", "M"):
         problems.append("sex not stated in the sources; set it by hand")
         final_sex = "M" if final_sex is None else final_sex
+    holder = str(data.get("holder_name") or name)
+    surname = holder.split()[-1] if holder.split() else holder
+    problems.append(
+        "aliases and alignment are set by hand: add the names the news uses (titles, handles, native scripts) "
+        "and the figure's position on the country's political axis (+1 the incumbent's camp, -1 the opposition)"
+    )
     entry = {
         "key": key,
         "role": role,
         "office": office,
-        "holder_name": str(data.get("holder_name") or name),
+        "holder_name": holder,
+        "aliases": sorted({holder, surname} if len(surname) >= 2 else {holder}),
+        "alignment": 0.0,
         "sex": final_sex,
         "birth_year": data.get("birth_year"),
         "verified": f"DRAFT {dt.date.today().isoformat()}: not verified; check every field against the sources",

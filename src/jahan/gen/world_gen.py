@@ -18,6 +18,7 @@ from jahan.gen.household_gen import assemble_households
 from jahan.gen.media_gen import channel_rows
 from jahan.gen.names import load_names
 from jahan.gen.notables_gen import add_notables
+from jahan.gen.politics_gen import sample_alignment
 from jahan.gen.population_gen import generate_people
 from jahan.gen.workplace_gen import assign_workplaces
 from jahan.model.country import load_country
@@ -97,6 +98,8 @@ def generate_world(config: RunConfig, data_dir: Path | None = None) -> World:
             pop_weight=np.float32(spec.population.value / n_c),
             **people,
         )
+        start = world.pop.n - n_c
+        world.pop["alignment"][start:] = sample_alignment(spec, people, age, hres.mother, ids, config.seed)
         # households
         members = np.bincount(hres.household, minlength=hres.n_households)
         income = np.bincount(

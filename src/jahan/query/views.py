@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from jahan.gen.politics_gen import alignment_words
 from jahan.model.enums import N_TOPICS, Big5, EdgeKind, EmpStatus, InfoTier, Marital, Sex, Topic, ValueDim
 from jahan.model.notables import SIMULATED_LABEL
 from jahan.model.world import World
@@ -44,6 +45,25 @@ def notable_card(world: World, i: int) -> list[str]:
         f"  Visibility: about 10^{e['visibility']:.1f} people; approval prior {e['approval']['value']:.2f} "
         f"({e['approval']['source']})",
     ]
+    politics = world.countries[int(e["country"])].politics
+    lean = alignment_words(float(e.get("alignment", 0.0)), politics)
+    if lean:
+        out.append(f"  Politics: {lean}")
+    prior, status = e.get("camp_prior"), e.get("camp_status", "placeholder")
+    if prior and status != "non_partisan":
+        given = e.get("approval_by_camp") or {}
+        note = {
+            "sourced": f"from {given.get('source', '?')}",
+            "sourced_shifted": f"from {given.get('source', '?')}, shifted to the current approval",
+            "derived": f"partly from {given.get('source', '?')}, the rest solved from the approval",
+            "template": "no poll by camp: a gap borrowed from US polling (halved outside the US), "
+            "shifted to this approval; heuristic",
+            "placeholder": "placeholder: everyone starts at the overall approval",
+        }.get(str(status), str(status))
+        out.append(
+            f"  Starting trust by camp: own camp {prior['aligned']:.2f}, neutral {prior['neutral']:.2f}, "
+            f"opposing camp {prior['opposed']:.2f} ({note})"
+        )
     for s in e.get("stances", []):
         out.append(f"  Stance [{s['topic']}] {s['position']:+.1f}: {s['summary']} <{s['source']}>")
     return out
@@ -120,6 +140,9 @@ def agent_card(world: World, agent_id: int, top_ties: int = 10) -> str:
         + (", online" if pop["internet"][i] else ", offline")
         + (f", focus on {Topic(int(pop['focus_topic'][i])).name.lower()}" if pop["focus_topic"][i] >= 0 else "")
     )
+    lean = alignment_words(float(pop["alignment"][i]), spec.politics)
+    if lean:
+        w(f"  Politics: {lean}")
     b5 = pop["big5"][i]
     w("  Personality (z): " + ", ".join(f"{t.name.lower()} {b5[t]:+.1f}" for t in Big5))
     vals = pop["values"][i]

@@ -254,6 +254,46 @@ class Media(Block):
     channels: list[ChannelSpec]
 
 
+SHIFT_KINDS = ("religion", "ethnicity", "education_group", "region", "age_band")
+CAMP_TAU = 1.0 / 3.0  # political camp band boundary on the [-1, 1] alignment scale (camp shares come from data)
+
+
+class AxisLabels(BaseModel):
+    """Words for the two ends of the country's main political axis (+1 = the incumbent's camp)."""
+
+    model_config = ConfigDict(extra="forbid")
+    pos: str
+    neg: str
+    note: str = ""
+
+
+class AlignmentShift(BaseModel):
+    """A sourced log-odds offset on the latent political lean for one demographic group."""
+
+    model_config = ConfigDict(extra="forbid")
+    by: Literal["religion", "ethnicity", "education_group", "region", "age_band"]
+    key: str  # a religion/ethnicity code; low|mid|high; urban|rural; "18-29"
+    logit: float
+    source: str  # registry id
+    note: str = ""
+
+
+class Politics(Block):
+    """Camp shares of adults on one axis per country.  ``placeholder`` marks shares with no source."""
+
+    axis: AxisLabels
+    camps: dict[Literal["pos", "neutral", "neg"], float]
+    shifts: list[AlignmentShift] = Field(default_factory=list)
+    placeholder: bool = False
+
+    @model_validator(mode="after")
+    def _norm(self) -> Politics:
+        if set(self.camps) != {"pos", "neutral", "neg"}:
+            raise DataError("politics.camps needs pos, neutral and neg")
+        self.camps = normalise(self.camps, "politics.camps")
+        return self
+
+
 class NamesRef(Block):
     file: str
 
@@ -348,6 +388,26 @@ class CountrySpec(BaseModel):
     values: ValuesSpec
     media: Media
     names: NamesRef
+    politics: Politics | None = None
+
+    @model_validator(mode="after")
+    def _politics_keys(self) -> CountrySpec:
+        if self.politics is None:
+            return self
+        known = {
+            "religion": set(self.religion.shares),
+            "ethnicity": set(self.ethnicity.shares),
+            "education_group": {"low", "mid", "high"},
+            "region": {"urban", "rural"},
+        }
+        for s in self.politics.shifts:
+            if s.by == "age_band":
+                lo, _, hi = s.key.partition("-")
+                if not (lo.isdigit() and hi.isdigit() and int(lo) < int(hi)):
+                    raise DataError(f"politics shift age_band {s.key!r} must look like '18-29'")
+            elif s.key not in known[s.by]:
+                raise DataError(f"politics shift {s.by}={s.key!r} is not a known code")
+        return self
 
     def source_ids(self) -> list[str]:
         out = []
@@ -355,6 +415,8 @@ class CountrySpec(BaseModel):
             v = getattr(self, name)
             if isinstance(v, Block):
                 out.append(v.source)
+        if self.politics is not None:
+            out += [s.source for s in self.politics.shifts]
         return out
 
     def ethnicity_codes(self) -> list[str]:

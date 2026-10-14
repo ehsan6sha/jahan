@@ -116,6 +116,9 @@ class CreateAgent(_Act):
     languages: list[str] | None = None
     values: dict[str, float] | None = None
     visibility: float | None = Field(None, ge=0.0, le=10.0)
+    alignment: float | None = Field(
+        None, ge=-1.0, le=1.0
+    )  # lean on the country's political axis (+1 = incumbent's camp)
     friends: int = Field(5, ge=0, le=50)
     acquaintances: int = Field(5, ge=0, le=50)
     household_of: int | None = None  # join this agent's household instead of living alone

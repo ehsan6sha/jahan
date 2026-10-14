@@ -1216,3 +1216,113 @@ entries:
   license: see source
   confidence: placeholder
   notes: ''
+- id: usa.politics
+  country: USA
+  variable: political camp shares (party identification)
+  source: Gallup party identification, 2025 annual average (27% Republican, 45% independent, 27% Democrat), as reported by FOX Television Stations, January 2026
+  url: https://www.fox5ny.com/news/americans-identify-political-independents-poll
+  year: 2025
+  retrieved: '2026-10-14'
+  license: attribution
+  confidence: medium
+  notes: Independents are the neutral camp, including the 20% who lean Democratic and 15% who lean Republican. Primary Gallup release not opened; secondary report.
+- id: bra.politics
+  country: BRA
+  variable: political camp shares (2026 first-round valid votes)
+  source: TSE count of the 2026-10-04 presidential first round (Flavio Bolsonaro 47.0%, Lula 45.2%, others 7.8% of valid votes)
+  url: https://en.wikipedia.org/wiki/2026_Brazilian_general_election
+  year: 2026
+  retrieved: '2026-10-13'
+  license: CC BY-SA (Wikipedia summary of TSE data)
+  confidence: low
+  notes: Shares of valid votes; abstention and blank/null votes are not modelled, so the neutral camp is small.
+- id: bra.politics_religion
+  country: BRA
+  variable: political lean shift by religion
+  source: Datafolha 2025, approval of the Lula government among evangelicals (~27%) vs Catholics (28%)
+  url: https://portaldeprefeitura.com.br/noticias/datafolha-aprovacao-de-lula-entre-catolicos-cai-de-42-para-28/589542/
+  year: 2025
+  retrieved: '2026-10-14'
+  license: attribution
+  confidence: low
+  notes: The two groups differ by about one point, so the shift is near zero (evangelical -0.05 on the log-odds scale); kept so the source is visible.
+- id: deu.politics
+  country: DEU
+  variable: political camp shares (party vote intention)
+  source: ARD-DeutschlandTrend (infratest dimap) October 2026 Sonntagsfrage, Union 20, AfD 27, Greens 16, SPD 13, Linke 11, others/FDP 13
+  url: https://www.t-online.de/nachrichten/deutschland/innenpolitik/id_101377970/ard-deutschlandtrend-union-verliert-in-umfrage-weiter-afd-legt-zu.html
+  year: 2026
+  retrieved: '2026-10-14'
+  license: attribution
+  confidence: low
+  notes: One axis, Union (the chancellor's party) vs the opposition; SPD (coalition partner), FDP and others are counted as neutral, AfD, Greens and Linke as opposed. A single axis lumps AfD with Greens and Linke.
+- id: nga.politics
+  country: NGA
+  variable: political camp shares (2023 presidential result over registered voters)
+  source: INEC declared results of the 2023 presidential election (registered 93,469,008; valid 24,025,940; Tinubu 8,794,726)
+  url: https://thenigerialawyer.com/inigeriaelections2023-final-results-of-2023-presidential-election-as-declared-by-ineci/
+  year: 2023
+  retrieved: '2026-10-14'
+  license: public results
+  confidence: low
+  notes: Tinubu voters 9.4% of registered, opposition voters 16.3%, non-voters (74.3%) neutral. Turnout was about 27%, so most people sit in the neutral camp.
+- id: ind.politics
+  country: IND
+  variable: political camp shares (2024 Lok Sabha result over the electorate)
+  source: Election Commission of India 2024 results as summarised on Wikipedia (NDA 42.5%, INDIA 40.6% of votes, turnout 66.1%)
+  url: https://en.wikipedia.org/wiki/2024_Indian_general_election
+  year: 2024
+  retrieved: '2026-10-14'
+  license: CC BY-SA (Wikipedia summary of ECI data)
+  confidence: low
+  notes: NDA voters 28.1% of the electorate, INDIA voters 26.8%, others and non-voters 45.1% neutral. Check against the ECI statistical report.
+- id: ind.politics_region
+  country: IND
+  variable: political lean shift by language community (region proxy)
+  source: Ipsos IndiaBus, February 2025, PM approval by region (north 86%, west 74%, south 32%; national 68%)
+  url: https://www.ipsos.com/en-in/indiabus/node/1042866
+  year: 2025
+  retrieved: '2026-10-14'
+  license: attribution
+  confidence: low
+  notes: Log-odds of regional approval minus national approval, applied by language community because the model has no regions (hindi +1.06; marathi, gujarati +0.29; tamil, telugu, kannada, malayalam -1.51). The community-to-region mapping is a judgement.
+- id: idn.politics
+  country: IDN
+  variable: political camp shares (2024 presidential result over registered voters)
+  source: KPU 2024 presidential result (registered 204,807,222; valid 164,227,475; Prabowo-Gibran 96,214,691)
+  url: https://www.kpu.go.id/dmdocument/1759834162Fact%20Sheet%20KPU%20Edisi%201%20%28Inggris%29-1.pdf
+  year: 2024
+  retrieved: '2026-10-14'
+  license: public results
+  confidence: low
+  notes: Prabowo voters 47.0% of registered, Anies and Ganjar voters 33.2%, non-voters 19.8% neutral.
+- id: irn.politics
+  country: IRN
+  variable: political camp shares
+  source: Placeholder; no reliable public polling on support for the political establishment
+  url: https://en.wikipedia.org/wiki/Politics_of_Iran
+  year: 2026
+  retrieved: null
+  license: n/a
+  confidence: placeholder
+  notes: Uniform thirds. The 2024 presidential runoff shares could replace this at low confidence.
+- id: chn.politics
+  country: CHN
+  variable: political camp shares
+  source: Placeholder; no free, reliable polling on support for the national leadership
+  url: https://en.wikipedia.org/wiki/Politics_of_China
+  year: 2026
+  retrieved: null
+  license: n/a
+  confidence: placeholder
+  notes: Uniform thirds.
+- id: global.alignment_inheritance
+  country: null
+  variable: parent-child political camp agreement
+  source: Jennings, Stoker and Bowers (2009), Politics across Generations, Journal of Politics 71(3); parent-child party agreement of about 0.7 in politicised families
+  url: https://scholar.google.com/scholar?q=Jennings+Stoker+Bowers+2009+Politics+across+Generations
+  year: 2009
+  retrieved: null
+  license: see source
+  confidence: provisional
+  notes: The 0.70 agreement rate used for children's camps is approximate; check the exact figure in the paper.

@@ -12,7 +12,7 @@ from pathlib import Path
 import numpy as np
 
 from jahan.model.enums import N_TOPICS, EmpStatus, InfoTier, Sex
-from jahan.model.notables import load_roster
+from jahan.model.notables import camp_priors, camp_shares, camp_template, load_roster
 from jahan.model.schema import MAX_LANGS
 from jahan.model.world import ParasocialStore, World
 
@@ -61,11 +61,27 @@ def add_notables(world: World, data_dir: Path) -> int:
                 home_tz_offset_min=main_tz,
                 global_rep=float(e.approval.value),
                 visibility=float(e.visibility),
+                alignment=float(e.alignment),
                 is_notable=True,
                 role_id=len(world.notables),
             )
             entry = e.model_dump(mode="json")
-            entry.update({"agent_id": agent_id, "country": c, "as_of": roster.as_of.isoformat()})
+            prior, shift, status = camp_priors(
+                e.approval.value,
+                camp_shares(spec.politics, e.alignment),
+                e.approval_by_camp,
+                camp_template(spec),
+            )
+            entry.update(
+                {
+                    "agent_id": agent_id,
+                    "country": c,
+                    "as_of": roster.as_of.isoformat(),
+                    "camp_prior": prior,
+                    "camp_shift_logit": shift,
+                    "camp_status": status,
+                }
+            )
             world.notables.append(entry)
             added += 1
     world.ptrust = ParasocialStore(world.pop.capacity, len(world.notables) + ParasocialStore.RESERVED)

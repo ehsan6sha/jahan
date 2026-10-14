@@ -37,6 +37,7 @@ from jahan.actors.actions import (
     PriceChange,
 )
 from jahan.gen.sampler import logit, sigmoid
+from jahan.model.country import CAMP_TAU
 from jahan.model.enums import CHANNEL_KIND_NAMES, TOPIC_NAMES, EdgeKind, EmpStatus, EventKind, Marital, OriginKind
 from jahan.model.notables import SIMULATED_LABEL
 from jahan.model.schema import AGENT_COLUMNS
@@ -641,6 +642,8 @@ def create_agent(world: World, ev: CreateAgent, log: EventLog, prompt_id: int) -
         cols["income_month"] = ev.income_month
     if ev.visibility is not None:
         cols["visibility"] = ev.visibility
+    if ev.alignment is not None:
+        cols["alignment"] = ev.alignment
     if ev.values:
         order = ["self", "money", "culture", "freedom", "family", "security"]
         v = np.array([max(ev.values.get(k, 0.0), 0.0) for k in order], np.float32)
@@ -685,12 +688,19 @@ def create_agent(world: World, ev: CreateAgent, log: EventLog, prompt_id: int) -
         if ev.visibility is None:
             pop["visibility"][row] = 4.0
         order = ["self", "money", "culture", "freedom", "family", "security"]
+        holder = display_name(world, row)
+        lean = float(pop["alignment"][row])
         world.notables.append(
             {
                 "key": f"{ev.country}.created_{new_id}",
                 "role": ev.notable_role,
                 "office": ev.office or role.label,
-                "holder_name": display_name(world, row),
+                "holder_name": holder,
+                "aliases": sorted({holder, *([ev.last_name] if ev.last_name else [])}),
+                "alignment": lean,
+                "camp_prior": {"aligned": 0.5, "neutral": 0.5, "opposed": 0.5},
+                "camp_shift_logit": 0.0,
+                "camp_status": "placeholder" if abs(lean) >= CAMP_TAU else "non_partisan",
                 "sex": "F" if pop["sex"][row] == 0 else "M",
                 "visibility": float(pop["visibility"][row]),
                 "approval": {"value": 0.5, "source": "created in the simulation (no polling)"},

@@ -13,6 +13,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from jahan.gen.politics_gen import alignment_words
 from jahan.llm.provider import LLMClient
 from jahan.model.enums import Big5, EdgeKind, InfoTier, Marital, Topic, ValueDim
 from jahan.model.notables import SIMULATED_LABEL
@@ -96,6 +97,9 @@ def mind_snapshot(world: World, agent_id: int, labels: dict[int, str] | None = N
     vals = pop["values"][i]
     top_v = np.argsort(-vals)[:3]
     lines.append("Cares most about: " + ", ".join(ValueDim(int(v)).name.lower() for v in top_v) + ".")
+    lean = alignment_words(float(pop["alignment"][i]), spec.politics)
+    if lean:
+        lines.append(f"Politics: {lean}.")
     b5 = pop["big5"][i]
     traits = [t.name.lower() for t in Big5 if abs(float(b5[t])) > 1.0]
     if traits:
