@@ -229,7 +229,10 @@
   function consoleStart(rec) {
     const cancel = $("#console-cancel");
     cancel.hidden = false;
-    cancel.onclick = () => api(`/api/jobs/${rec.id}/cancel`, { method: "POST", body: {} }).catch(() => {});
+    cancel.onclick = () => {
+      consoleState("stopping…", true);  // the world is free again once the command has actually stopped
+      api(`/api/jobs/${rec.id}/cancel`, { method: "POST", body: {} }).catch(() => {});
+    };
     if (rec.quiet) {
       consoleState("reading the world…", true);
       return;

@@ -167,7 +167,8 @@ class Job:
     argv: list[str]
     world: str | None
     lines: list[str] = field(default_factory=list)
-    status: str = "running"  # running | ok | failed | cancelled
+    status: str = "running"  # running | ok | failed | cancelled (only once the process has stopped)
+    cancel_requested: bool = False
     exit_code: int | None = None
     started: float = field(default_factory=time.time)
     ended: float | None = None
@@ -181,6 +182,7 @@ class Job:
             "cmdline": cmdline(self.argv),
             "world": self.world,
             "status": self.status,
+            "cancelling": self.cancel_requested and self.status == "running",
             "exit_code": self.exit_code,
             "started": self.started,
             "ended": self.ended,
@@ -265,7 +267,7 @@ class Jobs:
             self._finish(job, 1)
             return job
         with self.lock:
-            cancelled_meanwhile = job.status == "cancelled"
+            cancelled_meanwhile = job.cancel_requested
         if cancelled_meanwhile:  # Cancel arrived while the process was being created
             kill_tree(job.proc)
         threading.Thread(target=self._pump, args=(job,), daemon=True).start()
@@ -281,17 +283,17 @@ class Jobs:
         with self.lock:
             job.exit_code = code
             job.ended = time.time()
-            if job.status != "cancelled":
-                job.status = "ok" if code == 0 else "failed"
+            # "cancelled" only now that the process has stopped and the world is free again
+            job.status = "cancelled" if job.cancel_requested else ("ok" if code == 0 else "failed")
             if job.world is not None and self.busy.get(job.world) == job.id:
                 del self.busy[job.world]
 
     def cancel(self, job_id: int) -> Job:
         with self.lock:
             job = self.jobs[job_id]
-            if job.status != "running":
+            if job.status != "running" or job.cancel_requested:
                 return job
-            job.status = "cancelled"
+            job.cancel_requested = True
             job.lines.append("(cancelled from the page)")
             proc = job.proc
         if proc is not None:  # otherwise start() kills it as soon as it exists
