@@ -104,6 +104,31 @@ class BacktestFile(BaseModel):
         with path.open(encoding="utf-8") as f:
             return cls.model_validate(yaml.safe_load(f))
 
+    @classmethod
+    def load_all(cls, files: list[Path]) -> BacktestFile:
+        """Several event files as one, in date order.  They must judge errors by the same typical moves."""
+        parts = [cls.load(p) for p in files]
+        if not parts:
+            raise ValueError("no backtest event files")
+        noise = parts[0].noise_sd
+        for p, part in zip(files[1:], parts[1:], strict=True):
+            if part.noise_sd.model_dump(exclude={"note"}) != noise.model_dump(exclude={"note"}):
+                raise ValueError(f"{p.name}: noise_sd differs from {files[0].name}")
+        events = sorted((e for part in parts for e in part.events), key=lambda e: (e.date, e.id))
+        ids = [e.id for e in events]
+        if len(set(ids)) != len(ids):
+            raise ValueError("duplicate event ids across backtest files")
+        return cls(
+            retrieved=max(p.retrieved for p in parts),
+            noise_sd=noise,
+            events=events,
+            society=[s for part in parts for s in part.society],
+        )
+
+
+def default_events_files() -> list[Path]:
+    return sorted((paths.data_dir() / "backtests").glob("events_*.yaml"))
+
 
 def default_events_file() -> Path:
     return paths.data_dir() / "backtests" / "events_2026.yaml"
@@ -264,15 +289,18 @@ def _surprise_text(ev: BacktestEvent, surprise: float | None) -> str:
     return f"{surprise:+.0f}k jobs"
 
 
-def summary(report: Report) -> dict[str, dict[str, float]]:
-    """Per market: mean miss in daily s.d. of Jahan and of "no change", and direction calls and hits."""
+def _forecasts(results: list[EventResult]) -> list[EventResult]:
+    return [r for r in results if r.event.kind == "forecast"]
+
+
+def summary(report: Report, results: list[EventResult] | None = None) -> dict[str, dict[str, float]]:
+    """Per market: mean miss in daily s.d. of Jahan and of "no change", major misses, and direction calls
+    and hits, over ``results`` (default: every forecast event)."""
     noise = report.file.noise_sd
     out: dict[str, dict[str, float]] = {}
     for t in TARGETS:
-        errs, naive, calls, hits = [], [], 0, 0
-        for r in report.results:
-            if r.event.kind != "forecast":
-                continue
+        errs, naive, calls, hits, majors = [], [], 0, 0, 0
+        for r in _forecasts(report.results if results is None else results):
             real = r.event.actual.get(t)
             sim = r.jahan.get(t)
             if real is None or sim is None or math.isnan(sim):
@@ -280,6 +308,7 @@ def summary(report: Report) -> dict[str, dict[str, float]]:
             sd = noise.get(t)
             errs.append(abs(sim - real) / sd)
             naive.append(abs(real) / sd)
+            majors += int(score(sim, real, sd)["major"])
             if abs(sim) >= SIGN_FORECAST_SD * sd:
                 calls += 1
                 hits += int(np.sign(sim) == np.sign(real))
@@ -287,9 +316,28 @@ def summary(report: Report) -> dict[str, dict[str, float]]:
             "events": float(len(errs)),
             "jahan_mean_miss_sd": float(np.mean(errs)) if errs else float("nan"),
             "no_change_mean_miss_sd": float(np.mean(naive)) if naive else float("nan"),
+            "major_misses": float(majors),
             "direction_calls": float(calls),
             "direction_hits": float(hits),
         }
+    return out
+
+
+GROUP_LABELS = {"us_policy_rate": "Fed decisions", "us_payrolls": "Jobs reports"}
+
+
+def groups(report: Report) -> list[tuple[str, list[EventResult]]]:
+    """Forecast events by kind of announcement and year, then per kind, then all."""
+    fc = _forecasts(report.results)
+    out: list[tuple[str, list[EventResult]]] = []
+    for ind, label in GROUP_LABELS.items():
+        mine = [r for r in fc if r.event.announcement is not None and r.event.announcement.indicator == ind]
+        for year in sorted({r.event.date.year for r in mine}):
+            out.append((f"{label} {year}", [r for r in mine if r.event.date.year == year]))
+        if len({r.event.date.year for r in mine}) > 1:
+            years = sorted({r.event.date.year for r in mine})
+            out.append((f"**{label} {years[0]}-{years[-1]}**", mine))
+    out.append(("**All**", fc))
     return out
 
 
@@ -328,10 +376,38 @@ def to_json(report: Report) -> dict[str, Any]:
     }
 
 
-def render_markdown(report: Report) -> str:
-    """The benchmark tables (used for the README)."""
+def render_summary(report: Report) -> list[str]:
+    """One row per kind of announcement and year: average misses next to "no change", major misses and
+    direction calls."""
+    lines = [
+        '**Summary.** Average miss in typical daily moves, Jahan / "no change"; major misses out of forecasts; '
+        "direction right out of the forecasts large enough to have one (a quarter of a typical move or more).",
+        "",
+        "| Events | Count | US stocks | Gold | Dollar | Major misses | Direction right |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for label, rows in groups(report):
+        sm = summary(report, rows)
+        cells = [
+            f"{sm[t]['jahan_mean_miss_sd']:.2f} / {sm[t]['no_change_mean_miss_sd']:.2f}" if sm[t]["events"] else "n/a"
+            for t in TARGETS
+        ]
+        majors = sum(int(sm[t]["major_misses"]) for t in TARGETS)
+        cells_n = sum(int(sm[t]["events"]) for t in TARGETS)
+        calls = sum(int(sm[t]["direction_calls"]) for t in TARGETS)
+        hits = sum(int(sm[t]["direction_hits"]) for t in TARGETS)
+        lines.append(
+            f"| {label} | {len(rows)} | " + " | ".join(cells) + f" | {majors} of {cells_n} | {hits} of {calls} |"
+        )
+    lines.append("")
+    return lines
+
+
+def render_markdown(report: Report, years: set[int] | None = None) -> str:
+    """The benchmark: a summary over every event, then per-event tables (only ``years`` when given)."""
     noise = report.file.noise_sd
     by_id = {r.event.id: r for r in report.results}
+    shown = [r for r in report.results if years is None or r.event.date.year in years]
     lines: list[str] = []
     w = lines.append
     w(
@@ -339,7 +415,9 @@ def render_markdown(report: Report) -> str:
         f"{report.seeds} seeds for news reach); edit data/backtests, not this table -->"
     )
     w("")
-    w("**Market moves on the day** (percent, close to close; Jahan / real). Misses are in typical daily moves")
+    lines.extend(render_summary(report))
+    which = "" if years is None else f", {', '.join(str(y) for y in sorted(years))}"
+    w(f"**Market moves on the day{which}** (percent, close to close; Jahan / real). Misses are in typical daily moves")
     w(
         f"(one daily s.d.: US stocks {noise.us_stocks:.2f}%, gold {noise.gold:.2f}%, dollar {noise.dollar:.2f}%). "
         "A major miss is more than 2 s.d., or the wrong direction on a move over 1 s.d."
@@ -347,7 +425,7 @@ def render_markdown(report: Report) -> str:
     w("")
     w("| Date | Event | Surprise | US stocks | Gold | Dollar | Miss (s.d.): stocks, gold, dollar | Major miss |")
     w("|---|---|---|---|---|---|---|---|")
-    for r in report.results:
+    for r in shown:
         ev = r.event
         if ev.kind != "forecast":
             continue
@@ -369,7 +447,7 @@ def render_markdown(report: Report) -> str:
             + f" | {', '.join(misses)} | {', '.join(majors) or 'none'} |"
         )
     w("")
-    sm = summary(report)
+    sm = summary(report, shown)
     parts = []
     for t in TARGETS:
         s = sm[t]
@@ -380,7 +458,7 @@ def render_markdown(report: Report) -> str:
         )
     w("Summary over these events. " + ". ".join(parts) + ".")
     w("")
-    hind = [r for r in report.results if r.hindsight or r.side]
+    hind = [r for r in shown if r.hindsight or r.side]
     if hind:
         w(
             "**After the fact, not a forecast.** The day's 2-year Treasury yield move, minus the part the decision "
@@ -402,7 +480,7 @@ def render_markdown(report: Report) -> str:
                 f"{_f(r.side.get('gold'))} / {_f(ev.actual.gold)} |"
             )
         w("")
-    other = [r.event for r in report.results if r.event.kind == "not_modelled"]
+    other = [r.event for r in shown if r.event.kind == "not_modelled"]
     if other:
         w("**Not modelled.** No published estimate exists, so Jahan moves nothing unless a prompt scripts the move.")
         w("")
@@ -416,7 +494,7 @@ def render_markdown(report: Report) -> str:
         w("")
     for chk in report.file.society:
         hit = by_id.get(chk.event)
-        if hit is None or not hit.aware:
+        if hit is None or not hit.aware or (years is not None and hit.event.date.year not in years):
             continue
         arr = np.array(hit.aware, dtype=np.float64)  # seeds x days
         mean = arr.mean(axis=0)

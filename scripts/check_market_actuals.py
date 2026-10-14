@@ -1,6 +1,6 @@
 """Check the backtest events' S&P 500 moves and 2-year yield changes against FRED.
 
-    uv run python -I -X utf8 scripts/check_market_actuals.py [--events data/backtests/events_2026.yaml]
+    uv run python -I -X utf8 scripts/check_market_actuals.py [--events FILE.yaml ...]
         [--sp500 FILE.csv --dgs2 FILE.csv]
 
 Downloads FRED's SP500 and DGS2 daily series (or reads saved CSVs), recomputes each event's close-to-close
@@ -38,7 +38,7 @@ def series(name: str, path: str | None) -> list[tuple[str, float]]:
 
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--events", default=str(ROOT / "data" / "backtests" / "events_2026.yaml"))
+    ap.add_argument("--events", nargs="*", help="default: every data/backtests/events_*.yaml")
     ap.add_argument("--sp500")
     ap.add_argument("--dgs2")
     args = ap.parse_args(argv)
@@ -48,7 +48,10 @@ def main(argv: list[str]) -> int:
     except OSError as e:
         print(f"Could not download from FRED ({e}); save the CSVs by hand and pass --sp500 and --dgs2.")
         return 2
-    events = yaml.safe_load(Path(args.events).read_text(encoding="utf-8"))["events"]
+    files = (
+        [Path(p) for p in args.events] if args.events else sorted((ROOT / "data" / "backtests").glob("events_*.yaml"))
+    )
+    events = [ev for f in files for ev in yaml.safe_load(f.read_text(encoding="utf-8"))["events"]]
     sp_i = {d: i for i, (d, _) in enumerate(sp)}
     two_i = {d: i for i, (d, _) in enumerate(two)}
     bad = 0

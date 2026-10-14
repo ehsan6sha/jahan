@@ -1,0 +1,1362 @@
+# Backtest events, 2023-2025: every Fed decision and every jobs report (`jahan backtest`).
+#
+# Same conventions as events_2026.yaml. Inputs hold only what was known before each release: the decision or
+# the jobs number, and what markets expected the day before (CME FedWatch probabilities as reported in the news,
+# or the Dow Jones consensus for jobs). `actual` holds the release day's close-to-close moves, in percent:
+#   us_stocks  S&P 500 close (FRED series SP500)
+#   gold       exchange-rates.org yearly gold price pages (the page does not state its pricing time; on some days
+#              it differs from spot after the New York close)
+#   dollar     ICE US dollar index (DXY), Yahoo Finance DX-Y.NYB daily closes. Three days where Yahoo repeats the
+#              previous close are left out (null).
+# two_year_bp: the day's change in the 2-year Treasury yield (FRED DGS2), used only in the after-the-fact column.
+# A null actual means the market was closed or no reliable value was found. Only daily percent changes are kept,
+# each with its page; check the vendors' terms before reusing them. Retrieved 2026-10-14 by web research;
+# scripts/check_market_actuals.py re-checks the FRED values.
+retrieved: '2026-10-14'
+noise_sd:
+  us_stocks: 0.92
+  gold: 1.28
+  dollar: 0.41
+  note: Standard deviation of daily percent changes, 2023 to October 2026, computed for this benchmark from FRED
+    SP500, Yahoo Finance GC=F (front-month gold futures; contract rolls may inflate it) and DX-Y.NYB. Approximate;
+    a guide to what counts as an ordinary day, not a published figure.
+events:
+- id: jobs-2023-01-06
+  date: '2023-01-06'
+  title: Dec 2022 jobs +223k vs +200k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 223
+    expected: 200
+    headline: US employers added 223,000 jobs in December 2022; economists expected about 200,000
+    valence: 0.5
+    release_utc_hour: 13
+  expected_note: consensus 200k (Dow Jones)
+  two_year_bp: -21
+  actual:
+    us_stocks: 2.28
+    gold: 1.82
+    dollar: -1.1
+  sources:
+  - https://www.cnbc.com/2023/01/06/jobs-report-december-2022-nonfarm-payrolls-rose-223000-in-december-as-strong-jobs-market-tops-expectations.html
+  - https://www.bls.gov/news.release/archives/empsit_01062023.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2023
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: fomc-2023-02-01
+  date: '2023-02-01'
+  title: Fed raises 25 bp to 4.50-4.75%
+  announcement:
+    indicator: us_policy_rate
+    actual: 25
+    expected: 25.0
+    headline: The Federal Reserve raises interest rates by 0.25 points to 4.50-4.75%
+    valence: -0.3
+    release_utc_hour: 19
+  expected_note: no FedWatch figure found; news reports called the decision near-certain, so it is taken as fully
+    expected
+  two_year_bp: -12
+  actual:
+    us_stocks: 1.05
+    gold: 1.16
+    dollar: -0.86
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20230201a.htm
+  - https://www.cnbc.com/2023/02/01/live-updates-fed-rate-hike-february.html
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2023
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: 'Powell: ''the disinflationary process has started''; stocks rebounded during his press conference.'
+- id: jobs-2023-02-03
+  date: '2023-02-03'
+  title: Jan 2023 jobs +517k vs +187k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 517
+    expected: 187
+    headline: US employers added 517,000 jobs in January 2023; economists expected about 187,000
+    valence: 0.5
+    release_utc_hour: 13
+  expected_note: consensus 187k (Dow Jones)
+  two_year_bp: 21
+  actual:
+    us_stocks: -1.04
+    gold: -2.47
+    dollar: 1.15
+  sources:
+  - https://www.cnbc.com/2023/02/03/jobs-report-january-2023-.html
+  - https://www.bls.gov/news.release/archives/empsit_02032023.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2023
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: jobs-2023-03-10
+  date: '2023-03-10'
+  title: Feb 2023 jobs +311k vs +225k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 311
+    expected: 225
+    headline: US employers added 311,000 jobs in February 2023; economists expected about 225,000
+    valence: 0.5
+    release_utc_hour: 13
+  expected_note: consensus 225k (Dow Jones)
+  two_year_bp: -30
+  actual:
+    us_stocks: -1.45
+    gold: 1.95
+    dollar: -0.69
+  sources:
+  - https://www.cnbc.com/2023/03/10/jobs-report-february-2023.html
+  - https://www.bls.gov/news.release/archives/empsit_03102023.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2023
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: Silicon Valley Bank failed the same day.
+- id: fomc-2023-03-22
+  date: '2023-03-22'
+  title: Fed raises 25 bp to 4.75-5.00%
+  announcement:
+    indicator: us_policy_rate
+    actual: 25
+    expected: 21.5
+    headline: The Federal Reserve raises interest rates by 0.25 points to 4.75-5.00%
+    valence: -0.3
+    release_utc_hour: 18
+  expected_note: 'CME FedWatch as reported on 2023-03-21: hike 25 bp 86%, hold (pause) 13.6%'
+  two_year_bp: -21
+  actual:
+    us_stocks: -1.65
+    gold: 1.24
+    dollar: -0.88
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20230322a.htm
+  - https://www.cnbc.com/2023/03/20/stock-market-today-live-updates.html
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2023
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: Statement swapped 'ongoing increases' for 'some additional policy firming may be appropriate'.
+- id: jobs-2023-04-07
+  date: '2023-04-07'
+  title: Mar 2023 jobs +236k vs +238k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 236
+    expected: 238
+    headline: US employers added 236,000 jobs in March 2023; economists expected about 238,000
+    valence: -0.5
+    release_utc_hour: 12
+  expected_note: consensus 238k (Dow Jones)
+  two_year_bp: 15
+  actual:
+    us_stocks: null
+    gold: -0.01
+    dollar: null
+  sources:
+  - https://www.cnbc.com/2023/04/07/jobs-report-march-2023.html
+  - https://www.bls.gov/news.release/archives/empsit_04072023.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2023
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: 'Good Friday: the US stock market was closed.'
+- id: fomc-2023-05-03
+  date: '2023-05-03'
+  title: Fed raises 25 bp to 5.00-5.25%
+  announcement:
+    indicator: us_policy_rate
+    actual: 25
+    expected: 21.2
+    headline: The Federal Reserve raises interest rates by 0.25 points to 5.00-5.25%
+    valence: -0.3
+    release_utc_hour: 18
+  expected_note: 'CME FedWatch as reported on 2023-05-02: hike 25 bp ~85%, hold ~15% (residual, derived)'
+  two_year_bp: -8
+  actual:
+    us_stocks: -0.7
+    gold: 1.98
+    dollar: -0.61
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20230503a.htm
+  - https://www.cnbc.com/2023/05/01/stock-market-today-live-updates.html
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2023
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: 'Dropped ''additional policy firming'' sentence (pause signal); Powell: pause decision ''not made today''.'
+- id: jobs-2023-05-05
+  date: '2023-05-05'
+  title: Apr 2023 jobs +253k vs +180k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 253
+    expected: 180
+    headline: US employers added 253,000 jobs in April 2023; economists expected about 180,000
+    valence: 0.5
+    release_utc_hour: 12
+  expected_note: consensus 180k (Dow Jones)
+  two_year_bp: 17
+  actual:
+    us_stocks: 1.85
+    gold: -1.55
+    dollar: -0.19
+  sources:
+  - https://www.cnbc.com/2023/05/05/jobs-report-april-2023-job-growth-totals-25300-in-april.html
+  - https://www.bls.gov/news.release/archives/empsit_05052023.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2023
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: jobs-2023-06-02
+  date: '2023-06-02'
+  title: May 2023 jobs +339k vs +190k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 339
+    expected: 190
+    headline: US employers added 339,000 jobs in May 2023; economists expected about 190,000
+    valence: 0.5
+    release_utc_hour: 12
+  expected_note: consensus 190k (Dow Jones)
+  two_year_bp: 17
+  actual:
+    us_stocks: 1.45
+    gold: -1.46
+    dollar: 0.44
+  sources:
+  - https://www.cnbc.com/2023/06/02/jobs-report-may-2023-.html
+  - https://www.bls.gov/news.release/archives/empsit_06022023.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2023
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: fomc-2023-06-14
+  date: '2023-06-14'
+  title: Fed holds at 5.00-5.25%
+  announcement:
+    indicator: us_policy_rate
+    actual: 0
+    expected: 2.2
+    headline: The Federal Reserve holds interest rates at 5.00-5.25%
+    valence: 0.0
+    release_utc_hour: 18
+  expected_note: 'CME FedWatch as reported on 2023-06-13: hold ~91%, hike 25 bp ~9% (residual, derived)'
+  two_year_bp: 7
+  actual:
+    us_stocks: 0.08
+    gold: 0.04
+    dollar: -0.32
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20230614a.htm
+  - https://www.cnbc.com/2023/06/12/stock-market-today-live-updates.html
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2023
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: 'Hawkish skip: dot plot signaled two more hikes in 2023.'
+- id: jobs-2023-07-07
+  date: '2023-07-07'
+  title: Jun 2023 jobs +209k vs +240k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 209
+    expected: 240
+    headline: US employers added 209,000 jobs in June 2023; economists expected about 240,000
+    valence: -0.5
+    release_utc_hour: 12
+  expected_note: consensus 240k (Dow Jones)
+  two_year_bp: -5
+  actual:
+    us_stocks: -0.29
+    gold: 0.83
+    dollar: -0.87
+  sources:
+  - https://www.cnbc.com/2023/07/07/jobs-report-june-2023-.html
+  - https://www.bls.gov/news.release/archives/empsit_07072023.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2023
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: fomc-2023-07-26
+  date: '2023-07-26'
+  title: Fed raises 25 bp to 5.25-5.50%
+  announcement:
+    indicator: us_policy_rate
+    actual: 25
+    expected: 25.0
+    headline: The Federal Reserve raises interest rates by 0.25 points to 5.25-5.50%
+    valence: -0.3
+    release_utc_hour: 18
+  expected_note: 'CME FedWatch as reported on 2023-07-26: hike 100%'
+  two_year_bp: -3
+  actual:
+    us_stocks: -0.02
+    gold: 0.4
+    dollar: null
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20230726a.htm
+  - https://www.cnbc.com/2023/07/25/stock-market-today-live-updates.html
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2023
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: 'Powell: another hike in September ''certainly possible'' if data warranted; data-dependent.'
+- id: jobs-2023-08-04
+  date: '2023-08-04'
+  title: Jul 2023 jobs +187k vs +200k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 187
+    expected: 200
+    headline: US employers added 187,000 jobs in July 2023; economists expected about 200,000
+    valence: -0.5
+    release_utc_hour: 12
+  expected_note: consensus 200k (Dow Jones)
+  two_year_bp: -12
+  actual:
+    us_stocks: -0.53
+    gold: 0.37
+    dollar: -0.51
+  sources:
+  - https://www.cnbc.com/2023/08/04/jobs-report-july-2023-187000-jobs-in-july.html
+  - https://www.bls.gov/news.release/archives/empsit_08042023.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2023
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: jobs-2023-09-01
+  date: '2023-09-01'
+  title: Aug 2023 jobs +187k vs +170k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 187
+    expected: 170
+    headline: US employers added 187,000 jobs in August 2023; economists expected about 170,000
+    valence: 0.5
+    release_utc_hour: 12
+  expected_note: consensus 170k (Dow Jones)
+  two_year_bp: 2
+  actual:
+    us_stocks: 0.18
+    gold: -0.0
+    dollar: 0.6
+  sources:
+  - https://www.cnbc.com/2023/09/01/jobs-report-august-2023.html
+  - https://www.bls.gov/news.release/archives/empsit_09012023.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2023
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: fomc-2023-09-20
+  date: '2023-09-20'
+  title: Fed holds at 5.25-5.50%
+  announcement:
+    indicator: us_policy_rate
+    actual: 0
+    expected: 0.2
+    headline: The Federal Reserve holds interest rates at 5.25-5.50%
+    valence: 0.0
+    release_utc_hour: 18
+  expected_note: 'CME FedWatch as reported on 2023-09-19: hold 99%, hike 25 bp ~1% (residual)'
+  two_year_bp: 4
+  actual:
+    us_stocks: -0.94
+    gold: -0.02
+    dollar: null
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20230920a.htm
+  - https://www.cnbc.com/2023/09/18/gold-prices-edge-up-ahead-of-likely-fed-rate-pause.html
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2023
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: Dots kept one more 2023 hike and fewer 2024 cuts than projected in June.
+- id: jobs-2023-10-06
+  date: '2023-10-06'
+  title: Sep 2023 jobs +336k vs +170k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 336
+    expected: 170
+    headline: US employers added 336,000 jobs in September 2023; economists expected about 170,000
+    valence: 0.5
+    release_utc_hour: 12
+  expected_note: consensus 170k (Dow Jones)
+  two_year_bp: 5
+  actual:
+    us_stocks: 1.18
+    gold: 0.61
+    dollar: -0.27
+  sources:
+  - https://www.cnbc.com/2023/10/06/jobs-report-september-2023.html
+  - https://www.bls.gov/news.release/archives/empsit_10062023.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2023
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: fomc-2023-11-01
+  date: '2023-11-01'
+  title: Fed holds at 5.25-5.50%
+  announcement:
+    indicator: us_policy_rate
+    actual: 0
+    expected: 0.2
+    headline: The Federal Reserve holds interest rates at 5.25-5.50%
+    valence: 0.0
+    release_utc_hour: 18
+  expected_note: 'CME FedWatch as reported on 2023-10-31: hold >99%, hike <1%'
+  two_year_bp: -12
+  actual:
+    us_stocks: 1.05
+    gold: -0.07
+    dollar: 0.21
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20231101a.htm
+  - https://www.cnbc.com/2023/10/30/stock-market-today-live-updates.html
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2023
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: Statement noted tighter 'financial and credit conditions' after the Treasury-yield surge.
+- id: jobs-2023-11-03
+  date: '2023-11-03'
+  title: Oct 2023 jobs +150k vs +170k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 150
+    expected: 170
+    headline: US employers added 150,000 jobs in October 2023; economists expected about 170,000
+    valence: -0.5
+    release_utc_hour: 12
+  expected_note: consensus 170k (Dow Jones)
+  two_year_bp: -15
+  actual:
+    us_stocks: 0.94
+    gold: 0.33
+    dollar: -1.04
+  sources:
+  - https://www.cnbc.com/2023/11/03/jobs-report-october-2023-us-payrolls-increased-by-150000-in-october-less-than-expected.html
+  - https://www.bls.gov/news.release/archives/empsit_11032023.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2023
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: jobs-2023-12-08
+  date: '2023-12-08'
+  title: Nov 2023 jobs +199k vs +190k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 199
+    expected: 190
+    headline: US employers added 199,000 jobs in November 2023; economists expected about 190,000
+    valence: 0.5
+    release_utc_hour: 13
+  expected_note: consensus 190k (Dow Jones)
+  two_year_bp: 13
+  actual:
+    us_stocks: 0.41
+    gold: -1.14
+    dollar: 0.45
+  sources:
+  - https://www.cnbc.com/2023/12/08/jobs-report-november-2023-us-payrolls-rose-199000-in-november-unemployment-rate-falls-to-3point7percent.html
+  - https://www.bls.gov/news.release/archives/empsit_12082023.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2023
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: fomc-2023-12-13
+  date: '2023-12-13'
+  title: Fed holds at 5.25-5.50%
+  announcement:
+    indicator: us_policy_rate
+    actual: 0
+    expected: 0.0
+    headline: The Federal Reserve holds interest rates at 5.25-5.50%
+    valence: 0.0
+    release_utc_hour: 19
+  expected_note: no FedWatch figure found; news reports called the decision near-certain, so it is taken as fully
+    expected
+  two_year_bp: -27
+  actual:
+    us_stocks: 1.37
+    gold: 2.47
+    dollar: -0.96
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20231213a.htm
+  - https://www.cnbc.com/2023/12/12/gold-prices-rise-as-dollar-retreats-ahead-of-us-inflation-data.html
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2023
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: 'Dovish pivot: dot plot indicated three rate cuts in 2024.'
+- id: jobs-2024-01-05
+  date: '2024-01-05'
+  title: Dec 2023 jobs +216k vs +170k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 216
+    expected: 170
+    headline: US employers added 216,000 jobs in December 2023; economists expected about 170,000
+    valence: 0.5
+    release_utc_hour: 13
+  expected_note: consensus 170k (Dow Jones)
+  two_year_bp: 2
+  actual:
+    us_stocks: 0.18
+    gold: 0.12
+    dollar: -0.01
+  sources:
+  - https://www.cnbc.com/2024/01/05/jobs-report-december-2023-payrolls-increased-by-216000-in-december.html
+  - https://www.bls.gov/news.release/archives/empsit_01052024.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2024
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: fomc-2024-01-31
+  date: '2024-01-31'
+  title: Fed holds at 5.25-5.50%
+  announcement:
+    indicator: us_policy_rate
+    actual: 0
+    expected: -0.6
+    headline: The Federal Reserve holds interest rates at 5.25-5.50%
+    valence: 0.0
+    release_utc_hour: 19
+  expected_note: 'CME FedWatch as reported on 2024-01-30: cut 25 bp 2.3%, hold 97.7% (derived)'
+  two_year_bp: -9
+  actual:
+    us_stocks: -1.61
+    gold: 0.25
+    dollar: -0.13
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20240131a.htm
+  - https://www.kitco.com/opinion/2024-01-30/investors-await-federal-reserves-decision-wednesday
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2024
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: 'Powell: March cut unlikely (''I don''t think it''s likely''); Dow fell 300+ points.'
+- id: jobs-2024-02-02
+  date: '2024-02-02'
+  title: Jan 2024 jobs +353k vs +185k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 353
+    expected: 185
+    headline: US employers added 353,000 jobs in January 2024; economists expected about 185,000
+    valence: 0.5
+    release_utc_hour: 13
+  expected_note: consensus 185k (Dow Jones)
+  two_year_bp: 16
+  actual:
+    us_stocks: 1.07
+    gold: -0.82
+    dollar: 0.84
+  sources:
+  - https://www.cnbc.com/2024/02/02/us-economy-added-353000-jobs-in-january-much-better-than-expected.html
+  - https://www.bls.gov/news.release/archives/empsit_02022024.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2024
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: jobs-2024-03-08
+  date: '2024-03-08'
+  title: Feb 2024 jobs +275k vs +198k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 275
+    expected: 198
+    headline: US employers added 275,000 jobs in February 2024; economists expected about 198,000
+    valence: 0.5
+    release_utc_hour: 13
+  expected_note: consensus 198k (Dow Jones)
+  two_year_bp: -2
+  actual:
+    us_stocks: -0.65
+    gold: 0.86
+    dollar: -0.08
+  sources:
+  - https://www.cnbc.com/2024/03/08/jobs-report-february-2024-us-job-growth-totaled-275000.html
+  - https://www.bls.gov/news.release/archives/empsit_03082024.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2024
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: fomc-2024-03-20
+  date: '2024-03-20'
+  title: Fed holds at 5.25-5.50%
+  announcement:
+    indicator: us_policy_rate
+    actual: 0
+    expected: 0.0
+    headline: The Federal Reserve holds interest rates at 5.25-5.50%
+    valence: 0.0
+    release_utc_hour: 18
+  expected_note: no FedWatch figure found; news reports called the decision near-certain, so it is taken as fully
+    expected
+  two_year_bp: -9
+  actual:
+    us_stocks: 0.89
+    gold: 2.3
+    dollar: -0.39
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20240320a.htm
+  - https://www.fxstreet.com/news/gold-price-drops-as-us-dollar-strengthens-ahead-of-fed-policy-meeting-202403191038
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2024
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: Dot plot kept three 2024 cuts despite firm inflation readings.
+- id: jobs-2024-04-05
+  date: '2024-04-05'
+  title: Mar 2024 jobs +303k vs +200k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 303
+    expected: 200
+    headline: US employers added 303,000 jobs in March 2024; economists expected about 200,000
+    valence: 0.5
+    release_utc_hour: 12
+  expected_note: consensus 200k (Dow Jones)
+  two_year_bp: 8
+  actual:
+    us_stocks: 1.11
+    gold: 1.66
+    dollar: 0.17
+  sources:
+  - https://www.cnbc.com/2024/04/05/job-growth-totaled-303000-in-march-better-than-expected-and-unemployment-was-3point8percent.html
+  - https://www.bls.gov/news.release/archives/empsit_04052024.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2024
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: fomc-2024-05-01
+  date: '2024-05-01'
+  title: Fed holds at 5.25-5.50%
+  announcement:
+    indicator: us_policy_rate
+    actual: 0
+    expected: -1.4
+    headline: The Federal Reserve holds interest rates at 5.25-5.50%
+    valence: 0.0
+    release_utc_hour: 18
+  expected_note: 'CME FedWatch as reported on 2024-04-29: hold 94.6%, cut 25 bp 5.4%'
+  two_year_bp: -8
+  actual:
+    us_stocks: -0.34
+    gold: 1.32
+    dollar: -0.43
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20240501a.htm
+  - https://www.kitco.com/opinion/2024-04-29/gold-prices-subdued-investors-await-fomc-meeting
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2024
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: 'QT taper: Treasury runoff cap cut to $25B from $60B; Powell: hike unlikely.'
+- id: jobs-2024-05-03
+  date: '2024-05-03'
+  title: Apr 2024 jobs +175k vs +240k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 175
+    expected: 240
+    headline: US employers added 175,000 jobs in April 2024; economists expected about 240,000
+    valence: -0.5
+    release_utc_hour: 12
+  expected_note: consensus 240k (Dow Jones)
+  two_year_bp: -6
+  actual:
+    us_stocks: 1.26
+    gold: -0.12
+    dollar: -0.26
+  sources:
+  - https://www.cnbc.com/2024/05/03/jobs-report-april-2024-us-job-growth-totaled-175000-in-april.html
+  - https://www.bls.gov/news.release/archives/empsit_05032024.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2024
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: jobs-2024-06-07
+  date: '2024-06-07'
+  title: May 2024 jobs +272k vs +190k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 272
+    expected: 190
+    headline: US employers added 272,000 jobs in May 2024; economists expected about 190,000
+    valence: 0.5
+    release_utc_hour: 12
+  expected_note: consensus 190k (Dow Jones)
+  two_year_bp: 15
+  actual:
+    us_stocks: -0.11
+    gold: -3.46
+    dollar: 0.76
+  sources:
+  - https://www.cnbc.com/2024/06/07/jobs-report-may-2024-us-job-gains-totaled-272000-in-may.html
+  - https://www.bls.gov/news.release/archives/empsit_06072024.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2024
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: fomc-2024-06-12
+  date: '2024-06-12'
+  title: Fed holds at 5.25-5.50%
+  announcement:
+    indicator: us_policy_rate
+    actual: 0
+    expected: 0.0
+    headline: The Federal Reserve holds interest rates at 5.25-5.50%
+    valence: 0.0
+    release_utc_hour: 18
+  expected_note: no FedWatch figure found; news reports called the decision near-certain, so it is taken as fully
+    expected
+  two_year_bp: -6
+  actual:
+    us_stocks: 0.85
+    gold: 0.33
+    dollar: -0.55
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20240612a.htm
+  - https://www.cnbc.com/2024/06/11/fed-meeting-and-inflation-report-both-hit-wednesday-and-the-impact-could-be-huge.html
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2024
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: Dot plot cut 2024 median to one cut from three; soft CPI that morning.
+- id: jobs-2024-07-05
+  date: '2024-07-05'
+  title: Jun 2024 jobs +206k vs +200k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 206
+    expected: 200
+    headline: US employers added 206,000 jobs in June 2024; economists expected about 200,000
+    valence: 0.5
+    release_utc_hour: 12
+  expected_note: consensus 200k (Dow Jones)
+  two_year_bp: -11
+  actual:
+    us_stocks: 0.54
+    gold: 1.55
+    dollar: -0.49
+  sources:
+  - https://www.cnbc.com/2024/07/05/jobs-report-june-2024.html
+  - https://www.bls.gov/news.release/archives/empsit_07052024.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2024
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: Day after the July 4 holiday.
+- id: fomc-2024-07-31
+  date: '2024-07-31'
+  title: Fed holds at 5.25-5.50%
+  announcement:
+    indicator: us_policy_rate
+    actual: 0
+    expected: -1.0
+    headline: The Federal Reserve holds interest rates at 5.25-5.50%
+    valence: 0.0
+    release_utc_hour: 18
+  expected_note: 'CME FedWatch as reported on 2024-07-30: hold 95.9%, cut 25 bp 4.1%'
+  two_year_bp: -6
+  actual:
+    us_stocks: 1.58
+    gold: 1.59
+    dollar: -0.43
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20240731a.htm
+  - https://longbridge.com/en/news/210260456
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2024
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: 'Powell: September cut ''on the table'' if inflation keeps cooling.'
+- id: jobs-2024-08-02
+  date: '2024-08-02'
+  title: Jul 2024 jobs +114k vs +185k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 114
+    expected: 185
+    headline: US employers added 114,000 jobs in July 2024; economists expected about 185,000
+    valence: -0.5
+    release_utc_hour: 12
+  expected_note: consensus 185k (Dow Jones)
+  two_year_bp: -28
+  actual:
+    us_stocks: -1.84
+    gold: -0.18
+    dollar: -1.16
+  sources:
+  - https://www.cnbc.com/2024/08/02/job-growth-totals-114000-in-july-much-less-than-expected-as-unemployment-rate-rises-to-4point3percent.html
+  - https://www.bls.gov/news.release/archives/empsit_08022024.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2024
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: Unemployment rose to 4.3%, triggering the Sahm rule; recession fears.
+- id: jobs-2024-09-06
+  date: '2024-09-06'
+  title: Aug 2024 jobs +142k vs +161k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 142
+    expected: 161
+    headline: US employers added 142,000 jobs in August 2024; economists expected about 161,000
+    valence: -0.5
+    release_utc_hour: 12
+  expected_note: consensus 161k (Dow Jones)
+  two_year_bp: -9
+  actual:
+    us_stocks: -1.73
+    gold: -0.75
+    dollar: 0.07
+  sources:
+  - https://www.cnbc.com/2024/09/06/jobs-report-august-2024.html
+  - https://www.bls.gov/news.release/archives/empsit_09062024.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2024
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: fomc-2024-09-18
+  date: '2024-09-18'
+  title: Fed cuts 50 bp to 4.75-5.00%
+  announcement:
+    indicator: us_policy_rate
+    actual: -50
+    expected: -40.8
+    headline: The Federal Reserve cuts interest rates by 0.50 points to 4.75-5.00%
+    valence: 0.3
+    release_utc_hour: 18
+  expected_note: 'CME FedWatch as reported on 2024-09-17: cut 50 bp 63%, cut 25 bp 37%'
+  two_year_bp: 2
+  actual:
+    us_stocks: -0.29
+    gold: -0.43
+    dollar: -0.29
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20240918a.htm
+  - https://www.kitco.com/opinion/2024-09-17/golds-rally-pauses-investors-wait-feds-monetary-policy-decision
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2024
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: Jumbo 50 bp first cut; dots signaled another 50 bp of cuts in 2024.
+- id: jobs-2024-10-04
+  date: '2024-10-04'
+  title: Sep 2024 jobs +254k vs +150k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 254
+    expected: 150
+    headline: US employers added 254,000 jobs in September 2024; economists expected about 150,000
+    valence: 0.5
+    release_utc_hour: 12
+  expected_note: consensus 150k (Dow Jones)
+  two_year_bp: 23
+  actual:
+    us_stocks: 0.9
+    gold: -0.07
+    dollar: 0.52
+  sources:
+  - https://www.cnbc.com/2024/10/04/september-2024-us-jobs-report.html
+  - https://www.bls.gov/news.release/archives/empsit_10042024.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2024
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: jobs-2024-11-01
+  date: '2024-11-01'
+  title: Oct 2024 jobs +12k vs +100k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 12
+    expected: 100
+    headline: US employers added 12,000 jobs in October 2024; economists expected about 100,000
+    valence: -0.5
+    release_utc_hour: 12
+  expected_note: consensus 100k (Dow Jones)
+  two_year_bp: 5
+  actual:
+    us_stocks: 0.41
+    gold: -0.34
+    dollar: 0.29
+  sources:
+  - https://www.cnbc.com/2024/11/01/us-jobs-report-october-2024.html
+  - https://www.bls.gov/news.release/archives/empsit_11012024.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2024
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: Distorted by hurricanes and the Boeing strike.
+- id: fomc-2024-11-07
+  date: '2024-11-07'
+  title: Fed cuts 25 bp to 4.50-4.75%
+  announcement:
+    indicator: us_policy_rate
+    actual: -25
+    expected: -25.2
+    headline: The Federal Reserve cuts interest rates by 0.25 points to 4.50-4.75%
+    valence: 0.3
+    release_utc_hour: 19
+  expected_note: 'CME FedWatch as reported on 2024-11-07: cut 25 bp ~99%, cut 50 bp ''a sliver'' (~1%, assumed)'
+  two_year_bp: -6
+  actual:
+    us_stocks: 0.74
+    gold: 1.62
+    dollar: -0.55
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20241107a.htm
+  - https://www.cnbc.com/2024/11/07/fed-meeting-live-updates-traders-anticipate-november-rate-cut.html
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2024
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: 'Powell: election has no near-term policy effect; would not resign if asked.'
+- id: jobs-2024-12-06
+  date: '2024-12-06'
+  title: Nov 2024 jobs +227k vs +214k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 227
+    expected: 214
+    headline: US employers added 227,000 jobs in November 2024; economists expected about 214,000
+    valence: 0.5
+    release_utc_hour: 13
+  expected_note: consensus 214k (Dow Jones)
+  two_year_bp: -5
+  actual:
+    us_stocks: 0.25
+    gold: -0.0
+    dollar: 0.25
+  sources:
+  - https://www.cnbc.com/2024/12/06/jobs-report-november-2024.html
+  - https://www.bls.gov/news.release/archives/empsit_12062024.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2024
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: fomc-2024-12-18
+  date: '2024-12-18'
+  title: Fed cuts 25 bp to 4.25-4.50%
+  announcement:
+    indicator: us_policy_rate
+    actual: -25
+    expected: -23.8
+    headline: The Federal Reserve cuts interest rates by 0.25 points to 4.25-4.50%
+    valence: 0.3
+    release_utc_hour: 19
+  expected_note: 'CME FedWatch as reported on 2024-12-17: cut 25 bp 95%, hold 5% (residual, derived)'
+  two_year_bp: 10
+  actual:
+    us_stocks: -2.95
+    gold: -2.1
+    dollar: 1.0
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20241218a.htm
+  - https://www.kitco.com/news/off-the-wire/2024-12-17/gold-retreats-traders-see-slower-fed-rate-cuts-2025
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2024
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: 'Hawkish cut: dots showed two 2025 cuts; Powell ''cautious''; stocks fell sharply.'
+- id: jobs-2025-01-10
+  date: '2025-01-10'
+  title: Dec 2024 jobs +256k vs +155k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 256
+    expected: 155
+    headline: US employers added 256,000 jobs in December 2024; economists expected about 155,000
+    valence: 0.5
+    release_utc_hour: 13
+  expected_note: consensus 155k (Dow Jones)
+  two_year_bp: 13
+  actual:
+    us_stocks: -1.54
+    gold: 0.7
+    dollar: 0.43
+  sources:
+  - https://www.cnbc.com/2025/01/10/jobs-report-december-2024.html
+  - https://www.bls.gov/news.release/archives/empsit_01102025.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2025
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: Markets were closed on 9 Jan 2025 (national day of mourning), so the change runs from 8 Jan.
+- id: fomc-2025-01-29
+  date: '2025-01-29'
+  title: Fed holds at 4.25-4.50%
+  announcement:
+    indicator: us_policy_rate
+    actual: 0
+    expected: -0.1
+    headline: The Federal Reserve holds interest rates at 4.25-4.50%
+    valence: 0.0
+    release_utc_hour: 19
+  expected_note: 'CME FedWatch as reported on 2025-01-29: hold 99.5%, cut 25 bp 0.5% (residual, derived)'
+  two_year_bp: 2
+  actual:
+    us_stocks: -0.47
+    gold: -0.12
+    dollar: 0.12
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20250129a.htm
+  - https://www.foxbusiness.com/economy/what-fed-do-interest-rates-how-trump-react
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2025
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: 'Statement dropped ''has made progress'' on inflation; Powell: no ''hurry'' to adjust.'
+- id: jobs-2025-02-07
+  date: '2025-02-07'
+  title: Jan 2025 jobs +143k vs +169k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 143
+    expected: 169
+    headline: US employers added 143,000 jobs in January 2025; economists expected about 169,000
+    valence: -0.5
+    release_utc_hour: 13
+  expected_note: consensus 169k (Dow Jones)
+  two_year_bp: 8
+  actual:
+    us_stocks: -0.95
+    gold: 0.12
+    dollar: 0.33
+  sources:
+  - https://www.cnbc.com/2025/02/07/jobs-report-january-2025.html
+  - https://www.bls.gov/news.release/archives/empsit_02072025.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2025
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: jobs-2025-03-07
+  date: '2025-03-07'
+  title: Feb 2025 jobs +151k vs +170k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 151
+    expected: 170
+    headline: US employers added 151,000 jobs in February 2025; economists expected about 170,000
+    valence: -0.5
+    release_utc_hour: 13
+  expected_note: consensus 170k (Dow Jones)
+  two_year_bp: 3
+  actual:
+    us_stocks: 0.55
+    gold: -0.05
+    dollar: -0.21
+  sources:
+  - https://www.cnbc.com/2025/03/07/jobs-report-february-2025.html
+  - https://www.bls.gov/news.release/archives/empsit_03072025.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2025
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: fomc-2025-03-19
+  date: '2025-03-19'
+  title: Fed holds at 4.25-4.50%
+  announcement:
+    indicator: us_policy_rate
+    actual: 0
+    expected: -0.2
+    headline: The Federal Reserve holds interest rates at 4.25-4.50%
+    valence: 0.0
+    release_utc_hour: 18
+  expected_note: 'CME FedWatch as reported on 2025-03-18: hold 99%, cut 25 bp 1% (residual, derived)'
+  two_year_bp: -5
+  actual:
+    us_stocks: 1.08
+    gold: 0.49
+    dollar: 0.18
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20250319a.htm
+  - https://www.foxbusiness.com/economy/how-many-rate-cuts-does-market-expect-year
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2025
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: 'QT slowed: Treasury runoff cap cut to $5B from $25B monthly; dots: two 2025 cuts.'
+- id: jobs-2025-04-04
+  date: '2025-04-04'
+  title: Mar 2025 jobs +228k vs +140k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 228
+    expected: 140
+    headline: US employers added 228,000 jobs in March 2025; economists expected about 140,000
+    valence: 0.5
+    release_utc_hour: 12
+  expected_note: consensus 140k (Dow Jones)
+  two_year_bp: -3
+  actual:
+    us_stocks: -5.97
+    gold: -2.47
+    dollar: 0.93
+  sources:
+  - https://www.cnbc.com/2025/04/04/jobs-report-march-2025-.html
+  - https://www.bls.gov/news.release/archives/empsit_04042025.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2025
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: The day's moves were dominated by the tariff selloff after the 2 April 'Liberation Day' announcement and
+    China's retaliation.
+- id: jobs-2025-05-02
+  date: '2025-05-02'
+  title: Apr 2025 jobs +177k vs +133k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 177
+    expected: 133
+    headline: US employers added 177,000 jobs in April 2025; economists expected about 133,000
+    valence: 0.5
+    release_utc_hour: 12
+  expected_note: consensus 133k (Dow Jones)
+  two_year_bp: 13
+  actual:
+    us_stocks: 1.47
+    gold: 0.09
+    dollar: -0.25
+  sources:
+  - https://www.cnbc.com/2025/05/02/jobs-report-april-2025.html
+  - https://www.bls.gov/news.release/archives/empsit_05022025.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2025
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: fomc-2025-05-07
+  date: '2025-05-07'
+  title: Fed holds at 4.25-4.50%
+  announcement:
+    indicator: us_policy_rate
+    actual: 0
+    expected: -0.8
+    headline: The Federal Reserve holds interest rates at 4.25-4.50%
+    valence: 0.0
+    release_utc_hour: 18
+  expected_note: 'CME FedWatch as reported on 2025-05-06: hold 97%, cut 25 bp 3% (residual, derived)'
+  two_year_bp: 0
+  actual:
+    us_stocks: 0.43
+    gold: -0.96
+    dollar: 0.37
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20250507a.htm
+  - https://www.cbsnews.com/news/trump-fed-rate-cut-jerome-powell-may-7-fomc-meeting/
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2025
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: 'Statement: risks of higher unemployment and higher inflation have risen (tariff uncertainty).'
+- id: jobs-2025-06-06
+  date: '2025-06-06'
+  title: May 2025 jobs +139k vs +125k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 139
+    expected: 125
+    headline: US employers added 139,000 jobs in May 2025; economists expected about 125,000
+    valence: 0.5
+    release_utc_hour: 12
+  expected_note: consensus 125k (Dow Jones)
+  two_year_bp: 12
+  actual:
+    us_stocks: 1.03
+    gold: -1.5
+    dollar: 0.46
+  sources:
+  - https://www.cnbc.com/2025/06/06/jobs-report-may-2025.html
+  - https://www.bls.gov/news.release/archives/empsit_06062025.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2025
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: fomc-2025-06-18
+  date: '2025-06-18'
+  title: Fed holds at 4.25-4.50%
+  announcement:
+    indicator: us_policy_rate
+    actual: 0
+    expected: -0.0
+    headline: The Federal Reserve holds interest rates at 4.25-4.50%
+    valence: 0.0
+    release_utc_hour: 18
+  expected_note: 'CME FedWatch as reported on 2025-06-18: hold 99.9%, cut 0.1% (residual, derived)'
+  two_year_bp: 0
+  actual:
+    us_stocks: -0.03
+    gold: -0.48
+    dollar: 0.09
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20250618a.htm
+  - https://www.aol.com/fed-poised-next-rate-decision-123830392.html
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2025
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: 'Dots: two 2025 cuts, then one each in 2026 and 2027.'
+- id: jobs-2025-07-03
+  date: '2025-07-03'
+  title: Jun 2025 jobs +147k vs +110k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 147
+    expected: 110
+    headline: US employers added 147,000 jobs in June 2025; economists expected about 110,000
+    valence: 0.5
+    release_utc_hour: 12
+  expected_note: consensus 110k (Dow Jones)
+  two_year_bp: 10
+  actual:
+    us_stocks: 0.83
+    gold: -1.15
+    dollar: 0.41
+  sources:
+  - https://www.cnbc.com/2025/07/03/jobs-report-june-2025.html
+  - https://www.bls.gov/news.release/archives/empsit_07032025.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2025
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: Released on a Thursday before the July 4 holiday; US stocks closed early.
+- id: fomc-2025-07-30
+  date: '2025-07-30'
+  title: Fed holds at 4.25-4.50%
+  announcement:
+    indicator: us_policy_rate
+    actual: 0
+    expected: -0.8
+    headline: The Federal Reserve holds interest rates at 4.25-4.50%
+    valence: 0.0
+    release_utc_hour: 18
+  expected_note: 'CME FedWatch as reported on 2025-07-29: hold 96.9%, cut 25 bp 3.1% (residual, derived)'
+  two_year_bp: 8
+  actual:
+    us_stocks: -0.12
+    gold: -1.57
+    dollar: 1.04
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20250730a.htm
+  - https://www.foxbusiness.com/economy/powell-fed-cut-rates-response-trumps-pressure
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2025
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: Governors Bowman and Waller dissented for a cut; September-cut odds fell.
+- id: jobs-2025-08-01
+  date: '2025-08-01'
+  title: Jul 2025 jobs +73k vs +100k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 73
+    expected: 100
+    headline: US employers added 73,000 jobs in July 2025; economists expected about 100,000
+    valence: -0.5
+    release_utc_hour: 12
+  expected_note: consensus 100k (Dow Jones)
+  two_year_bp: -25
+  actual:
+    us_stocks: -1.6
+    gold: 2.11
+    dollar: -1.34
+  sources:
+  - https://www.cnbc.com/2025/08/01/jobs-report-july-2025.html
+  - https://www.bls.gov/news.release/archives/empsit_08012025.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2025
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: Large downward revisions to earlier months.
+- id: jobs-2025-09-05
+  date: '2025-09-05'
+  title: Aug 2025 jobs +22k vs +75k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 22
+    expected: 75
+    headline: US employers added 22,000 jobs in August 2025; economists expected about 75,000
+    valence: -0.5
+    release_utc_hour: 12
+  expected_note: consensus 75k (Dow Jones)
+  two_year_bp: -8
+  actual:
+    us_stocks: -0.32
+    gold: 1.26
+    dollar: -0.59
+  sources:
+  - https://www.cnbc.com/2025/09/05/jobs-report-august-2025.html
+  - https://www.bls.gov/news.release/archives/empsit_09052025.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2025
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+- id: fomc-2025-09-17
+  date: '2025-09-17'
+  title: Fed cuts 25 bp to 4.00-4.25%
+  announcement:
+    indicator: us_policy_rate
+    actual: -25
+    expected: -26.0
+    headline: The Federal Reserve cuts interest rates by 0.25 points to 4.00-4.25%
+    valence: 0.3
+    release_utc_hour: 18
+  expected_note: 'CME FedWatch as reported on 2025-09-16: cut 25 bp 96%, cut 50 bp 4%'
+  two_year_bp: 1
+  actual:
+    us_stocks: -0.1
+    gold: -0.73
+    dollar: 0.25
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20250917a.htm
+  - https://www.foxbusiness.com/economy/fed-expected-cut-rates-first-time-2025-amid-trump-pressure
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2025
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: Dots signaled two more 2025 cuts; Miran dissented for a 50 bp cut.
+- id: fomc-2025-10-29
+  date: '2025-10-29'
+  title: Fed cuts 25 bp to 3.75-4.00%
+  announcement:
+    indicator: us_policy_rate
+    actual: -25
+    expected: -24.2
+    headline: The Federal Reserve cuts interest rates by 0.25 points to 3.75-4.00%
+    valence: 0.3
+    release_utc_hour: 18
+  expected_note: 'CME FedWatch as reported on 2025-10-29: cut 25 bp 96.7%, hold 3.3% (residual, assumed)'
+  two_year_bp: 12
+  actual:
+    us_stocks: -0.0
+    gold: -0.22
+    dollar: 0.54
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20251029a.htm
+  - https://www.cbsnews.com/news/federal-reserve-fomc-interest-rate-meeting-decision-october-29-forecast/
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2025
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: 'Powell: December cut ''not a foregone conclusion''; balance-sheet runoff ends December 1.'
+- id: jobs-2025-11-20
+  date: '2025-11-20'
+  title: Sep 2025 jobs +119k vs +50k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 119
+    expected: 50
+    headline: US employers added 119,000 jobs in September 2025; economists expected about 50,000
+    valence: 0.5
+    release_utc_hour: 13
+  expected_note: consensus 50k (Dow Jones)
+  two_year_bp: -3
+  actual:
+    us_stocks: -1.56
+    gold: -0.17
+    dollar: -0.07
+  sources:
+  - https://www.cnbc.com/2025/11/20/jobs-report-september-2025.html
+  - https://www.bls.gov/news.release/archives/empsit_11202025.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2025
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: Delayed by the government shutdown (originally due 3 Oct).
+- id: fomc-2025-12-10
+  date: '2025-12-10'
+  title: Fed cuts 25 bp to 3.50-3.75%
+  announcement:
+    indicator: us_policy_rate
+    actual: -25
+    expected: -22.0
+    headline: The Federal Reserve cuts interest rates by 0.25 points to 3.50-3.75%
+    valence: 0.3
+    release_utc_hour: 19
+  expected_note: 'CME FedWatch as reported on 2025-12-09: cut 25 bp 88%, hold 12% (residual, derived)'
+  two_year_bp: -7
+  actual:
+    us_stocks: 0.67
+    gold: 0.36
+    dollar: -0.43
+  sources:
+  - https://www.federalreserve.gov/newsevents/pressreleases/monetary20251210a.htm
+  - https://www.cbsnews.com/news/federal-reserve-interest-rate-decision-december-10-meeting/
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2025
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: Fed begins ~$40B T-bill reserve-management purchases Dec 12; dots show one 2026 cut.
+- id: jobs-2025-12-16
+  date: '2025-12-16'
+  title: Nov 2025 jobs +64k vs +45k expected
+  announcement:
+    indicator: us_payrolls
+    actual: 64
+    expected: 45
+    headline: US employers added 64,000 jobs in November 2025; economists expected about 45,000
+    valence: 0.5
+    release_utc_hour: 13
+  expected_note: consensus 45k (Dow Jones)
+  two_year_bp: -3
+  actual:
+    us_stocks: -0.24
+    gold: -0.03
+    dollar: null
+  sources:
+  - https://www.cnbc.com/2025/12/16/jobs-report-november-2025-.html
+  - https://www.bls.gov/news.release/archives/empsit_12162025.htm
+  - https://fred.stlouisfed.org/series/SP500
+  - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2025
+  - https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?period1=1672272000&period2=1767225600&interval=1d
+  note: Delayed by the shutdown; the same release first reported October 2025 (-105k, no consensus), which had no
+    release of its own.

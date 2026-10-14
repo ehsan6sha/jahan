@@ -8,13 +8,39 @@ from jahan import paths
 from jahan.config import RunConfig
 from jahan.gen.registry import load_registry
 from jahan.model.markets import load_markets
-from jahan.scenario.backtest import BacktestFile, default_events_file, hindsight, score, simulate
+from jahan.scenario.backtest import (
+    BacktestFile,
+    default_events_file,
+    default_events_files,
+    hindsight,
+    score,
+    simulate,
+)
 from tests.conftest import cli
 
 
 @pytest.fixture(scope="module")
 def events():
-    return BacktestFile.load(default_events_file())
+    return BacktestFile.load_all(default_events_files())
+
+
+def test_event_files_merge_in_date_order_and_must_agree(tmp_path):
+    files = default_events_files()
+    assert len(files) >= 2 and default_events_file() in files
+    merged = BacktestFile.load_all(files)
+    dates = [e.date for e in merged.events]
+    assert dates == sorted(dates)
+    fed = [e for e in merged.events if e.id.startswith("fomc-")]
+    assert len(fed) >= 30  # every Fed decision 2023-2026
+    other = BacktestFile.load(files[0]).model_copy(
+        update={"noise_sd": merged.noise_sd.model_copy(update={"gold": 9.9})}
+    )
+    path = tmp_path / "events_x.yaml"
+    import yaml
+
+    path.write_text(yaml.safe_dump(other.model_dump(mode="json")), encoding="utf-8")
+    with pytest.raises(ValueError, match="noise_sd differs"):
+        BacktestFile.load_all([files[0], path])
 
 
 def _event(file, eid):
@@ -27,7 +53,8 @@ def test_events_file_is_complete(events):
     assert len(ids) == len(events.events)
     for e in events.events:
         assert e.sources, e.id
-        assert e.actual.us_stocks is not None, e.id
+        assert any(v is not None for v in e.actual.model_dump().values()), e.id
+        assert e.actual.us_stocks is not None or "closed" in e.note, e.id  # e.g. Good Friday
         if e.kind != "not_modelled":
             assert e.announcement is not None and e.expected_note, e.id
     for chk in events.society:
