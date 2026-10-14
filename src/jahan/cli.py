@@ -25,6 +25,7 @@ from jahan.config import RunConfig
 from jahan.gen.registry import validate_data
 from jahan.gen.world_gen import generate_world
 from jahan.model.enums import EventKind
+from jahan.model.notables import is_later_roster
 from jahan.scenario.experiment import run_experiment
 from jahan.scenario.inject import apply_scenario, describe_moves, preview_moves
 from jahan.scenario.report import build_report
@@ -61,6 +62,14 @@ def gen(
     seed: Annotated[int | None, typer.Option()] = None,
     start_date: Annotated[str | None, typer.Option(help="YYYY-MM-DD; default today")] = None,
     force: Annotated[bool, typer.Option(help="Overwrite an existing run directory")] = False,
+    allow_later_roster: Annotated[
+        bool,
+        typer.Option(
+            "--allow-later-roster",
+            help="Allow a start date before the public-figure rosters' date (for backtests); the figures' "
+            "approval and stances may then include later information",
+        ),
+    ] = False,
 ) -> None:
     """Generate a new world."""
     rd = RunDir(run_dir)
@@ -78,6 +87,11 @@ def gen(
     if start_date:
         cfg.start_date = dt.date.fromisoformat(start_date)
     problems = validate_data(paths.data_dir(), cfg.countries, start_date=cfg.start_date if cfg.notables else None)
+    if allow_later_roster:
+        later = [p for p in problems if is_later_roster(p)]
+        problems = [p for p in problems if not is_later_roster(p)]
+        for p in later:
+            typer.echo(f"Warning: {p}; public figures' approval and stances may include later information.")
     if problems:
         raise typer.BadParameter("data problems:\n" + "\n".join(problems))
     t0 = time.perf_counter()
@@ -888,6 +902,46 @@ def validate_data_cmd(
 def events_hash(run_dir: RunOpt) -> None:
     """Content hash of the event log (determinism checks)."""
     typer.echo(content_hash(read_all(RunDir(run_dir).events, "events", EVENT_SCHEMA)))
+
+
+@app.command()
+def backtest(
+    events: Annotated[Path | None, typer.Option(help="Events YAML (default data/backtests/events_2026.yaml)")] = None,
+    config: Annotated[Path | None, typer.Option(help="RunConfig YAML (default configs/m1.yaml)")] = None,
+    agents_n: Annotated[int | None, typer.Option("--agents", help="Override the number of agents")] = None,
+    seeds: Annotated[int, typer.Option(help="Worlds per event with a news-reach check")] = 5,
+    out: Annotated[Path | None, typer.Option(help="Also write the Markdown tables to this file")] = None,
+    as_json: JsonOpt = False,
+) -> None:
+    """Replay real announcements in worlds dated the day before and compare with what happened (offline)."""
+    import json
+
+    from jahan.scenario.backtest import BacktestFile, default_events_file, render_markdown, run_backtests, to_json
+
+    cfg_path = config or paths.data_dir().parent / "configs" / "m1.yaml"
+    base = RunConfig.load(cfg_path) if cfg_path.exists() else RunConfig(countries=["USA", "DEU"], n_agents=10000)
+    if agents_n is not None:
+        base.n_agents = agents_n
+    file = BacktestFile.load(events or default_events_file())
+    say = (lambda _m: None) if as_json else (lambda m: typer.echo(f"  {m}", err=True))
+    if not as_json:
+        typer.echo(
+            "Educational and testing use only; not financial advice; no warranty. Market moves come from published "
+            "estimates times the surprise, not from the simulated people.",
+            err=True,
+        )
+    try:
+        report = run_backtests(file, base, seeds=seeds, progress=say)
+    except ValueError as e:
+        raise typer.BadParameter(str(e)) from e
+    md = render_markdown(report)
+    if out is not None:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(md, encoding="utf-8")
+    if as_json:
+        typer.echo(json.dumps(to_json(report), ensure_ascii=False, default=float))
+    else:
+        typer.echo(md)
 
 
 @app.command()

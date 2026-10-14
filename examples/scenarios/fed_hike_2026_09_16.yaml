@@ -1,0 +1,16 @@
+prompt: "The Fed raises rates by a quarter point to 3.75-4.00% tomorrow; markets expected it at about 92%."
+# The 16 September 2026 decision, for a world created on 15 September 2026:
+#   jahan gen --run runs/fed --start-date 2026-09-15 --allow-later-roster
+#   jahan inject --run runs/fed --scenario examples/scenarios/fed_hike_2026_09_16.yaml --yes
+#   jahan run --run runs/fed --days 4      (the 15th, the release day and two days after)
+# US stocks and the dollar move by published estimates times the 2 bp surprise (data/global/markets.yaml).
+horizon_days: 30
+events:
+  - type: announcement
+    indicator: us_policy_rate
+    actual: 25
+    expected: 23
+    headline: The Federal Reserve raises interest rates by a quarter point to 3.75-4.00%, its first hike since 2023
+    valence: -0.3
+    start_day_offset: 1
+    release_utc_hour: 18

@@ -1,0 +1,289 @@
+# Backtest events: real 2026 announcements and what markets did (`jahan backtest`).
+#
+# Inputs hold only what was known before each release: the decision or the jobs number, and what markets
+# expected the day before. `actual` holds the release day's close-to-close moves, in percent:
+#   us_stocks  S&P 500 close (FRED series SP500)
+#   gold       spot gold, priced after the New York close (Investing.com XAU/USD; exchange-rates.org where
+#              noted). COMEX futures settle at 13:30 New York time, before a 14:00 Fed release, so they would
+#              show the reaction a day late.
+#   dollar     ICE US dollar index (DXY; Yahoo Finance DX-Y.NYB). Jahan moves only the euro rate; the euro is
+#              the largest part of the index.
+# two_year_bp: the day's change in the 2-year Treasury yield (FRED DGS2), used only in the after-the-fact
+# column, never in a forecast.
+# Gold and dollar moves come from data vendors' pages (no free official series); S&P and yields from FRED.
+# Only daily percent changes are kept here, each with the page it came from; check the vendors' terms
+# before reusing them.
+# Retrieved 2026-10-14. Gathered from the pages listed under each event; see scripts/check_market_actuals.py
+# for the FRED part.
+
+retrieved: 2026-10-14
+
+noise_sd:
+  us_stocks: 0.92
+  gold: 1.28
+  dollar: 0.41
+  note: >-
+    Standard deviation of daily percent changes, 2023 to October 2026, computed for this benchmark from FRED
+    SP500, Yahoo Finance GC=F (front-month gold futures; contract rolls may inflate it) and DX-Y.NYB.
+    Approximate; a guide to what counts as an ordinary day, not a published figure.
+
+events:
+  - id: fomc-2026-01-28
+    date: 2026-01-28
+    title: Fed holds at 3.50-3.75%
+    announcement:
+      indicator: us_policy_rate
+      actual: 0
+      expected: -0.7
+      headline: The Federal Reserve holds interest rates at 3.50-3.75%
+      valence: 0.0
+      release_utc_hour: 19
+    expected_note: >-
+      about a 97% chance of a hold was reported (secondary source, date unclear); the remaining 3% is taken as
+      a 25 bp cut. Low confidence.
+    two_year_bp: 3
+    actual: {us_stocks: -0.01, gold: 4.44, dollar: 0.24}
+    sources:
+      - https://www.federalreserve.gov/newsevents/pressreleases/monetary20260128a.htm
+      - https://www.federalreserve.gov/monetarypolicy/fomcminutes20260128.htm
+      - https://fred.stlouisfed.org/series/SP500
+      - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2026
+      - https://finance.yahoo.com/quote/DX-Y.NYB/history/
+    note: Gold was in the middle of a strong rally that week, unrelated to the decision.
+
+  - id: fomc-2026-03-18
+    date: 2026-03-18
+    title: Fed holds at 3.50-3.75%
+    announcement:
+      indicator: us_policy_rate
+      actual: 0
+      expected: 0
+      headline: The Federal Reserve holds interest rates at 3.50-3.75%
+      valence: 0.0
+      release_utc_hour: 18
+    expected_note: assumed fully expected (no market-implied probability found; the minutes describe a hold as expected)
+    two_year_bp: 8
+    actual: {us_stocks: -1.36, gold: -3.63, dollar: 0.51}
+    sources:
+      - https://www.federalreserve.gov/newsevents/pressreleases/monetary20260318a.htm
+      - https://www.federalreserve.gov/monetarypolicy/fomcminutes20260318.htm
+      - https://fred.stlouisfed.org/series/SP500
+      - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2026
+      - https://finance.yahoo.com/quote/DX-Y.NYB/history/
+    note: The Iran war and oil prices moved markets that week.
+
+  - id: fomc-2026-04-29
+    date: 2026-04-29
+    title: Fed holds at 3.50-3.75%
+    announcement:
+      indicator: us_policy_rate
+      actual: 0
+      expected: 0
+      headline: The Federal Reserve holds interest rates at 3.50-3.75%
+      valence: 0.0
+      release_utc_hour: 18
+    expected_note: assumed fully expected (no market-implied probability found)
+    two_year_bp: 8
+    actual: {us_stocks: -0.04, gold: -1.02, dollar: 0.30}
+    sources:
+      - https://www.federalreserve.gov/newsevents/pressreleases/monetary20260429a.htm
+      - https://www.federalreserve.gov/monetarypolicy/fomcminutes20260429.htm
+      - https://fred.stlouisfed.org/series/SP500
+      - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2026
+      - https://finance.yahoo.com/quote/DX-Y.NYB/history/
+
+  - id: fomc-2026-06-17
+    date: 2026-06-17
+    title: Fed holds at 3.50-3.75% (Warsh's first meeting; median 2026 dot 3.4 to 3.8)
+    announcement:
+      indicator: us_policy_rate
+      actual: 0
+      expected: 0
+      headline: The Federal Reserve holds interest rates at 3.50-3.75% in Kevin Warsh's first meeting as chair
+      valence: 0.0
+      release_utc_hour: 18
+    expected_note: a 95-98% chance of a hold was reported a month earlier (secondary source); taken as fully expected
+    two_year_bp: 15
+    actual: {us_stocks: -1.21, gold: -1.50, dollar: 0.55}
+    sources:
+      - https://www.federalreserve.gov/newsevents/pressreleases/monetary20260617a.htm
+      - https://www.federalreserve.gov/monetarypolicy/fomcminutes20260617.htm
+      - https://fred.stlouisfed.org/series/SP500
+      - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2026
+      - https://finance.yahoo.com/quote/DX-Y.NYB/history/
+    note: The projections signalled higher rates for longer (forward guidance), which this layer cannot know in advance.
+
+  - id: fomc-2026-07-29
+    date: 2026-07-29
+    title: Fed holds at 3.50-3.75% (three officials wanted a hike)
+    announcement:
+      indicator: us_policy_rate
+      actual: 0
+      expected: 8.3
+      headline: The Federal Reserve holds interest rates at 3.50-3.75%; three officials wanted a hike
+      valence: 0.0
+      release_utc_hour: 18
+    expected_note: the minutes report "about a one-in-three chance" of a 25 bp hike priced before the meeting
+    two_year_bp: -4
+    actual: {us_stocks: -1.52, gold: 1.32, dollar: -0.57}
+    sources:
+      - https://www.federalreserve.gov/newsevents/pressreleases/monetary20260729a.htm
+      - https://www.federalreserve.gov/monetarypolicy/fomcminutes20260729.htm
+      - https://fred.stlouisfed.org/series/SP500
+      - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2026
+      - https://finance.yahoo.com/quote/DX-Y.NYB/history/
+
+  - id: fomc-2026-09-16
+    date: 2026-09-16
+    title: Fed raises 0.25 pt to 3.75-4.00% (first hike since 2023)
+    announcement:
+      indicator: us_policy_rate
+      actual: 25
+      expected: 23
+      headline: The Federal Reserve raises interest rates by a quarter point to 3.75-4.00%, its first hike since 2023
+      valence: -0.3
+      release_utc_hour: 18
+    expected_note: '"better than a 92% chance" of a 25 bp hike the day before (Yahoo Finance, 15 Sep 2026, citing CNBC)'
+    two_year_bp: 7
+    actual: {us_stocks: -0.45, gold: -0.71, dollar: 0.66}
+    sources:
+      - https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm
+      - https://www.federalreserve.gov/monetarypolicy/fomcprojtabl20260916.htm
+      - https://www.federalreserve.gov/monetarypolicy/fomcminutes20260916.htm
+      - https://finance.yahoo.com/economy/policy/articles/fed-rate-hike-expected-wednesday-120945216.html
+      - https://fred.stlouisfed.org/series/SP500
+      - https://www.investing.com/currencies/xau-usd-historical-data
+      - https://finance.yahoo.com/quote/DX-Y.NYB/history/
+    note: >-
+      COMEX gold futures, which settled before the decision, rose 1.26% that day; spot gold fell after it.
+      Investing.com shows DXY +0.64%. The projections showed 16 of 18 officials expecting another hike this year.
+
+  - id: jobs-2026-06-05
+    date: 2026-06-05
+    title: May jobs +172k vs about 85k expected
+    announcement:
+      indicator: us_payrolls
+      actual: 172
+      expected: 85
+      headline: US employers added 172,000 jobs in May, about twice what economists expected
+      valence: 0.5
+      release_utc_hour: 12
+    expected_note: consensus quoted between 80k and 93k in market reports; 85k used
+    two_year_bp: 12
+    actual: {us_stocks: -2.64, gold: -3.36, dollar: 0.66}
+    sources:
+      - https://tapeboard.com/blog/market-pulse-2026-06-05
+      - https://fred.stlouisfed.org/series/SP500
+      - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2026
+      - https://finance.yahoo.com/quote/DX-Y.NYB/history/
+    note: The year's worst day for US stocks; strong jobs meant higher rates for longer.
+
+  - id: jobs-2026-08-07
+    date: 2026-08-07
+    title: July jobs -23k vs about +80k expected
+    announcement:
+      indicator: us_payrolls
+      actual: -23
+      expected: 80
+      headline: US employers cut 23,000 jobs in July; economists had expected a gain of about 80,000
+      valence: -0.5
+      release_utc_hour: 12
+    expected_note: consensus of about +80k reported before the release
+    two_year_bp: -6
+    actual: {us_stocks: 0.62, gold: 2.37, dollar: -0.37}
+    sources:
+      - https://greenleaftrust.com/?p=22954
+      - https://foxbusiness.com/economy/us-jobs-report-july-2026
+      - https://fred.stlouisfed.org/series/SP500
+      - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2026
+      - https://finance.yahoo.com/quote/DX-Y.NYB/history/
+
+  - id: jackson-hole-2026-08-28
+    date: 2026-08-28
+    title: Warsh's hawkish Jackson Hole speech (guidance only)
+    kind: hindsight_only
+    announcement:
+      indicator: us_policy_rate
+      actual: 0
+      expected: 0
+      headline: Fed chair Kevin Warsh signals that interest rates may need to rise
+      valence: -0.2
+      release_utc_hour: 14
+    expected_note: no decision; only guidance, whose size is known only after the fact
+    two_year_bp: 14
+    actual: {us_stocks: -0.25, gold: -3.32, dollar: 0.54}
+    sources:
+      - https://www.bondbuyer.com/news/markets-see-rate-hike-coming-following-warshs-speech
+      - https://fred.stlouisfed.org/series/SP500
+      - https://www.exchange-rates.org/precious-metals/gold-price/united-states/2026
+      - https://finance.yahoo.com/quote/DX-Y.NYB/history/
+
+  - id: greenland-tariffs-2026-01-20
+    date: 2026-01-20
+    title: Trump threatens tariffs on 8 European countries over Greenland
+    kind: not_modelled
+    actual: {us_stocks: -2.06, gold: 3.55, dollar: -0.75}
+    sources:
+      - https://www.hawaiitribune-herald.com/2026/01/21/nation-world-news/wall-street-posts-biggest-daily-drop-in-three-months-trump-greenland-tariff-threat-triggers-wide-selloff/
+
+  - id: scotus-tariffs-2026-02-20
+    date: 2026-02-20
+    title: Supreme Court strikes down the IEEPA tariffs
+    kind: not_modelled
+    actual: {us_stocks: 0.69, gold: 2.16, dollar: -0.13}
+    sources:
+      - https://www.scotusblog.com/2026/02/supreme-court-strikes-down-tariffs/
+
+  - id: iran-war-2026-03-02
+    date: 2026-03-02
+    title: First trading day after US and Israeli strikes on Iran
+    kind: not_modelled
+    actual: {us_stocks: 0.04, gold: 1.07, dollar: 0.79}
+    sources:
+      - https://www.cnbc.com/2026/03/01/stock-market-today-live-update.html
+
+  - id: ceasefire-2026-04-08
+    date: 2026-04-08
+    title: Two-week US-Iran ceasefire; oil falls 13%
+    kind: not_modelled
+    actual: {us_stocks: 2.51, gold: -0.43, dollar: -0.51}
+    sources:
+      - https://www.tahlequahdailypress.com/natlnewsap/oil-plunges-below-95-as-the-dow-surges-1-100-in-a-worldwide-rally-following/article_eca46e3d-c517-5d0c-8ab1-5575579f5a1d.html
+
+  - id: iran-strikes-2026-07-07
+    date: 2026-07-07
+    title: US strikes on Iran; Trump says the truce is over
+    kind: not_modelled
+    actual: {us_stocks: -0.45, gold: -1.53, dollar: 0.29}
+    sources:
+      - https://www.wjhg.com/2026/07/08/oil-prices-jump-more-than-6-after-trump-says-ceasefire-with-iran-is-over/
+
+  - id: iran-strikes-2026-09-01
+    date: 2026-09-01
+    title: Renewed US-Iran strikes; tankers hit
+    kind: not_modelled
+    actual: {us_stocks: -0.71, gold: -2.69, dollar: 0.24}
+    sources:
+      - https://www.thestreet.com/stock-market-today/stock-market-today-dow-jones-sp-500-nasdaq-updates-sept-1-2026
+
+  - id: hormuz-2026-09-28
+    date: 2026-09-28
+    title: Trump rejects Iran's Hormuz plan; Brent near $108
+    kind: not_modelled
+    actual: {us_stocks: -0.77, gold: -4.01, dollar: 0.23}
+    sources:
+      - https://limitlessmetals.com/2026/09/28/gold-plunges-oil-surges-fed-rate-hike-bets/
+      - https://www.investing.com/currencies/xau-usd-historical-data
+    note: exchange-rates.org shows gold -3.72% that day.
+
+society:
+  - event: fomc-2026-09-16
+    days_after: 2
+    low: 0.10
+    high: 0.41
+    source: markets.lamla_vinogradov2019
+    note: >-
+      In surveys around 12 Fed press conferences (2015-2018), about 30% of US consumers had heard some news
+      about the Fed in the week before and about 40% in the first two days after; the announcement itself
+      added about 10 points. The share who heard this decision should lie between the added 10 points and
+      the 41% total. Jahan tracks only this headline, with no earlier Fed news.

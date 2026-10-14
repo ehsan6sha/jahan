@@ -264,6 +264,15 @@ def load_roles(data_dir: Path) -> dict[str, RoleSpec]:
     return {k: RoleSpec.model_validate(v) for k, v in raw["roles"].items()}
 
 
+LATER_ROSTER = "is after the world start date"
+
+
+def is_later_roster(problem: str) -> bool:
+    """The roster is dated after the world's start: harmless for a backtest that knowingly uses a later roster
+    (the figures' approval and stances may then include later information)."""
+    return problem.startswith("notables/") and LATER_ROSTER in problem
+
+
 def validate_rosters(data_dir: Path, countries: list[str], start_date: dt.date | None = None) -> list[str]:
     problems: list[str] = []
     try:
@@ -289,7 +298,7 @@ def validate_rosters(data_dir: Path, countries: list[str], start_date: dt.date |
         except Exception:  # the country file's own problems are reported by validate_data
             politics, script, template = None, None, None
         if start_date is not None and roster.as_of > start_date:
-            problems.append(f"notables/{iso}: as_of {roster.as_of} is after the world start date {start_date}")
+            problems.append(f"notables/{iso}: as_of {roster.as_of} {LATER_ROSTER} {start_date}")
         for entry in roster.entries:
             if entry.role not in roles:
                 problems.append(f"notables/{iso}: {entry.key} has unknown role {entry.role}")
