@@ -25,8 +25,9 @@ def _hash(run: Path) -> str:
 
 
 def _flat(e: Exception) -> str:
-    """Error text without the CLI's box drawing and line wrapping."""
-    return " ".join(re.sub(r"[│┌┐└┘─]", " ", str(e)).split())
+    """Error text without the CLI's colour codes, box drawing (square or rounded) and line wrapping."""
+    text = re.sub(r"\x1b\[[0-9;]*m", "", str(e))
+    return " ".join(re.sub(r"[─-╿]", " ", text).split())
 
 
 def _actor_and_listener(run: Path) -> tuple[int, int]:

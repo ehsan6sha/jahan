@@ -31,6 +31,10 @@ def cli_env(env_extra: dict[str, str] | None = None) -> dict[str, str]:
     env = dict(os.environ)
     env["PYTHONIOENCODING"] = "utf-8"
     env["JAHAN_OFFLINE"] = "1"  # never reach a real model from tests, even if an API key is set
+    # Plain text: Typer forces colour codes into its error boxes on GitHub Actions (and with FORCE_COLOR).
+    for var in ("GITHUB_ACTIONS", "FORCE_COLOR", "PY_COLORS"):
+        env.pop(var, None)
+    env["NO_COLOR"] = "1"
     env.update(env_extra or {})
     return env
 
