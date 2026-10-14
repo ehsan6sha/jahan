@@ -287,7 +287,9 @@ and 37 jobs reports, 67 announcements in all.
   | Dollar | 1.15 | 1.23 |
 
 - **Direction: 25 right out of 41 (61%), not clearly better than a coin toss.** Only forecasts of at least
-  a quarter of a typical move count. By market: stocks 8 of 15, gold 3 of 4, dollar 14 of 22.
+  a quarter of a typical move count. By market: stocks 8 of 15, gold 3 of 4, dollar 14 of 22. A fair coin
+  does at least this well about one time in nine (one-sided p = 0.11). The real chance is higher still,
+  because calls on the same day are not independent.
 - **Major misses: 26 out of 196 market forecasts (13%).** The limits were fixed before the first run.
 - **Fed decisions were almost always expected,** so Jahan forecasts almost no move on those days. Only one
   of the 30 was a real surprise: the 50 bp cut on 18 Sep 2024, when markets gave a 50 bp cut about 63%.
@@ -322,8 +324,9 @@ and 37 jobs reports, 67 announcements in all.
   `events_2026.yaml`.
   - **S&P 500 and 2-year yield changes** come from FRED. `scripts/check_market_actuals.py` re-checks all
     142 of them, and all match.
-  - **Gold** comes from exchange-rates.org's yearly pages for 2023-2025 (they do not state their pricing
-    time) and mostly from the same site for 2026.
+  - **Gold** comes from exchange-rates.org's yearly pages for 2023-2025 and mostly from the same site for
+    2026. The pages do not state their pricing time, and on some days they differ noticeably from spot
+    prices taken after the New York close, so the gold rows are the least reliable.
   - **The dollar index (DXY)** comes from Yahoo Finance; three 2023-2025 days where Yahoo repeats the
     previous close are left out.
   - **Vendor data.** Only daily percent changes are quoted, each with its page. Check the vendors' terms
@@ -456,6 +459,8 @@ In 2026:
     only 8 times out of 15 in 2023-2026.
   - **Gold.** It moved opposite to the 2-year yield on 26 of 29 Fed days. That supports the sign of the gold
     estimate Jahan does not apply.
+  - **How to decide fairly.** Either change should be judged only on events after October 2026, with the
+    rule written down before they happen.
 - **Public figures: one sourced fix.** In the first live run, the four US figures (Trump, Bessent, Warsh,
   Musk) each got a turn on 17 Sep and all chose to do nothing. The real Trump criticised the hike on Truth
   Social on 16 Sep, said rates should be 1% or lower, and did not attack Warsh by name.
