@@ -115,7 +115,7 @@ uv run jahan transcript --run runs/live --agent 42 --day 35 --llm
   posts per country (`--per-country-social`, default 2) become items that reach people through the social
   channels in the post's language. A post by a public figure on the roster counts as that figure's words, so
   people weigh it by their trust in them. Reach comes from the author's followers (a figure's roster
-  visibility) and the post's likes and reposts, never from a model. Each platform's push strength is its
+  visibility) and the post's likes, reposts and views, never from a model. Each platform's push strength is its
   share of the country's internet users (DataReportal 2026). In their feeds, people see more posts on topics
   they care about and more posts by figures they trust (heuristic weights). Posts by ordinary people (fewer
   than 100,000 followers) only count towards trending topics: their words are not spread, stored in the

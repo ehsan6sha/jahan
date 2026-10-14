@@ -291,3 +291,28 @@ def test_cli_ingests_social_posts_offline_and_shows_the_feed(tmp_path):
     cli(*args)
     ledger = json.loads((run / "prompts.json").read_text(encoding="utf-8"))
     assert hashlib.sha256((run / ledger[-1]["scenario_file"]).read_bytes()).hexdigest() == digest
+
+
+def test_classification_cap_keeps_public_figures_first():
+    from jahan.cli import _cap_per_country
+
+    posts = [post(f"user{i}", 10, "topic", "en:economy") for i in range(5)] + [post("POTUS", 4_000_000, "figure", "k")]
+    for i, p in enumerate(posts):
+        p.rank = i
+    kept = _cap_per_country(posts, 2)
+    assert [p.author_handle for p in kept] == ["user0", "POTUS"]  # the figure survives; collection order kept
+
+
+def test_x_text_is_unescaped():
+    from jahan.ingest.social import parse_x
+
+    body = json.dumps({"posts": {"items": [x_item(1, "POTUS", "THUGS &amp; DRUGS &lt;3")]}}).encode()
+    assert parse_x(body, "USA", "en")[0].text == "THUGS & DRUGS <3"
+
+
+def test_engagement_counts_views_for_channels_without_likes():
+    from jahan.ingest.social import engagement
+
+    tg = post("BBCPersian", 770_000, "channel", "BBCPersian", likes=0)
+    tg.views = 40_000
+    assert engagement(tg) > 0.5 > engagement(post("quiet", 10, "channel", "q", likes=0)) == 0.0

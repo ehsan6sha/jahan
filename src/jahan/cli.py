@@ -431,7 +431,7 @@ def ingest(
     from jahan.ingest.social import SocialPost, collect_social, to_social_scenario
     from jahan.llm.budget import BudgetExceeded
     from jahan.llm.recordings import MissingRecording, Recordings
-    from jahan.model.social import load_social
+    from jahan.model.social import PLATFORMS, load_social
 
     if not (news or social):
         raise typer.BadParameter("nothing to fetch: --no-news and --no-social together")
@@ -525,6 +525,8 @@ def ingest(
             language_code=lambda code: world.languages[world.lang_id(code)],
             reachable=_social_reach(world),
             news_day=real,
+            stats=stats,
+            problems=[p for p in problems if "/" in p and p.split("/", 1)[1].split(":", 1)[0] in PLATFORMS],
         )
         n_posts = sum(1 for ev in social_spec.events if getattr(ev, "type", "") == "social")
         events += social_spec.events
@@ -552,13 +554,16 @@ SOCIAL_CLASSIFY_PER_COUNTRY = 60  # posts per country sent to the classifier (co
 
 
 def _cap_per_country(posts: list[Any], cap: int) -> list[Any]:
+    """At most ``cap`` posts per country: public figures first, then channels, then topic searches."""
+    order = {"figure": 0, "channel": 1, "topic": 2}
+    ranked = sorted(posts, key=lambda p: (order.get(p.query_kind, 3), p.rank))
     kept: list[Any] = []
     count: dict[str, int] = {}
-    for p in posts:  # collection order: public figures first
+    for p in ranked:
         if count.get(p.country, 0) < cap:
             kept.append(p)
             count[p.country] = count.get(p.country, 0) + 1
-    return kept
+    return sorted(kept, key=lambda p: p.rank)  # back to collection order
 
 
 def _social_reach(world: Any) -> set[tuple[str, str]]:

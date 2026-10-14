@@ -136,7 +136,7 @@ def parse_x(body: bytes, country: str, lang: str) -> list[SocialPost]:
     out = []
     for item in (data.get("posts") or {}).get("items") or []:
         author = item.get("author") or {}
-        text = str(item.get("text") or "")
+        text = html.unescape(str(item.get("text") or ""))  # X escapes &, < and > in post text
         m = item.get("metrics") or {}
         handle = str(author.get("handle") or "")
         out.append(
@@ -526,8 +526,10 @@ def author_visibility(post: SocialPost, roster_visibility: dict[str, float]) -> 
 
 
 def engagement(post: SocialPost) -> float:
-    """0..1 from interactions (HEURISTIC: a million likes-and-reposts is 1)."""
-    return float(min(max(math.log10(1 + post.likes + 2 * post.reposts + 2 * post.quotes) / 6.0, 0.0), 1.0))
+    """0..1 from interactions (HEURISTIC: reposts and quotes count twice, a view a tenth of a like, and a
+    million of these is 1).  Views matter for Telegram, which shows no likes or reposts."""
+    interactions = post.likes + 2 * post.reposts + 2 * post.quotes + 0.1 * post.views
+    return float(min(max(math.log10(1 + interactions) / 6.0, 0.0), 1.0))
 
 
 def platform_share(cfg: SocialConfig, iso: str, platform: str) -> float:
@@ -555,6 +557,8 @@ def to_social_scenario(
     news_day: dt.date,
     prompt: str = "",
     duration_days: int = 2,
+    stats: dict[str, dict[str, int]] | None = None,
+    problems: list[str] | None = None,
 ) -> tuple[Scenario, dict[str, int]]:
     """Top posts per country as SocialPostEvents plus one SocialDigest, and counts of what was dropped.
 
@@ -605,6 +609,8 @@ def to_social_scenario(
                 )
             )
     digest = social_digest(posts, labels, tracked, news_day)
+    digest.stats = dict(stats or {})
+    digest.problems = [p[:300] for p in (problems or [])][:50]
     n_posts = len(events)
     events.append(digest)
     scenario = Scenario(
@@ -658,13 +664,13 @@ def social_digest(
     for iso, by_topic in topics.items():
         rows: list[dict[str, Any]] = []
         for topic, items in by_topic.items():
-            top = sorted(items, key=lambda x: -engagement(x[1]))[:3]
+            top = sorted(items, key=lambda x: -engagement(x[1]))
             rows.append(
                 {
                     "topic": topic,
                     "n": len(items),
                     "mean_valence": round(sum(v for v, _ in items) / len(items), 2),
-                    "top_handles": [p.author_handle for _, p in top if is_public_author(p)],
+                    "top_handles": list(dict.fromkeys(p.author_handle for _, p in top if is_public_author(p)))[:3],
                 }
             )
         trending[iso] = sorted(rows, key=lambda r: (-r["n"], r["topic"]))[:6]

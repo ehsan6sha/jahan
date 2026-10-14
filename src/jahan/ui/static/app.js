@@ -46,6 +46,7 @@
     busy: false,
     flash: null, // {kind, text} shown once at the top of the next render
     whatif: { tab: "words", text: "", future: "", preview: null, questions: null, answers: {} },
+    social: { country: "", kind: "all", rows: null, loading: null, per: 2, includeX: store.get("includeX") !== false },
     people: { form: { country: "", sex: "", ageMin: "", ageMax: "", info: "", status: "", area: "", figures: "" },
       advanced: null, limit: 25, result: null, selected: null, profile: null },
     ask: { mode: "group", agent: "", form: { country: "", sex: "", ageMin: "", ageMax: "", info: "" }, advanced: null,
@@ -62,6 +63,8 @@
     seed: "A starting point for chance. Different seeds give different but equally plausible histories; several of them show the spread.",
     "information level": "How much news someone follows: minimal, major news, well informed or specialist.",
     visibility: "How many people someone's public statements can reach, on a log scale: 1 is family, 8 is a head of state.",
+    repost: "An ordinary person passing a story on in their social feed. It adds a short, weak push on the social channels of their country; it never creates a new story.",
+    trending: "Topics many fetched posts were about, counted per country. Shown as context; trending has no effect on the simulation.",
     "political lean": "Where someone stands on their country's main political divide: with the camp of the current head of government, with the main opposition, or neither. It sets how much they trust each public figure to begin with. Camp sizes come from polls or election results; Iran and China use placeholders.",
     trust: "How much one person believes another (0 to 1). It grows when their advice works out and falls faster when it does not.",
     autopilot: "While you are not acting, the simulator decides for your character the way it does for everyone else.",
@@ -334,6 +337,7 @@
     { id: "start", title: "Start", hint: "Create or open a world" },
     { id: "world", title: "World", hint: "Where things stand; move time", world: true },
     { id: "whatif", title: "What-if", hint: "Add news, products, market moves", world: true },
+    { id: "social", title: "Social", hint: "Real posts, trending, posts in the world", world: true },
     { id: "people", title: "People", hint: "Find anyone; see their view", world: true },
     { id: "ask", title: "Ask", hint: "Interview a person or a group", world: true },
     { id: "play", title: "Play", hint: "Become someone and act", world: true },
@@ -562,6 +566,7 @@
   function nextSteps(st) {
     const tiles = [];
     if (st.ingest_allowed && !st.prompts.some((p) => p.source === "ingest")) tiles.push(tile("Add today's real news", "Top headlines per country, in their own languages", () => { S.whatif.tab = "news"; go("whatif"); }));
+    if (st.ingest_allowed && !(st.social && st.social.last_fetch)) tiles.push(tile("Read today's social posts", "Posts by public figures and channels, from X, Bluesky, Mastodon and Telegram", () => go("social")));
     tiles.push(tile("Add a what-if", "A product, news, a market move, in plain words", () => { S.whatif.tab = "words"; go("whatif"); }));
     if (st.day < 7) tiles.push(tile("Move time forward", "Let a week pass and see what spreads", () => $(".btn.primary.act") && $(".btn.primary.act").focus()));
     tiles.push(tile("Look through someone's eyes", "Find a person and open their view", () => go("people")));
@@ -585,7 +590,7 @@
   }
 
   function sourceTag(p) {
-    const label = p.session ? `your session ${p.session}` : { ingest: "real news", llm: "your words", feed: "future events" }[p.source] || (p.source.endsWith(".yaml") ? "example" : p.source);
+    const label = p.session ? `your session ${p.session}` : { ingest: "real news & posts", llm: "your words", feed: "future events" }[p.source] || (p.source.endsWith(".yaml") ? "example" : p.source);
     return h("span", { class: "tag" }, label);
   }
 
@@ -723,6 +728,10 @@
           (e.steps || []).map((s) => `${s.pct_per_day > 0 ? "+" : ""}${s.pct_per_day}% a day for ${s.days} day(s)${when(s.start_day_offset)}`).join(", then ") + ".";
       case "statement":
         return `Statement by ${String(e.speaker).replace(/^[A-Z]{3}\./, "").replace(/_/g, " ")} (${String(e.speaker).slice(0, 3)})${when(e.start_day_offset)}: “${e.headline}”; tone ${e.valence > 0 ? "good" : e.valence < 0 ? "bad" : "neutral"}.`;
+      case "social":
+        return `Real post by ${e.author_handle ? "@" + e.author_handle : e.author_name || "a user"} on ${({ x: "X", bluesky: "Bluesky", mastodon: "Mastodon", telegram: "Telegram" })[e.platform] || e.platform} in ${where(e.countries)} (${e.language}): “${e.headline}”; tone ${e.valence > 0 ? "good" : e.valence < 0 ? "bad" : "neutral"}; social channels for ${e.duration_days} days.`;
+      case "social_digest":
+        return `What the fetch saw (${e.fetch_day}): ${(e.seen || []).length} posts, trending topics and figures' recent posts, kept for display and context.`;
       default:
         return `${e.type.replace(/_/g, " ")}: ${JSON.stringify(e).slice(0, 160)}`;
     }
@@ -749,10 +758,10 @@
   function whatifNews(st) {
     const box = h("div", {});
     let per = 2;
-    const ingest = () => act(box, ["ingest", "--run", S.world, "--yes", "--per-country", String(per)], {
+    const ingest = () => act(box, ["ingest", "--run", S.world, "--yes", "--no-social", "--per-country", String(per)], {
       ok: "Today's headlines were added.",
       then: async (rec) => {
-        const n = rec.lines.find((l) => l.startsWith("prompt: Live news ingest")) || "";
+        const n = rec.lines.find((l) => l.startsWith("prompt: Live ingest")) || "";
         box.append(h("p", { class: "muted" }, n.replace("prompt: ", "")), outputBlock(rec, "What was added"));
       },
     });
@@ -761,7 +770,110 @@
       h("div", { class: "row" },
         field("Headlines per country", select([["1", "1"], ["2", "2"], ["3", "3"], ["5", "5"]], per, (v) => (per = parseInt(v, 10)))),
         h("button", { class: "btn primary act", disabled: !st.ingest_allowed, onclick: ingest }, "Fetch and add headlines")),
+      h("p", { class: "muted small" }, "Real posts from social networks are under ", h("button", { class: "btn link", onclick: () => go("social") }, "Social"), "."),
       box);
+  }
+
+  // ------------------------------------------------------------------ Social
+  const PLATFORM = { x: "X", bluesky: "Bluesky", mastodon: "Mastodon", telegram: "Telegram" };
+  const SOURCE_KIND = { official: ["tag accent", "official API"], unofficial: ["tag warn", "unofficial — may stop working"], public_preview: ["tag", "public preview"] };
+  const fmtPeople = (x) => (x >= 1e9 ? `${(x / 1e9).toFixed(1)} billion` : x >= 1e6 ? `${(x / 1e6).toFixed(1)} million` : x >= 1e3 ? `${Math.round(x / 1e3)} thousand` : `${Math.round(x)}`);
+  const tone = (v) => (v > 0.15 ? "good" : v < -0.15 ? "bad" : "neutral");
+  const plural = (n, word) => `${Number(n).toLocaleString()} ${word}${Number(n) === 1 ? "" : "s"}`;
+
+  function viewSocial() {
+    const st = S.status;
+    if (!st) return page("Social", null, loading());
+    const out = page("Social", "Real posts by public figures, institutions and channels, what is trending, and the posts made in this world. Real posts reach people through the social channels in their language; reach comes from the author's audience and the post's engagement, never from a model.");
+    out.append(h("div", { class: "grid two" }, socialSources(st), socialFetch(st)));
+    out.append(socialTrending(st));
+    out.append(socialFeed(st));
+    return out;
+  }
+
+  function socialSources(st) {
+    const soc = st.social || { configured: {} };
+    const lf = soc.last_fetch;
+    return card("Sources", "Networks that can be read for free. Facebook, TikTok, WhatsApp, Instagram and WeChat cannot, so China has no source.",
+      h("ul", { class: "events-list" }, ...Object.entries(soc.configured).map(([name, c]) => {
+        const [cls, label] = SOURCE_KIND[c.kind] || ["tag", c.kind];
+        return h("li", {}, h("strong", {}, PLATFORM[name] || name), " ", h("span", { class: cls }, label), c.enabled ? "" : h("span", { class: "tag" }, "off"),
+          h("span", { class: "muted small" }, ` ${c.accounts} accounts, ${c.queries} topic searches in this world`),
+          c.kind === "unofficial" ? h("div", { class: "muted small" }, c.note) : null);
+      })),
+      lf ? h("p", { class: "small" }, `Last fetch: ${lf.fetch_day} (world day ${lf.world_day}). `,
+        Object.entries(lf.stats || {}).map(([k, v]) => `${PLATFORM[k] || k}: ${v.posts} posts from ${v.queries} queries${v.failed ? `, ${v.failed} failed` : ""}`).join("; ")) : h("p", { class: "muted small" }, "Nothing fetched yet."),
+      lf && lf.problems && lf.problems.length ? h("details", {}, h("summary", {}, `${lf.problems.length} source problems (skipped)`), h("pre", { class: "out" }, lf.problems.join("\n"))) : null);
+  }
+
+  function socialFetch(st) {
+    const Soc = S.social;
+    const box = h("div", {});
+    const fetchPosts = () => {
+      Soc.rows = null;
+      return act(box, ["ingest", "--run", S.world, "--yes", "--no-news", "--per-country-social", String(Soc.per), ...(Soc.includeX ? [] : ["--no-x"])], {
+        ok: "Today's posts were added.",
+        then: async (rec) => box.append(outputBlock(rec, "What was fetched")),
+      });
+    };
+    return card("Fetch today's posts", "The top posts per country become stories in the world, in their own language. Posts by ordinary people only count towards trending topics; they are not spread or shown.",
+      st.ingest_allowed ? null : h("div", { class: "notice warn" }, h("strong", {}, "Not available for this world's date."), ` The world is on ${st.date}; real posts would be out of place.`),
+      h("div", { class: "row" },
+        field("Posts per country", select([["1", "1"], ["2", "2"], ["3", "3"], ["5", "5"]], String(Soc.per), (v) => (Soc.per = parseInt(v, 10)))),
+        h("label", { class: "check" }, h("input", { type: "checkbox", checked: Soc.includeX, onchange: (e) => { Soc.includeX = e.target.checked; store.set("includeX", Soc.includeX); } }), "Include X (unofficial reader)")),
+      h("p", { class: "muted small" }, "X is read through a free third-party service. X has taken scrapers to court and several such services have shut down, so it may stop working. About ten searches per ten minutes are allowed."),
+      h("button", { class: "btn primary act", disabled: !st.ingest_allowed, onclick: fetchPosts }, "Fetch and add posts"),
+      box);
+  }
+
+  function socialTrending(st) {
+    const tr = (st.social && st.social.trending) || {};
+    const isos = Object.keys(tr).sort();
+    return card(h("span", {}, term("trending", "Trending"), " in the last fetch"), "Counts of fetched posts per topic. Context only: trending has no effect on the simulation.",
+      isos.length ? h("div", { class: "grid two" }, ...isos.map((iso) => h("div", {}, h("strong", {}, iso),
+        h("ul", { class: "events-list" }, ...tr[iso].map((r) => h("li", {}, `${r.topic}: ${plural(r.n, "post")}, tone ${tone(r.mean_valence)}`, r.top_handles.length ? h("span", { class: "muted small" }, ` (${r.top_handles.map((x) => "@" + x).join(", ")})`) : null)))))) : h("p", { class: "muted" }, "Nothing fetched yet."));
+  }
+
+  function socialFeed(st) {
+    const Soc = S.social;
+    const box = h("div", {});
+    const load = () => {
+      const argv = ["social-feed", "--run", S.world, "--json", "--limit", "80", "--kind", Soc.kind];
+      if (Soc.country) argv.push("--country", Soc.country);
+      Soc.loading = runJSON(argv).then((r) => { Soc.rows = r.rows; Soc.loading = null; if (box.isConnected) render(); })
+        .catch((e) => { Soc.loading = null; box.replaceChildren(errorNotice(e)); });
+    };
+    if (Soc.rows === null && !Soc.loading) load();
+    const reload = () => { Soc.rows = null; Soc.loading = null; render(); };
+    const rows = Soc.rows;
+    return card("Feed", "Newest first. Real posts link to the original; posts made in the world are [simulated].",
+      h("div", { class: "row" },
+        field("Country", select([["", "All countries"], ...st.countries.map((c) => [c.iso3, c.name])], Soc.country, (v) => { Soc.country = v; reload(); })),
+        field("Show", select([["all", "Real and in-world"], ["real", "Real posts"], ["virtual", "Posts made in the world"]], Soc.kind, (v) => { Soc.kind = v; reload(); })),
+        h("button", { class: "btn small", onclick: reload }, "Refresh")),
+      rows === null ? loading("Loading the feed…") : rows.length ? h("div", {}, ...rows.map(feedRow)) : h("p", { class: "muted" }, "No posts yet: fetch real posts above, or post from Play."),
+      box);
+  }
+
+  function feedRow(r) {
+    if (r.kind === "real") {
+      const who = r.handle ? (r.url ? h("a", { href: r.url, target: "_blank", rel: "noopener noreferrer" }, "@" + r.handle) : "@" + r.handle) : (r.name || "a user");
+      const reach = r.reached === null || r.reached === undefined
+        ? h("span", { class: "muted small" }, "not tracked (shown for context only)")
+        : h("span", { class: "small" }, `reached ${plural(r.reached, "simulated person").replace("persons", "people")} (standing for about ${fmtPeople(r.reached_people)} real people), reposted ${plural(r.world_reposts || 0, "time")} in the world`);
+      const metrics = r.platform === "telegram"
+        ? `${(r.views || 0).toLocaleString()} views`
+        : `${plural(r.likes || 0, "like")} · ${plural(r.reposts || 0, "repost")} on ${PLATFORM[r.platform] || r.platform}`;
+      return h("div", { class: "feed-row" },
+        h("div", { class: "row" }, h("span", { class: "tag" }, PLATFORM[r.platform] || r.platform), h("strong", {}, who), h("span", { class: "muted small" }, `${r.country} · ${r.date}${r.is_repost ? " · repost" : ""}`)),
+        h("p", { style: "margin:4px 0", dir: "auto" }, r.text),
+        h("div", { class: "muted small" }, `${r.topic}, ${tone(r.valence || 0)} news · ${metrics}`),
+        reach);
+    }
+    return h("div", { class: "feed-row" },
+      h("div", { class: "row" }, h("span", { class: "tag accent" }, "in the world"), h("strong", {}, r.name), h("span", { class: "muted small" }, `${r.country} · day ${r.day} · ${r.post_kind} to ${r.audience}`)),
+      h("p", { style: "margin:4px 0", dir: "auto" }, `[simulated] ${r.text}`),
+      h("div", { class: "small" }, `reached ${r.reached.toLocaleString()} simulated people (standing for about ${fmtPeople(r.reached_people)} real people), ${r.believed.toLocaleString()} convinced, `, term("repost", plural(r.reposts, "repost"))));
   }
 
   // ------------------------------------------------------------------ filters (People and Ask)
@@ -1176,7 +1288,10 @@
         h("div", { class: "row" }, field("When", select(hours, hour, (v) => (hour = v)))),
         claimFields(),
         h("p", { class: "muted small" }, "How far a post spreads depends on who you are, never on how strongly it is worded."),
-        h("button", { class: "btn primary act", onclick: send }, "Post"));
+        actor.reach ? h("p", { class: "small" }, "Eligible audience (who could see it at most, not who will): ",
+          ...actor.audiences.map((a, i) => `${i ? "; " : ""}${labels[a].toLowerCase()}: ${actor.reach[a].people.toLocaleString()} simulated people, standing for about ${fmtPeople(actor.reach[a].represents)} real people`)) : null,
+        h("div", { class: "row" }, h("button", { class: "btn primary act", onclick: send }, "Post"),
+          h("button", { class: "btn link", onclick: () => { S.social.kind = "virtual"; S.social.rows = null; go("social"); } }, "See how my posts did")));
     } else if (P.tab === "decide") {
       let product = st.products[0] || "";
       let choice = "adopt";
@@ -1493,7 +1608,7 @@
     store.set("theme", v);
   }
 
-  const RENDER = { start: viewStart, world: viewWorld, whatif: viewWhatif, people: viewPeople, ask: viewAsk, play: viewPlay, results: viewResults, activity: viewActivity, guide: viewGuide };
+  const RENDER = { start: viewStart, world: viewWorld, whatif: viewWhatif, social: viewSocial, people: viewPeople, ask: viewAsk, play: viewPlay, results: viewResults, activity: viewActivity, guide: viewGuide };
 
   // ------------------------------------------------------------------ boot
   async function boot() {
