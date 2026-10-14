@@ -34,6 +34,11 @@ class SimParams(BaseModel):
     media_attention: float = 0.09  # chance a consumption session includes a salience-1 item
     media_salience_power: float = 3.0  # attention falls steeply for less salient items
     k_media: float = 0.15  # belief pull per repeated exposure
+    # social feeds (real posts and public figures' posts on social channels only; HEURISTIC, 0 disables)
+    social_interest_weight: float = 1.0  # exposure x clip(1 + w*(interest*N_TOPICS - 1), 0.25, 3): mean-preserving
+    # exposure to a public figure's posts x clip(base + trust, 0.5, 1.5): with camp-based trust about 1.4 for
+    # supporters and 0.6 for opponents, near the 70:30 aligned:cross-cutting exposure in Bakshy et al. 2015
+    social_affinity_base: float = 0.5
 
     # sharing / acceptance (logistic coefficients)
     share_min_age: float = 8.0  # no product/news advice below this age

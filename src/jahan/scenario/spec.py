@@ -8,7 +8,7 @@ come from the engine.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -175,11 +175,79 @@ class Statement(BaseModel):
         return v
 
 
-# What a free-text prompt may produce.  Actor events (control, messages, posts, ...) are deliberately
-# not in this union: only the actor commands create them.
+class SocialPostEvent(BaseModel):
+    """A real post fetched from a social network, pushed through the social channels in its language.
+
+    Reach comes from ``author_visibility`` (a roster figure's visibility, else log10 of followers) and
+    ``engagement`` (likes and reposts), both computed by the ingest code from the platform's numbers, never
+    by a model.  ``intensity`` is the platform's share of the country's internet users.  Created only by
+    `jahan ingest`; a free-text prompt cannot produce it.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+    type: Literal["social"] = "social"
+    platform: Literal["x", "bluesky", "mastodon", "telegram"]
+    post_id: str
+    author_handle: str
+    author_name: str = ""
+    author_key: str | None = None  # roster key when a public figure wrote (or reposted) it
+    author_visibility: float = Field(ge=0.0, le=10.0)
+    engagement: float = Field(0.0, ge=0.0, le=1.0)
+    headline: str
+    topic: str = "world"
+    valence: float = Field(0.0, ge=-1, le=1)
+    accuracy: float = Field(0.5, ge=0, le=1)
+    language: str
+    countries: list[str]
+    url: str = ""
+    mentions: list[str] = Field(default_factory=list)
+    is_repost: bool = False
+    start_day_offset: int = Field(0, ge=0)
+    duration_days: int = Field(2, ge=1)
+    release_utc_hour: int = Field(12, ge=0, le=23)
+    intensity: float = Field(1.0, ge=0.0, le=1.0)
+
+    @field_validator("topic")
+    @classmethod
+    def _topic(cls, v: str) -> str:
+        if v not in TOPIC_NAMES:
+            raise ValueError(f"unknown topic {v}; known: {sorted(TOPIC_NAMES)}")
+        return v
+
+
+class SocialDigest(BaseModel):
+    """What one social fetch saw, for display and grounding: per-platform counts, problems, the keys of
+    posts already ingested, recent posts by public figures, trending topics and a feed per country.
+    Applied into ``world.macro["social"]`` so a reset restores it.  Trending has no behavioural effect."""
+
+    model_config = ConfigDict(extra="forbid")
+    type: Literal["social_digest"] = "social_digest"
+    fetch_day: str
+    start_day_offset: int = Field(0, ge=0)
+    stats: dict[str, dict[str, int]] = Field(default_factory=dict)
+    problems: list[str] = Field(default_factory=list)
+    seen: list[str] = Field(default_factory=list)
+    figures: dict[str, list[dict[str, Any]]] = Field(default_factory=dict)  # roster key -> recent posts
+    trending: dict[str, list[dict[str, Any]]] = Field(default_factory=dict)  # ISO -> topics
+    feed: dict[str, list[dict[str, Any]]] = Field(default_factory=dict)  # ISO -> rows
+
+
+# What a free-text prompt may produce.  Actor events (control, messages, posts, ...) and fetched social
+# posts are deliberately not in this union: only the actor commands and `jahan ingest` create them.
 ScenarioEvent = Annotated[ProductLaunch | NewsEvent | MacroPath | Statement, Field(discriminator="type")]
 AnyEvent = Annotated[
-    ProductLaunch | NewsEvent | MacroPath | Statement | Control | Message | Post | Decision | PriceChange | CreateAgent,
+    ProductLaunch
+    | NewsEvent
+    | MacroPath
+    | Statement
+    | SocialPostEvent
+    | SocialDigest
+    | Control
+    | Message
+    | Post
+    | Decision
+    | PriceChange
+    | CreateAgent,
     Field(discriminator="type"),
 ]
 

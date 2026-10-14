@@ -243,8 +243,11 @@ Several numbers for player actions and public-figure autonomy are heuristics, no
 
 Worlds created before political camps existed (snapshot schema 5) cannot be opened; create a new world.
 
-Each distinct message or post occupies one tracked-item slot for about a week. A very talkative session
-can fill the `max_slots` pool (64 by default). Further claims are then skipped and logged as such.
+Each distinct story, message or post occupies one tracked-item slot: news for about a week after it stops
+being broadcast, a public figure's statement for two months. When the `max_slots` pool (128 by default)
+is full, the oldest item that is no longer being broadcast gives up its slot, and what people believed
+about it is forgotten (logged as `ITEM_EVICTED`). Products keep their slots. A new item is skipped only
+when every tracked item is still on air. At 10,000 agents each slot costs about 0.4 MB of memory.
 
 ## Rebuilding the data
 

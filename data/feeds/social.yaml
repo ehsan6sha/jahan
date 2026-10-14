@@ -1,0 +1,127 @@
+# Social-media sources read by `jahan ingest` (ingest/social.py).  Real posts become news inside the world;
+# what virtual people post stays inside the world.  Accounts were checked on 2026-10-14 (follower counts
+# from each platform's public profile API); they change, so this file is not hashed into world snapshots.
+#
+# Platforms:
+#   x         unofficial: a third-party reader of public X posts (unifapi.com).  Free tier: 20 units per
+#             10 minutes, 2 per search.  X has taken scrapers to court and several readers have shut down,
+#             so it may stop working; switch it off with `--no-x` or `enabled: false`.
+#   bluesky   official public API, no login.
+#   mastodon  official public API of each server, no login.
+#   telegram  public channel previews at t.me/s/<channel>, no login.
+# Facebook, TikTok, WhatsApp, Instagram and WeChat have no free way to read them; they are not used.
+
+sources:
+  x:
+    enabled: true
+    kind: unofficial
+    search_url: "https://unifapi.com/tools/x/search?q="
+    max_searches: 10
+    note: "Unofficial reader of public X posts; may stop working (X has sued scrapers). Turn off with --no-x."
+  bluesky:
+    enabled: true
+    kind: official
+    author_feed_url: "https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed"
+    search_url: "https://api.bsky.app/xrpc/app.bsky.feed.searchPosts"   # the public.api host refuses search
+  mastodon:
+    enabled: true
+    kind: official
+  telegram:
+    enabled: true
+    kind: public_preview
+    preview_url: "https://t.me/s/"
+
+lookback_days: 2   # posts since (fetch day - 2); derived from the fetch day, never the clock
+
+# How strongly a post is pushed to a country's social channel: the platform's users as a share of the
+# country's internet users.  DataReportal "Digital 2026: <country>" (Kepios): internet users in October 2025,
+# platform advertising reach in late 2025, in millions.  Advertising reach is not the same as monthly users.
+platform_usage:
+  default_share: {x: 0.3, bluesky: 0.05, mastodon: 0.05, telegram: 0.3}   # HEURISTIC where no figure is published
+  countries:
+    USA: {source: datareportal.USA, internet_users_m: 324, platforms_m: {x: 99.0}}
+    BRA: {source: datareportal.BRA, internet_users_m: 185, platforms_m: {x: 17.1}}
+    DEU: {source: datareportal.DEU, internet_users_m: 78.5, platforms_m: {x: 19.0}}
+    NGA: {source: datareportal.NGA, internet_users_m: 109, platforms_m: {x: 6.95}}
+    IND: {source: datareportal.IND, internet_users_m: 1030, platforms_m: {x: 22.2}}
+    IDN: {source: datareportal.IDN, internet_users_m: 230, platforms_m: {x: 22.9}}
+    IRN: {source: datareportal.IRN, internet_users_m: 73.8, platforms_m: {x: null, telegram: null}}   # no per-platform figures
+
+countries:
+  USA:
+    figures:   # roster key -> accounts the figure posts from
+      USA.head_of_state:
+        - {platform: x, handle: POTUS, followers: 4270643}
+        - {platform: x, handle: realDonaldTrump, followers: 111827446}
+      USA.finance_minister:
+        - {platform: x, handle: SecScottBessent, followers: 998351}
+      USA.business.musk:
+        - {platform: x, handle: elonmusk, followers: 241510887, own_query: true}   # posts very often
+    channels:
+      - {platform: x, handle: WhiteHouse, name: The White House, lang: en, followers: 5328189}
+      - {platform: x, handle: federalreserve, name: Federal Reserve, lang: en, followers: 1595439}
+    topics:
+      en:
+        economy: {x: "#tariffs", bluesky: tariffs}
+        politics: {bluesky: congress}
+  BRA:
+    figures:
+      BRA.head_of_state:
+        - {platform: x, handle: LulaOficial, followers: 10754998}
+        - {platform: bluesky, handle: lulaoficialbluesky.bsky.social, followers: 297763}
+      BRA.opposition.flavio_bolsonaro:
+        - {platform: x, handle: FlavioBolsonaro, followers: 3789739}
+    topics:
+      pt:
+        economy: {bluesky: dólar}
+        politics: {bluesky: eleição}
+  DEU:
+    figures:
+      DEU.head_of_state:
+        - {platform: x, handle: _FriedrichMerz, followers: 576242}
+      DEU.central_bank_governor:
+        - {platform: x, handle: Lagarde, followers: 2955872}
+        - {platform: bluesky, handle: president.ecb.europa.eu}
+    channels:
+      - {platform: mastodon, instance: social.bund.de, handle: Bundesregierung, name: Bundesregierung, lang: de, followers: 39743}
+    topics:
+      de:
+        economy: {mastodon: wirtschaft, bluesky: Wirtschaft}
+  NGA:
+    figures:
+      NGA.head_of_state:
+        - {platform: x, handle: officialABAT, followers: 3524696}
+    topics:
+      en:
+        economy: {bluesky: Nigeria economy}
+  IRN:
+    figures:
+      IRN.head_of_state:
+        - {platform: x, handle: drpezeshkian, followers: 631362}
+      IRN.foreign_minister:
+        - {platform: x, handle: araghchi, followers: 920661}
+    channels:
+      - {platform: x, handle: khamenei_ir, name: Khamenei.ir (office of the Supreme Leader), lang: fa, followers: 2279436}
+      - {platform: telegram, handle: BBCPersian, name: BBC Persian, lang: fa, followers: 770000}
+      - {platform: telegram, handle: khamenei_ir, name: Khamenei.ir, lang: fa, note: "official channel; announced it suspended Telegram activity"}
+    topics:
+      fa:
+        politics: {bluesky: ایران}
+  IND:
+    figures:
+      IND.head_of_state:
+        - {platform: x, handle: narendramodi, followers: 107112684}
+    channels:
+      - {platform: x, handle: RBI, name: Reserve Bank of India, lang: en, followers: 2512712}
+    topics:
+      hi:
+        politics: {bluesky: भारत}
+  IDN:
+    figures:
+      IDN.head_of_state:
+        - {platform: x, handle: prabowo, followers: 5289101}
+    topics:
+      id:
+        economy: {bluesky: ekonomi}
+  CHN:
+    note: "Weibo and WeChat have no free way to read them; China has no social source (placeholder)."

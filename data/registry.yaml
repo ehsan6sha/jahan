@@ -1326,3 +1326,73 @@ entries:
   license: see source
   confidence: provisional
   notes: The 0.70 agreement rate used for children's camps is approximate; check the exact figure in the paper.
+- id: datareportal.USA
+  country: USA
+  variable: internet users and social platform advertising reach
+  source: DataReportal / Kepios, Digital 2026 country report (internet users October 2025 324M; ad reach late 2025 X 99.0M)
+  url: https://datareportal.com/reports/digital-2026-united-states-of-america
+  year: 2025
+  retrieved: '2026-10-14'
+  license: attribution
+  confidence: medium
+  notes: Advertising reach is not the same as monthly active users. Used for how strongly a post on a platform is pushed to the country's social channel.
+- id: datareportal.BRA
+  country: BRA
+  variable: internet users and social platform advertising reach
+  source: DataReportal / Kepios, Digital 2026 country report (internet users October 2025 185M; ad reach late 2025 X 17.1M)
+  url: https://datareportal.com/reports/digital-2026-brazil
+  year: 2025
+  retrieved: '2026-10-14'
+  license: attribution
+  confidence: medium
+  notes: Advertising reach is not the same as monthly active users. Used for how strongly a post on a platform is pushed to the country's social channel.
+- id: datareportal.DEU
+  country: DEU
+  variable: internet users and social platform advertising reach
+  source: DataReportal / Kepios, Digital 2026 country report (internet users October 2025 78.5M; ad reach late 2025 X 19.0M)
+  url: https://datareportal.com/reports/digital-2026-germany
+  year: 2025
+  retrieved: '2026-10-14'
+  license: attribution
+  confidence: medium
+  notes: Advertising reach is not the same as monthly active users. Used for how strongly a post on a platform is pushed to the country's social channel.
+- id: datareportal.NGA
+  country: NGA
+  variable: internet users and social platform advertising reach
+  source: DataReportal / Kepios, Digital 2026 country report (internet users October 2025 109M; ad reach late 2025 X 6.95M; Facebook 38.0M; TikTok 47.8M; YouTube 30.5M)
+  url: https://datareportal.com/reports/digital-2026-nigeria
+  year: 2025
+  retrieved: '2026-10-14'
+  license: attribution
+  confidence: medium
+  notes: Advertising reach is not the same as monthly active users. Used for how strongly a post on a platform is pushed to the country's social channel.
+- id: datareportal.IND
+  country: IND
+  variable: internet users and social platform advertising reach
+  source: DataReportal / Kepios, Digital 2026 country report (internet users October 2025 1030M; ad reach late 2025 X 22.2M)
+  url: https://datareportal.com/reports/digital-2026-india
+  year: 2025
+  retrieved: '2026-10-14'
+  license: attribution
+  confidence: medium
+  notes: Advertising reach is not the same as monthly active users. Used for how strongly a post on a platform is pushed to the country's social channel.
+- id: datareportal.IDN
+  country: IDN
+  variable: internet users and social platform advertising reach
+  source: DataReportal / Kepios, Digital 2026 country report (internet users October 2025 230M; ad reach late 2025 X 22.9M)
+  url: https://datareportal.com/reports/digital-2026-indonesia
+  year: 2025
+  retrieved: '2026-10-14'
+  license: attribution
+  confidence: medium
+  notes: Advertising reach is not the same as monthly active users. Used for how strongly a post on a platform is pushed to the country's social channel.
+- id: datareportal.IRN
+  country: IRN
+  variable: internet users and social platform advertising reach
+  source: DataReportal / Kepios, Digital 2026 Iran (internet users 73.8M; 48M social media user identities; no per-platform figures)
+  url: https://datareportal.com/reports/digital-2026-iran
+  year: 2025
+  retrieved: '2026-10-14'
+  license: attribution
+  confidence: provisional
+  notes: No per-platform figures are published (X and Telegram are filtered in Iran and used through VPNs), so X and Telegram use the default share.

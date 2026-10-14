@@ -69,6 +69,7 @@ class OriginKind(IntEnum):
     SYNTHETIC = 6
     NOTABLE = 7
     HUMAN = 8
+    SOCIAL = 9  # a real post fetched from a social network (not by a public figure on the roster)
 
 
 class Topic(IntEnum):
@@ -139,6 +140,8 @@ class EventKind(IntEnum):
     WEB_INGEST_FAILED = 25
     TRAVEL_START = 26
     TRAVEL_END = 27
+    SOCIAL_SHARED = 28  # an ordinary person reposted a tracked item on social media
+    ITEM_EVICTED = 29  # the tracked-item pool was full; the oldest item no longer broadcast lost its slot
     ITEM_UPDATED = 28  # a running story (e.g. a currency slide) got a new headline
 
 

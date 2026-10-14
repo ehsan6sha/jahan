@@ -8,4 +8,4 @@ allocation: sqrt
 # start_date defaults to today, so `jahan ingest` can add real news; pin it (or pass --start-date) to
 # reproduce a world exactly.
 snapshot_every: 30
-max_slots: 64
+max_slots: 128

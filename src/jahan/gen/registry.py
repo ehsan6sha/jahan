@@ -18,6 +18,7 @@ from jahan.model.notables import (
     load_roster,
     validate_rosters,
 )
+from jahan.model.social import load_social, validate_social
 
 Confidence = Literal["high", "medium", "low", "provisional", "placeholder"]
 WEAK = {"provisional", "placeholder"}
@@ -82,6 +83,24 @@ def _politics_placeholders(data_dir: Path, iso: str, spec: CountrySpec) -> list[
     return out
 
 
+def _social_problems(data_dir: Path, countries: list[str], reg: dict[str, RegistryEntry], strict: bool) -> list[str]:
+    """data/feeds/social.yaml: accounts name roster figures, and platform shares cite the registry."""
+    if not (data_dir / "feeds" / "social.yaml").exists():
+        return []
+    out = validate_social(data_dir, countries)
+    if out:
+        return out
+    for iso, usage in load_social(data_dir).platform_usage.countries.items():
+        if iso not in countries:
+            continue
+        entry = reg.get(usage.source)
+        if entry is None:
+            out.append(f"feeds/social.yaml: {iso} source id '{usage.source}' not in registry")
+        elif strict and entry.confidence in WEAK:
+            out.append(f"feeds/social.yaml: {iso} source '{usage.source}' is {entry.confidence} (strict mode)")
+    return out
+
+
 def validate_data(
     data_dir: Path, countries: list[str], strict: bool = False, start_date: dt.date | None = None
 ) -> list[str]:
@@ -108,6 +127,7 @@ def validate_data(
             problems.append(f"{iso}: names file {names_path} missing")
         if strict:
             problems += _politics_placeholders(data_dir, iso, spec)
+    problems += _social_problems(data_dir, countries, reg, strict)
     if strict:
         try:
             roles = load_roles(data_dir)

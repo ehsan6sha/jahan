@@ -17,8 +17,8 @@ import numpy as np
 from jahan.actors import engine
 from jahan.model.enums import CHANNEL_KIND_NAMES, EventKind, OriginKind, Topic
 from jahan.model.world import World
-from jahan.scenario.inject import create_item, start_news, start_statement
-from jahan.scenario.spec import NewsEvent, Statement
+from jahan.scenario.inject import create_item, retire_item, start_news, start_social, start_statement
+from jahan.scenario.spec import NewsEvent, SocialPostEvent, Statement
 from jahan.sim.params import SimParams
 from jahan.store.eventlog import EventLog
 
@@ -37,6 +37,8 @@ def apply_due(world: World, log: EventLog) -> dict[str, int]:
             start_news(world, NewsEvent.model_validate(e["spec"]), log, int(e.get("prompt_id", -1)))
         elif e["kind"] == "statement":
             start_statement(world, Statement.model_validate(e["spec"]), log, int(e.get("prompt_id", -1)))
+        elif e["kind"] == "social":
+            start_social(world, SocialPostEvent.model_validate(e["spec"]), log, int(e.get("prompt_id", -1)))
         elif e["kind"] == "macro":
             apply_macro(world, e, log)
         elif e["kind"] == engine.KIND_LATER:
@@ -206,8 +208,7 @@ def expire_items(world: World) -> int:
         return 0
     done = np.flatnonzero((it["slot"] >= 0) & (it["active_until"] < world.day))
     for i in done:
-        world.beliefs.free_slot(int(it["slot"][i]))
-        it["slot"][i] = -1
+        retire_item(world, int(i))
     return int(done.size)
 
 
