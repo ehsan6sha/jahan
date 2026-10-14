@@ -34,6 +34,7 @@ from jahan.model.enums import TOPIC_NAMES, EventKind, OriginKind, Topic
 from jahan.model.mentions import mentions
 from jahan.model.notables import SIMULATED_LABEL
 from jahan.model.world import World
+from jahan.query.social_feed import recent_posts_lines, trending_lines
 from jahan.scenario.inject import apply_scenario
 from jahan.scenario.spec import Scenario
 from jahan.store.eventlog import EventLog
@@ -188,6 +189,8 @@ def _brief(world: World, cand: dict[str, Any]) -> str:
         lines.append("- none documented")
     if entry.get("communication_style"):
         lines.append(f"Communication style (documented): {entry['communication_style']}")
+    lines.extend(recent_posts_lines(world, str(entry["key"])))
+    lines.extend(trending_lines(world, world.countries[int(entry["country"])].iso3))
     lines.append("Why you are deciding now:")
     lines.extend(f"- {r[2]}" for r in cand["reasons"][:4])
     lines.append("Permitted actions:")

@@ -83,6 +83,85 @@ def _llm_spend(rd: RunDir) -> dict[str, Any]:
     return {"input_tokens": tin, "output_tokens": tout, "usd": round(usd, 4), "unpriced_models": sorted(unpriced)}
 
 
+def eligible_audience(world: World, row: int) -> dict[str, dict[str, float]]:
+    """Who each audience could reach at most (eligible people, not expected reach): simulated people and the
+    real people they stand for (population weights)."""
+    pop = world.pop
+    alive = pop["alive"] & ~pop["is_notable"]
+    aid = int(pop["id"][row])
+    e = world.edges
+    listeners = np.unique(e["src"][(e["dst"] == aid) & e["active"]]).astype(np.int64)
+    fof = np.unique(e["src"][np.isin(e["dst"], listeners) & e["active"]]).astype(np.int64)
+    same = pop["location_country"] == pop["location_country"][row]
+    community = np.zeros(pop.n, bool)
+    community[fof] = True
+    community[listeners] = False
+    community[row] = False
+    circle = np.zeros(pop.n, bool)
+    circle[listeners] = True
+    home = pop["country"] == pop["country"][row]
+    w = pop["pop_weight"].astype(np.float64)
+
+    def size(mask: Any) -> dict[str, float]:
+        m = mask & alive
+        return {"people": int(m.sum()), "represents": round(float(w[m].sum()), 1)}
+
+    return {
+        "circle": size(circle),
+        "community": size(community & same),
+        "national": size(home),
+        "global": size(np.ones(pop.n, bool)),
+    }
+
+
+def social_status(world: World) -> dict[str, Any]:
+    """Configured social sources, the last fetch, and what social activity the world holds."""
+    from jahan import paths
+    from jahan.model.social import load_social
+
+    configured: dict[str, Any] = {}
+    try:
+        cfg = load_social(paths.data_dir())
+    except Exception:  # noqa: BLE001 - shown as "not configured"
+        cfg = None
+    if cfg is not None:
+        codes = {c.iso3 for c in world.countries}
+        for name, src in cfg.sources.items():
+            accounts = sum(
+                1
+                for iso, cs in cfg.countries.items()
+                if iso in codes
+                for acc in [a for lst in cs.figures.values() for a in lst] + cs.channels
+                if acc.platform == name
+            )
+            queries = sum(
+                1
+                for iso, cs in cfg.countries.items()
+                if iso in codes
+                for topics in cs.topics.values()
+                for q in topics.values()
+                if name in q
+            )
+            configured[name] = {
+                "enabled": src.enabled,
+                "kind": src.kind,
+                "accounts": accounts,
+                "queries": queries,
+                "note": src.note,
+            }
+    st = world.macro.get("social", {})
+    live = [k for k in st.get("items", {}) if 0 <= int(k) < world.items.n and int(world.items["slot"][int(k)]) >= 0]
+    posts = world.macro.get("posts", {})
+    return {
+        "configured": configured,
+        "last_fetch": st.get("last_fetch"),
+        "items_live": len(live),
+        "virtual_posts": len(posts),
+        "reposts_yesterday": int(st.get("reposts_by_day", {}).get(str(world.day - 1), 0)),
+        "trending": st.get("trending", {}),
+    }
+
+
 def world_status(rd: RunDir, world: World) -> dict[str, Any]:
     pop = world.pop
     real_today = dt.datetime.now(dt.UTC).date()
@@ -103,6 +182,7 @@ def world_status(rd: RunDir, world: World) -> dict[str, Any]:
                     "controlled_now": int(pop["controlled_by"][row]) == sid,
                     "office": None if entry is None else entry["office"],
                     "audiences": allowed_audiences(world, row),
+                    "reach": eligible_audience(world, row),
                     "policies": _policies(world, row),
                 }
             )
@@ -183,6 +263,7 @@ def world_status(rd: RunDir, world: World) -> dict[str, Any]:
             }
             for e in world.notables
         ],
+        "social": social_status(world),
         "experiments": experiments,
         "reports": reports,
         "llm": {
@@ -215,6 +296,13 @@ def status_text(st: dict[str, Any]) -> str:
         lines.append("Products: " + ", ".join(st["products"]))
     if st["reports"]:
         lines.append("Reports: " + ", ".join(st["reports"]))
+    soc = st["social"]
+    if soc["last_fetch"]:
+        lf = soc["last_fetch"]
+        lines.append(
+            f"Social: last fetch {lf['fetch_day']} (world day {lf['world_day']}); {soc['items_live']} real posts "
+            f"tracked; {soc['virtual_posts']} posts made in the world; {len(lf.get('problems', []))} source problems"
+        )
     llm = st["llm"]
     spent = llm["spent_in_this_world"]
     lines.append(

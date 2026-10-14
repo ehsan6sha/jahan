@@ -1,6 +1,7 @@
 """Social ingest from fixture responses (no network): parsing, budget, replay, ranking and anonymity."""
 
 import datetime as dt
+import hashlib
 import json
 import re
 import urllib.parse
@@ -17,7 +18,8 @@ from jahan.ingest.social import (
 )
 from jahan.llm.recordings import Recordings
 from jahan.model.social import load_social, validate_social
-from jahan.scenario.spec import SocialDigest, SocialPostEvent
+from jahan.scenario.spec import Scenario, SocialDigest, SocialPostEvent
+from tests.conftest import cli
 
 M1 = ["USA", "BRA", "DEU", "NGA", "IRN", "IND", "CHN", "IDN"]
 DAY = "2026-10-14"
@@ -260,3 +262,32 @@ def test_posts_classify_without_a_model_by_their_topic_search():
     )
     assert labels[0]["topic"] == "economy" and labels[1]["topic"] == "world"
     assert all(lab["valence"] == 0.0 for lab in labels)
+
+
+def test_cli_ingests_social_posts_offline_and_shows_the_feed(tmp_path):
+    run = tmp_path / "run"
+    today = dt.datetime.now(dt.UTC).date().isoformat()
+    cli("gen", "--run", str(run), "--agents", "1500", "--countries", "USA", "--start-date", today)
+    collect_social(paths.data_dir(), ["USA"], Recordings(run / "recordings"), today, fetcher_factory([]))
+    args = ["ingest", "--run", str(run), "--replay", "--provider", "none", "--fetch-day", today, "--no-news", "-y"]
+    out = cli(*args)
+    assert "Prompt 1 injected" in out and "unofficial service" in out and "count towards trending" in out
+    ledger = json.loads((run / "prompts.json").read_text(encoding="utf-8"))
+    assert ledger[-1]["prompt"].startswith("Live ingest (0 headlines, 2 social posts)")
+    first = run / ledger[-1]["scenario_file"]
+    sc = Scenario.load(first)
+    assert {e.type for e in sc.events} == {"social", "social_digest"}
+    assert all(e.author_handle for e in sc.events if isinstance(e, SocialPostEvent))  # public authors only
+    assert "Nothing new to ingest." in cli(*args)  # the same posts are never ingested twice
+    feed = json.loads(cli("social-feed", "--run", str(run), "--json"))["rows"]
+    assert feed and all(r["kind"] == "real" for r in feed) and sum(r["tracked"] for r in feed) == 2
+    assert json.loads(cli("social-feed", "--run", str(run), "--kind", "virtual", "--json"))["rows"] == []
+    st = json.loads(cli("status", "--run", str(run), "--json"))
+    assert st["social"]["last_fetch"]["fetch_day"] == today and st["social"]["items_live"] == 2
+    assert st["social"]["configured"]["x"]["kind"] == "unofficial"
+    # time travel: undo the ingest and redo it offline; the prompt is byte-identical
+    digest = hashlib.sha256(first.read_bytes()).hexdigest()
+    cli("reset", "--run", str(run), "--before-prompt", "1")
+    cli(*args)
+    ledger = json.loads((run / "prompts.json").read_text(encoding="utf-8"))
+    assert hashlib.sha256((run / ledger[-1]["scenario_file"]).read_bytes()).hexdigest() == digest

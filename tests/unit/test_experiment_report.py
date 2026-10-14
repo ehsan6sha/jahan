@@ -39,9 +39,12 @@ def test_end_to_end_experiment_and_report(tmp_path):
         "### Who adopted Smart Ring X",
         "### Trust (Smart Ring X)",
         "### Sampled stories",
+        "## How first exposures arrived",
         "## Caveats",
     ):
         assert heading in report, heading
+    table = report.split("## How first exposures arrived", 1)[1].split("##", 1)[0]
+    assert "| Smart Ring X |" in table and "people" in table  # word of mouth next to the channel kinds
     assert (run / "reports" / "0001" / "curves.csv").exists()
     listing = cli("agents", "--run", str(run), "--filter", "age > 30", "--limit", "3")
     assert "agents match" in listing

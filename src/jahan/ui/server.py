@@ -42,7 +42,7 @@ import yaml
 WORLD_COMMANDS = {
     "gen", "run", "inject", "feed", "ingest", "ask", "transcript", "experiment", "report", "reset", "agents",
     "agent", "status", "create-agent", "possess", "release", "say", "post", "decide", "act", "brief", "circle",
-    "events-hash", "session",
+    "events-hash", "session", "social-feed",
 }  # fmt: skip
 GLOBAL_COMMANDS = {"doctor", "validate-data", "bench", "notables-draft"}
 SESSION_SUBCOMMANDS = {"list", "show", "replay"}

@@ -81,7 +81,7 @@ uv sync --extra llm
 $env:ANTHROPIC_API_KEY = "sk-ant-..."            # PowerShell; use `export ANTHROPIC_API_KEY=...` on Linux/macOS
 uv run jahan doctor --check-models              # one tiny request per model; each line should end in OK
 uv run jahan gen        --run runs/live --config configs/m1.yaml
-uv run jahan ingest     --run runs/live         # today's real headlines per country and language
+uv run jahan ingest     --run runs/live         # today's real headlines and social posts per country and language
 uv run jahan run        --run runs/live --days 7
 uv run jahan inject     --run runs/live --prompt 'Launch a $199 smart ring in the US, Germany, India and Iran'
 uv run jahan run        --run runs/live --days 30
@@ -102,6 +102,29 @@ uv run jahan transcript --run runs/live --agent 42 --day 35 --llm
   news items that reach only channels in their language. Without a key, headlines are labelled neutral:
   they raise awareness but do not move mood. It refuses when the world date is more than three days from
   the real date.
+- **Social media.** `ingest` also reads posts by public figures, institutions and channels, and topic
+  searches, from networks that can be read for free (accounts in `data/feeds/social.yaml`, checked on
+  2026-10-14):
+  - X, through an unofficial reader (unifapi.com). X has taken scrapers to court and several free readers
+    have shut down, so this source may stop working. It is on by default; `--no-x` skips it. The free tier
+    allows about ten searches per ten minutes, so a second ingest within ten minutes may get nothing from X.
+  - Bluesky and Mastodon, through their official public APIs.
+  - Telegram public channel previews (for example BBC Persian).
+
+  Facebook, TikTok, WhatsApp, Instagram and WeChat cannot be read for free, so China has no source. The top
+  posts per country (`--per-country-social`, default 2) become items that reach people through the social
+  channels in the post's language. A post by a public figure on the roster counts as that figure's words, so
+  people weigh it by their trust in them. Reach comes from the author's followers (a figure's roster
+  visibility) and the post's likes and reposts, never from a model. Each platform's push strength is its
+  share of the country's internet users (DataReportal 2026). In their feeds, people see more posts on topics
+  they care about and more posts by figures they trust (heuristic weights). Posts by ordinary people (fewer
+  than 100,000 followers) only count towards trending topics: their words are not spread, stored in the
+  world or shown. Trending topics are context for figures' decisions and for you; they do not change the
+  simulation. Posts in a language nobody in that country reads in this world are dropped, for example
+  Modi's English posts, because India's social channels here are Hindi and regional. `--no-news` and
+  `--no-social` fetch one kind only. `jahan social-feed --run runs/live` lists the real posts and the posts
+  made in the world, with how far they got. Public figures' real posts are shown to them when they decide
+  what to do and in interviews.
 - When `run` crosses today's real date, it offers to take hypothetical events for the days with no real
   news (only in an interactive terminal; scripts get a one-line note). `feed` does the same at any time.
 - Every web fetch and model answer is stored under `runs/<name>/recordings/`. `--provider replay` and
@@ -145,7 +168,9 @@ uv run jahan play --run runs/demo --days 7 < examples/sessions/president_trade.t
 - **Posts.** Reach depends on who you are, not on how loudly you write. Anyone reaches their circle.
   Better-known people reach their local community, meaning friends of friends. Only public figures whose
   role allows it reach national or global media. The LLM only turns your words into a topic, a product
-  and one of five stance levels; the engine sets salience from your visibility.
+  and one of five stance levels; the engine sets salience from your visibility. Briefings show how far each
+  post got: simulated people reached, the real people they stand for, and how many you convinced.
+  `social-feed --kind virtual` lists every post made in the world, including public figures' statements.
 - **Powers of an office.** `act` checks `data/roles.yaml`, so a president cannot set interest rates and a
   central bank governor can. Effect sizes come from that file. They are invented placeholders and are
   labelled as such.

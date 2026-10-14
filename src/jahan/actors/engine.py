@@ -44,6 +44,7 @@ from jahan.model.schema import AGENT_COLUMNS
 from jahan.model.world import World
 from jahan.rng import MASK64, Stream, u01
 from jahan.scenario.inject import InjectError, _push, create_item, product_id_by_name, statement_salience
+from jahan.scenario.posts import record_post, update_post_stats
 from jahan.scenario.spec import DEFAULT_SENTIMENT_WEIGHT
 from jahan.sim.availability import Masks
 from jahan.sim.diffusion import acceptance
@@ -263,6 +264,7 @@ def deliver_actions(world: World, masks: Masks, params: SimParams, log: EventLog
     day = world.day
     kinds = (KIND_DEFERRED, KIND_DELIVER)
     due = [e for e in world.scheduled if e["day"] <= day and e["kind"] in kinds]
+    update_post_stats(world)  # yesterday's spread, before today's posts
     if not due:
         return {"actions_delivered": 0}
     world.scheduled = [e for e in world.scheduled if not (e["day"] <= day and e["kind"] in kinds)]
@@ -505,6 +507,7 @@ def _post(world: World, ev: Post, masks: Masks, params: SimParams, log: EventLog
         world, item, aid, circle, effective_trust(world, erows, params), conveyed, ev.utc_hour, masks, params, log
     )
     entry = notable_entry(world, a)
+    community, channels = 0, 0
     if AUDIENCES.index(aud) >= AUDIENCES.index("community"):
         # local community: friends of friends in the same country, reached with a visibility-based chance
         e2 = np.flatnonzero(np.isin(e["dst"], circle) & e["active"])
@@ -519,12 +522,30 @@ def _post(world: World, ev: Post, masks: Masks, params: SimParams, log: EventLog
             rep = float(pop["global_rep"][a])
             tr = np.full(hit.size, float(sigmoid(logit(STRANGER_TRUST) + 0.8 * (rep - 0.5))))
         n += _deliver(world, item, aid, hit, tr, conveyed, ev.utc_hour, masks, params, log)
+        community = int(hit.size)
     if aud in ("national", "global") and entry is not None:
         home = int(entry["country"])
-        n += _push(world, item, [home], ALL_KINDS, world.day, ev.duration_days, 1.0)
+        channels = _push(world, item, [home], ALL_KINDS, world.day, ev.duration_days, 1.0)
         if aud == "global":
             others = [c for c in range(world.n_countries) if c != home]
-            n += _push(world, item, others, ALL_KINDS, world.day + 1, ev.duration_days, 0.7)
+            channels += _push(world, item, others, ALL_KINDS, world.day + 1, ev.duration_days, 0.7)
+        n += channels
+    record_post(
+        world,
+        actor=aid,
+        item=item,
+        kind="post",
+        audience=aud,
+        requested=ev.audience,
+        headline=ev.claim.headline,
+        text=ev.claim.text,
+        session=ev.session,
+        hour=ev.utc_hour,
+        circle=int(circle.size),
+        community=community,
+        channels=channels,
+        stance=ev.claim.stance,
+    )
     note = "" if aud == ev.audience else f" (asked for {ev.audience}; allowed {aud})"
     _log_action(world, ev, log, f"post to {aud}: {ev.claim.headline}{note}", item=item)
     return n

@@ -13,7 +13,7 @@ import shutil
 import sys
 import time
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import numpy as np
 import pyarrow.parquet as pq
@@ -404,6 +404,14 @@ def feed(
 def ingest(
     run_dir: RunOpt,
     per_country: Annotated[int, typer.Option(help="Headlines per country that become tracked items")] = 2,
+    per_country_social: Annotated[int, typer.Option(help="Social posts per country that become tracked items")] = 2,
+    news: Annotated[bool, typer.Option("--news/--no-news", help="Fetch news headlines (RSS feeds)")] = True,
+    social: Annotated[
+        bool, typer.Option("--social/--no-social", help="Fetch posts from social networks (data/feeds/social.yaml)")
+    ] = True,
+    x: Annotated[
+        bool, typer.Option("--x/--no-x", help="Include X through an unofficial reader that may stop working")
+    ] = True,
     provider: Annotated[
         str, typer.Option(help="Headline classifier LLM: anthropic, openai_compat, replay, none")
     ] = "anthropic",
@@ -414,11 +422,19 @@ def ingest(
     ] = False,
     yes: Annotated[bool, typer.Option("--yes", "-y")] = False,
 ) -> None:
-    """Fetch today's real headlines (per country and language) and inject them as news (recorded for replay)."""
-    from jahan.ingest.classify import classify, to_scenario
-    from jahan.ingest.feeds import collect
-    from jahan.llm.recordings import Recordings
+    """Fetch today's real headlines and social posts (per country and language) and inject them as news.
 
+    Everything fetched and every model answer is recorded, so `--replay` reproduces the same prompt offline.
+    """
+    from jahan.ingest.classify import classify, to_scenario
+    from jahan.ingest.feeds import Headline, collect
+    from jahan.ingest.social import SocialPost, collect_social, to_social_scenario
+    from jahan.llm.budget import BudgetExceeded
+    from jahan.llm.recordings import MissingRecording, Recordings
+    from jahan.model.social import load_social
+
+    if not (news or social):
+        raise typer.BadParameter("nothing to fetch: --no-news and --no-social together")
     rd = RunDir(run_dir)
     world = _load_head(rd)
     real = dt.date.fromisoformat(fetch_day) if fetch_day else dt.datetime.now(dt.UTC).date()
@@ -433,18 +449,31 @@ def ingest(
             client = _client(rd, provider)
         except typer.BadParameter as e:
             typer.echo(
-                f"{e.message}\nHeadlines will be labelled neutral 'world' news: they raise awareness but do not "
+                f"{e.message}\nHeadlines and posts will be labelled neutral: they raise awareness but do not "
                 "move mood.  Set the provider's API key (see `jahan doctor`) for topic and tone labels."
             )
     rec = client.recordings if client else Recordings(rd.root / "recordings")
     if replay:
         rec.replay_only = True
-    heads, problems = collect(paths.data_dir(), [c.iso3 for c in world.countries], rec, real.isoformat())
+    codes = [c.iso3 for c in world.countries]
+    problems: list[str] = []
+    heads: list[Headline] = []
+    if news:
+        heads, news_problems = collect(paths.data_dir(), codes, rec, real.isoformat())
+        problems += news_problems
+    posts: list[SocialPost] = []
+    stats: dict[str, dict[str, int]] = {}
+    if social:
+        posts, social_problems, stats = collect_social(
+            paths.data_dir(), codes, rec, real.isoformat(), disabled=set() if x else {"x"}
+        )
+        problems += social_problems
+        if x and load_social(paths.data_dir()).sources["x"].enabled:
+            typer.echo("X is read through an unofficial service that may stop working; use --no-x to skip it.")
     if problems:
         failed = EventLog()
-        codes = [c.iso3 for c in world.countries]
         for p in problems:
-            typer.echo(f"feed problem (skipped): {p}")
+            typer.echo(f"source problem (skipped): {p}")
             iso = p.split("/", 1)[0]
             failed.add(
                 world.day,
@@ -457,10 +486,9 @@ def ingest(
                 p[:300],
             )
         _park_events(rd, failed)  # the gap is part of the record, not just a console message
-    if not heads:
-        raise typer.BadParameter("no headlines fetched")
+    if not heads and not posts:
+        raise typer.BadParameter("nothing fetched (see the source problems above)")
     item_labels = world.macro.get("item_labels", {})
-    codes = [c.iso3 for c in world.countries]
     pu = world.pushes
     live: set[tuple[str, str]] = set()  # (country, headline) of news still live there
     for r in range(pu.n):
@@ -470,23 +498,80 @@ def ingest(
     fresh = [h for h in heads if (h.country, h.title[:300]) not in live]
     if len(fresh) < len(heads):
         typer.echo(f"{len(heads) - len(fresh)} headlines are already live in this world; skipped")
-    if not fresh:
+    seen = set(world.macro.get("social", {}).get("seen", []))
+    new_posts = [p for p in posts if p.key not in seen]
+    if len(new_posts) < len(posts):
+        typer.echo(f"{len(posts) - len(new_posts)} social posts were ingested before; skipped")
+    if not fresh and not new_posts:
         typer.echo("Nothing new to ingest.")
         return
-    heads = fresh
-    from jahan.llm.budget import BudgetExceeded
-    from jahan.llm.recordings import MissingRecording
-
+    new_posts = _cap_per_country(new_posts, SOCIAL_CLASSIFY_PER_COUNTRY)
     try:
-        labels = classify(heads, client, world.day)
+        labels = classify(fresh, client, world.day)
+        post_labels = classify(new_posts, client, world.day, kind="posts")
     except (MissingRecording, BudgetExceeded) as e:
-        raise typer.BadParameter(
-            f"headline classification stopped: {e} (use --provider none for neutral labels)"
-        ) from e
-    spec = to_scenario(heads, labels, per_country, news_day=real)
+        raise typer.BadParameter(f"classification stopped: {e} (use --provider none for neutral labels)") from e
+    events: list[Any] = []
+    if fresh:
+        events += to_scenario(fresh, labels, per_country, news_day=real).events
+    n_posts = 0
+    if new_posts:
+        social_spec, dropped = to_social_scenario(
+            new_posts,
+            post_labels,
+            load_social(paths.data_dir()),
+            per_country_social,
+            roster_visibility={str(e["key"]): float(e["visibility"]) for e in world.notables},
+            language_code=lambda code: world.languages[world.lang_id(code)],
+            reachable=_social_reach(world),
+            news_day=real,
+        )
+        n_posts = sum(1 for ev in social_spec.events if getattr(ev, "type", "") == "social")
+        events += social_spec.events
+        counts = ", ".join(f"{k} {v['posts']} posts from {v['queries']} queries" for k, v in sorted(stats.items()))
+        typer.echo(f"Social posts fetched: {counts or 'none'}.")
+        if dropped["no_channel"]:
+            typer.echo(
+                f"{dropped['no_channel']} posts are in a language nobody in their country reads in this world "
+                "(no social channel in that language); they were not used."
+            )
+        if dropped["private"]:
+            typer.echo(f"{dropped['private']} posts by ordinary people count towards trending topics only.")
+    n_heads = sum(1 for ev in events if getattr(ev, "type", "") == "news")
+    spec = Scenario(
+        prompt=f"Live ingest ({n_heads} headlines, {n_posts} social posts)",
+        events=events,
+        horizon_days=30,
+    )
     _inject_spec(rd, world, spec, yes, source="ingest")
     if client is not None:
         typer.echo(client.budget.summary())
+
+
+SOCIAL_CLASSIFY_PER_COUNTRY = 60  # posts per country sent to the classifier (cost bound)
+
+
+def _cap_per_country(posts: list[Any], cap: int) -> list[Any]:
+    kept: list[Any] = []
+    count: dict[str, int] = {}
+    for p in posts:  # collection order: public figures first
+        if count.get(p.country, 0) < cap:
+            kept.append(p)
+            count[p.country] = count.get(p.country, 0) + 1
+    return kept
+
+
+def _social_reach(world: Any) -> set[tuple[str, str]]:
+    """(country, language) pairs that have a social channel in this world."""
+    from jahan.model.enums import CHANNEL_KIND_NAMES
+
+    ch = world.channels
+    social = int(CHANNEL_KIND_NAMES["social"])
+    return {
+        (world.countries[int(ch["country"][i])].iso3, world.languages[int(ch["lang"][i])])
+        for i in range(ch.n)
+        if int(ch["kind"][i]) == social
+    }
 
 
 @app.command()
@@ -688,6 +773,27 @@ def status(run_dir: RunOpt, as_json: JsonOpt = False) -> None:
     rd = RunDir(run_dir)
     st = world_status(rd, _load_head(rd))
     typer.echo(json.dumps(st, ensure_ascii=False) if as_json else status_text(st))
+
+
+@app.command("social-feed")
+def social_feed(
+    run_dir: RunOpt,
+    country: Annotated[str | None, typer.Option(help="ISO3 country (default: all)")] = None,
+    kind: Annotated[str, typer.Option(help="real (fetched posts), virtual (posts made in the world) or all")] = "all",
+    limit: Annotated[int, typer.Option(help="Most recent rows to show")] = 50,
+    as_json: JsonOpt = False,
+) -> None:
+    """Real posts from the last fetches and posts made in the world, newest first, with how far they got."""
+    import json
+
+    from jahan.query.social_feed import feed_rows, feed_text
+
+    if kind not in ("real", "virtual", "all"):
+        raise typer.BadParameter("kind is real, virtual or all")
+    rd = RunDir(run_dir)
+    world = _load_head(rd)
+    rows = feed_rows(world, country.upper() if country else None, kind, limit)
+    typer.echo(json.dumps({"rows": rows}, ensure_ascii=False) if as_json else feed_text(rows))
 
 
 @app.command()

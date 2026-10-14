@@ -18,7 +18,7 @@ import pyarrow.parquet as pq
 
 from jahan import paths
 from jahan.gen.registry import confidence_summary
-from jahan.model.enums import EventKind, InfoTier, Sex
+from jahan.model.enums import ChannelKind, EventKind, InfoTier, Sex
 from jahan.model.world import World
 from jahan.rng import Stream, u01
 from jahan.scenario.spec import MacroPath, NewsEvent, ProductLaunch, Scenario
@@ -193,6 +193,7 @@ def build_report(rundir: RunDir, prompt_id: int) -> Path:
     _mood_section(ctx, w)
     if any(isinstance(ev, MacroPath) for ev in sc.events):
         _macro_section(ctx, w)
+    _exposure_section(ctx, w)
     with (ctx.out_dir / "curves.csv").open("w", newline="", encoding="utf-8") as f:
         cw = csv.writer(f)
         cw.writerow(
@@ -471,6 +472,45 @@ def _macro_section(ctx: Context, w: Any) -> None:
     g1 = m.get("gold_index", -1, -1, last, float("nan"))
     if np.isfinite(g0) and np.isfinite(g1) and abs(g1 / g0 - 1) > 1e-9:
         w(f"- Gold index: {g0:.1f} to {g1:.1f} ({100 * (g1 / g0 - 1):+.1f}%).")
+    w("")
+
+
+def _exposure_section(ctx: Context, w: Any) -> None:
+    """How people first heard of each story the scenario created: which kind of channel, or another person."""
+    if not ctx.created:
+        return
+    t = pq.read_table(_branch(ctx.exp_dir, 0, "treated") / "events.parquet").to_pydict()
+    created = {it for it, _ in ctx.created}
+    pre = ctx.pre
+    kinds = [k.name.lower() for k in ChannelKind]
+    counts: dict[int, dict[str, int]] = {}
+    for k, other, it in zip(t["kind"], t["other"], t["item"], strict=True):
+        if k != EventKind.INFO_EXPOSED or it not in created:
+            continue
+        if other <= -2:
+            src = kinds[int(pre.channels["kind"][-int(other) - 2])]
+        elif 0 <= other < pre.pop.n and pre.pop["is_notable"][int(other)]:
+            src = "public figure"
+        else:
+            src = "people"
+        row = counts.setdefault(int(it), {})
+        row[src] = row.get(src, 0) + 1
+    if not counts:
+        return
+    cols = [*kinds, "public figure", "people"]
+    used = [c for c in cols if any(c in r for r in counts.values())]
+    w("## How first exposures arrived (treated branch, seed 0)")
+    w("")
+    w('Share of the simulated people who heard each story first through each kind of source. "public figure" means')
+    w('the figure\'s own words reached them through the media; "people" is word of mouth.')
+    w("")
+    w("| Story | " + " | ".join(used) + " | People reached |")
+    w("|---|" + "---|" * (len(used) + 1))
+    labels = dict(ctx.created)
+    for it, row in list(counts.items())[:12]:
+        total = sum(row.values())
+        cells = [f"{100 * row.get(c, 0) / total:.0f}%" for c in used]
+        w(f"| {labels[it][:70]} | " + " | ".join(cells) + f" | {total:,} |")
     w("")
 
 

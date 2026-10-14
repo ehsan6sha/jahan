@@ -19,6 +19,7 @@ from jahan.model.enums import Big5, EdgeKind, InfoTier, Marital, Topic, ValueDim
 from jahan.model.notables import SIMULATED_LABEL
 from jahan.model.world import World
 from jahan.query.scope import evaluate
+from jahan.query.social_feed import recent_posts_lines
 from jahan.query.views import age_of, full_name
 from jahan.rng import Stream, u01
 from jahan.scenario.report import ISCO_LABELS
@@ -174,6 +175,9 @@ def interview(client: LLMClient | None, world: World, agent_id: int, question: s
             f"Figure: {entry['holder_name']}, {entry['office']} (verified {entry['as_of']}).\n"
             f"Documented public positions:\n{positions or '- none recorded'}"
         )
+        grounding = recent_posts_lines(world, str(entry["key"]))
+        if grounding:
+            snap += "\n" + "\n".join(grounding)
         if client is None:
             return Interview(agent_id, name, f"{SIMULATED_LABEL} (no LLM configured)", False, snap)
         ans = client.complete(

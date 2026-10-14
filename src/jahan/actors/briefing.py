@@ -18,6 +18,7 @@ from jahan.model.enums import EdgeKind, OriginKind
 from jahan.model.notables import SIMULATED_LABEL
 from jahan.model.world import World
 from jahan.query.persona import mind_snapshot
+from jahan.scenario.posts import people, posts_of
 from jahan.sim.params import SimParams
 from jahan.sim.trust import parasocial_trust
 
@@ -74,6 +75,18 @@ def briefing(world: World, agent_id: int) -> str:
                     f'- to {who}: "{m["headline"]}" ({who} {took}; trust in you {m["trust"]:.2f}; their view '
                     f"{m.get('belief_before', 0.5):.2f} -> {m.get('belief_after', 0.5):.2f})"
                 )
+    posted = posts_of(world, agent_id, world.day - 7)
+    if posted:
+        lines.append("Your posts (last 7 days):")
+        for p in posted[-5:]:
+            where = {"circle": "your circle", "community": "your community", "national": "the whole country"}.get(
+                p["audience"], "the world"
+            )
+            reposts = f"; reposted {p['reposts']:,} times" if p.get("reposts") else ""
+            lines.append(
+                f'- day {p["day"]}, to {where}: "{p["headline"]}" reached {p["reached"]:,} simulated people '
+                f"({people(p['reached_people'])} real people), {p['believed']:,} convinced by you{reposts}"
+            )
     figures = []
     for i in range(world.items.n):
         if int(world.items["created_day"][i]) == yesterday and int(world.items["origin_kind"][i]) == OriginKind.NOTABLE:

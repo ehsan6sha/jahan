@@ -15,6 +15,7 @@ from jahan.actors.actions import ACTOR_TYPES
 from jahan.model.enums import CHANNEL_KIND_NAMES, TOPIC_NAMES, VALUE_NAMES, EventKind, OriginKind
 from jahan.model.notables import SIMULATED_LABEL
 from jahan.model.world import MAX_PRODUCTS, World
+from jahan.scenario.posts import record_post
 from jahan.scenario.spec import (
     DEFAULT_SENTIMENT_WEIGHT,
     MacroPath,
@@ -294,6 +295,18 @@ def start_statement(world: World, ev: Statement, log: EventLog, prompt_id: int) 
     if audience == "global":
         others = [c for c in range(world.n_countries) if c != home]
         n += _push(world, item_id, others, all_kinds, world.day + 1, ev.duration_days, 0.7)  # pickup lag abroad
+    record_post(
+        world,
+        actor=int(entry["agent_id"]),
+        item=item_id,
+        kind="statement",
+        audience=audience,
+        requested=ev.audience,
+        headline=ev.headline,
+        hour=ev.release_utc_hour,
+        channels=n,
+        stance=ev.valence,
+    )
     return n
 
 
