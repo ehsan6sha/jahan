@@ -102,7 +102,7 @@ def test_parser_retries_invalid_output_and_feed_restriction(tmp_path):
     assert res.scenario is not None and res.scenario.events[0].type == "product_launch"
     c2 = client(tmp_path / "b", lambda s, m: json.dumps(product))
     res2 = parse_prompt(c2, w, "launch a gizmo", feed=True)
-    assert res2.scenario is None and "news and macro" in res2.error
+    assert res2.scenario is None and "news, macro and announcement" in res2.error
 
 
 def test_persona_grounding_and_unaware_shortcut(tmp_path):

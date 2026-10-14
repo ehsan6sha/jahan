@@ -26,7 +26,7 @@ from jahan.gen.registry import validate_data
 from jahan.gen.world_gen import generate_world
 from jahan.model.enums import EventKind
 from jahan.scenario.experiment import run_experiment
-from jahan.scenario.inject import apply_scenario
+from jahan.scenario.inject import apply_scenario, describe_moves, preview_moves
 from jahan.scenario.report import build_report
 from jahan.scenario.spec import Scenario
 from jahan.sim.runner import Recorder, run
@@ -250,6 +250,8 @@ def _inject_spec(  # noqa: ANN001
     """Snapshot, apply, park day-D events, save head and ledger.  Returns the prompt id."""
     if not quiet:
         typer.echo(spec.dump_yaml())
+        for line in describe_moves(preview_moves(world, spec)):
+            typer.echo(line)
     if not yes and not typer.confirm(f"Inject this scenario at day {world.day}?"):
         raise typer.Abort()
     pid = rd.next_prompt_id()
@@ -345,12 +347,19 @@ JsonOpt = Annotated[bool, typer.Option("--json", help="Machine-readable output (
 
 
 def _show_preview(world, spec: Scenario, as_json: bool = False) -> None:  # noqa: ANN001
+    moves = preview_moves(world, spec)
     if as_json:
         import json
 
-        typer.echo(json.dumps({"day": world.day, "scenario": spec.model_dump(mode="json")}, ensure_ascii=False))
+        typer.echo(
+            json.dumps(
+                {"day": world.day, "scenario": spec.model_dump(mode="json"), "market_moves": moves}, ensure_ascii=False
+            )
+        )
         return
     typer.echo(spec.dump_yaml())
+    for line in describe_moves(moves):
+        typer.echo(line)
     typer.echo(f"Preview only: nothing was injected. The world is on day {world.day} ({world.date().isoformat()}).")
 
 

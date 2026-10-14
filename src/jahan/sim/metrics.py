@@ -23,8 +23,9 @@ def record(world: World, params: SimParams, stats: dict[str, int], out: MetricsL
     adult = world.ages() >= params.min_adopt_age
     for name, v in stats.items():
         out.add(day, -1, -1, name, v)
-    if "gold_index" in world.macro:
-        out.add(day, -1, -1, "gold_index", float(world.macro["gold_index"]))
+    for key in ("gold_index", "us_stocks_index"):
+        if key in world.macro:
+            out.add(day, -1, -1, key, float(world.macro[key]))
     bel = world.beliefs.m
     for c in range(world.n_countries):
         mc = loc == c

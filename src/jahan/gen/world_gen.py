@@ -22,6 +22,7 @@ from jahan.gen.politics_gen import sample_alignment
 from jahan.gen.population_gen import generate_people
 from jahan.gen.workplace_gen import assign_workplaces
 from jahan.model.country import load_country
+from jahan.model.markets import load_markets
 from jahan.model.notables import load_roles
 from jahan.model.world import BeliefStore, World
 from jahan.rng import MASK64
@@ -46,6 +47,7 @@ def load_world_shell(config: RunConfig, data_dir: Path | None = None) -> World:
         languages=load_languages(dd),
         sim_seed=config.seed,
         roles=load_roles(dd),
+        markets=load_markets(dd),
     )
 
 

@@ -1396,3 +1396,53 @@ entries:
   license: attribution
   confidence: provisional
   notes: No per-platform figures are published (X and Telegram are filtered in Iran and used through VPNs), so X and Telegram use the default share.
+- id: markets.gss2005
+  country: USA
+  variable: S&P 500 response to a Federal Reserve target-rate surprise (daily window)
+  source: "Gurkaynak, Sack and Swanson (2005), Do Actions Speak Louder Than Words? The Response of Asset Prices to Monetary Policy Actions and Statements, International Journal of Central Banking 1(1):55-93, Table 1"
+  url: https://mpra.ub.uni-muenchen.de/820/1/ijcb05q2a2.pdf
+  year: 2005
+  retrieved: '2026-10-14'
+  license: citation (journal article)
+  confidence: medium
+  notes: "Daily window, Jan 1990-Dec 2004: -3.961 percent per percentage point of surprise (R2 .12); 30-minute window -4.032. Bernanke and Kuttner (2005, J. Finance 60(3)) find about +1% for a surprise 25 bp cut. Applied to 2026 data, far outside the sample period."
+- id: markets.swanson2021
+  country: USA
+  variable: S&P 500 and dollar responses to Federal Reserve forward guidance (30-minute window)
+  source: "Swanson (2021), Measuring the effects of Federal Reserve forward guidance and asset purchases on financial markets, Journal of Monetary Economics 118:32-53, Tables 3 and 5"
+  url: https://sites.socsci.uci.edu/~swanson2/papers/facts3.pdf
+  year: 2021
+  retrieved: '2026-10-14'
+  license: citation (journal article)
+  confidence: medium
+  notes: "Full sample Jul 1991-Jun 2019, 30-minute windows. One s.d. of forward guidance moves the 2-year yield 4.61 bp, the S&P 500 -0.14% and dollars per euro -0.21%; one s.d. of the federal funds rate factor (8.37 bp) moves the 2-year yield 3.88 bp."
+- id: markets.roache_rossi2009
+  country: USA
+  variable: gold and dollar-index responses to US macroeconomic surprises (daily)
+  source: "Roache and Rossi (2009), The Effects of Economic News on Commodity Prices: Is Gold Just Another Commodity?, IMF Working Paper 09/140, Table 3 and Table A2"
+  url: https://www.imf.org/external/pubs/ft/wp/2009/wp09140.pdf
+  year: 2009
+  retrieved: '2026-10-14'
+  license: citation (working paper)
+  confidence: low
+  notes: "Daily GARCH regressions Jan 1997-Mar 2009, surprises against the Bloomberg consensus in s.d. units (FOMC 6 bp, payrolls 77.5k). Gold uses the nearest futures contract, which settles before the 14:00 ET FOMC release, hence most of the reaction appears the next day. The authors note some results rest on few data points. Gospodinov and Jamali (2013, Federal Reserve Bank of Atlanta WP 2013-12) find the opposite sign for gold after monetary tightening."
+- id: markets.abdv2007
+  country: USA
+  variable: S&P 500 futures response to nonfarm payroll surprises (5-minute window)
+  source: "Andersen, Bollerslev, Diebold and Vega (2007), Real-time price discovery in global stock, bond and foreign exchange markets, Journal of International Economics 73(2):251-277; read in NBER Working Paper 11312, Tables 2 and 5A-5C"
+  url: https://www.nber.org/papers/w11312
+  year: 2007
+  retrieved: '2026-10-14'
+  license: citation (journal article)
+  confidence: low
+  notes: "Five-minute S&P 500 futures returns in percent (Table 2 and text). Payrolls: full sample -0.151 per s.d., expansion 1994-Feb 2001 -0.220, recession Mar 2001-2002 +0.415. The paper does not publish the s.d. of the surprise."
+- id: markets.lamla_vinogradov2019
+  country: USA
+  variable: share of US consumers who heard news about the Federal Reserve before and after FOMC announcements
+  source: "Lamla and Vinogradov (2019), Central bank announcements: Big news for little people?, Journal of Monetary Economics 108:21-38; read in Essex Finance Centre Working Paper 50"
+  url: https://repository.essex.ac.uk/25125/
+  year: 2019
+  retrieved: '2026-10-14'
+  license: citation (journal article)
+  confidence: medium
+  notes: "Online surveys of over 15,000 US consumers around 12 FOMC press conferences (Dec 2015-Jun 2018): about 30% had heard news about the Fed before an announcement and about 40% in the first two days after (31% to 41% for press-conference meetings); announcements raise the probability by 0.098 (probit marginal effect with controls) and had little measurable direct effect on average beliefs."

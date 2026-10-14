@@ -23,6 +23,8 @@ from jahan.sim.params import SimParams
 from jahan.store.eventlog import EventLog
 
 AUTO_NEWS_MIN_PCT = 2.0  # cumulative move since the last headline that makes news (HEURISTIC)
+# US stocks make the news at smaller moves: a 1% day (about one daily s.d. of the S&P 500) is reported (HEURISTIC)
+STOCKS_NEWS_MIN_PCT = 1.0
 AUTO_NEWS_REFRESH_DAYS = 3
 AUTO_NEWS_KINDS = {int(CHANNEL_KIND_NAMES[k]) for k in ("tv", "online", "social", "radio", "newspaper")}
 
@@ -55,6 +57,8 @@ def _targets(world: World, variable: str, country: str | None) -> list[int]:
         return [codes.index(country)]
     if variable == "fx_local_per_usd":
         return [i for i, c in enumerate(world.countries) if c.currency != "USD"]
+    if variable == "us_stocks":
+        return [codes.index("USA")] if "USA" in codes else []
     return list(range(len(codes)))
 
 
@@ -65,7 +69,9 @@ def _fx_headline(currency: str) -> Callable[[float], str]:
     return make
 
 
-def _newsworthy(world: World, key: str, before: float, after: float) -> float | None:
+def _newsworthy(
+    world: World, key: str, before: float, after: float, threshold: float = AUTO_NEWS_MIN_PCT
+) -> float | None:
     """Cumulative % move since the last headline on this key, if it reached the news threshold.
 
     Slow grinds become news once they add up (a 0.65%/day slide makes headlines every few days).
@@ -74,7 +80,7 @@ def _newsworthy(world: World, key: str, before: float, after: float) -> float | 
     ref = float(refs.get(key, before))
     refs.setdefault(key, before)
     cum = 100.0 * (after / ref - 1.0)
-    if abs(cum) < AUTO_NEWS_MIN_PCT:
+    if abs(cum) < threshold:
         return None
     refs[key] = after
     return cum
@@ -118,6 +124,26 @@ def apply_macro(world: World, e: dict, log: EventLog) -> None:
                 pct=cum,
                 weight=0.5,
                 headline=lambda p: f"Gold price {'jumps' if p > 0 else 'drops'} {abs(p):.1f}%",
+                log=log,
+            )
+    elif var == "us_stocks":
+        # set here, not on load: worlds made before the stock index get the key only once stocks move,
+        # so their fingerprints (and recorded sessions) stay valid
+        before = float(world.macro.setdefault("us_stocks_index", 100.0))
+        world.macro["us_stocks_index"] = before * (1.0 + pct / 100.0)
+        after = world.macro["us_stocks_index"]
+        log.add(world.day, EventKind.MACRO_UPDATE, -1, -1, -1, after, -1, "us_stocks_index")
+        cum = _newsworthy(world, "us_stocks", before, after, STOCKS_NEWS_MIN_PCT) if e.get("auto_news", True) else None
+        if cum is not None and targets:
+            # a rising market reads as good news, a falling one as bad (HEURISTIC sign and weight)
+            _auto_news(
+                world,
+                ("us_stocks", -1),
+                targets,
+                valence=float(np.sign(cum)) * min(1.0, 0.3 + abs(cum) / 10),
+                pct=cum,
+                weight=0.5,
+                headline=lambda p: f"US stocks {'rise' if p > 0 else 'fall'} {abs(p):.1f}%",
                 log=log,
             )
     elif var == "sentiment":

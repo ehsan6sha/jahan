@@ -12,6 +12,7 @@ from numpy.typing import NDArray
 from jahan.config import RunConfig
 from jahan.gen.names import NameTable
 from jahan.model.country import CountrySpec
+from jahan.model.markets import MarketsConfig
 from jahan.model.schema import (
     AGENT_COLUMNS,
     CHANNEL_COLUMNS,
@@ -129,13 +130,15 @@ class World:
     product_available: NDArray[np.int32] = field(default_factory=lambda: np.zeros((0, 0), np.int32))
     # USD list price per product and country (NaN = priced in local currency); local price follows the fx rate
     product_price_usd: NDArray[np.float64] = field(default_factory=lambda: np.zeros((0, 0), np.float64))
-    # macro state (JSON-able): fx[c] local per USD, fx0[c] at world start, gold_index (100 = world start),
+    # macro state (JSON-able): fx[c] local per USD, fx0[c] at world start, gold_index and us_stocks_index
+    # (100 = world start; worlds made before the stock index have no key until a stock move happens),
     # last_auto_news {key: day}
     macro: dict[str, Any] = field(default_factory=dict)
     # notable public figures: roster entries (JSON-able) + agent_id + country index; column j of ptrust
     notables: list[dict[str, Any]] = field(default_factory=list)
     ptrust: ParasocialStore = field(default_factory=lambda: ParasocialStore(16, ParasocialStore.RESERVED))
     roles: dict[str, Any] = field(default_factory=dict)  # role -> RoleSpec (data/roles.yaml)
+    markets: MarketsConfig | None = None  # market reactions to announcements (data/global/markets.yaml)
     product_names: list[str] = field(default_factory=list)  # index = product id
     counters: dict[str, int] = field(
         default_factory=lambda: {"agent": 0, "edge": 0, "item": 0, "product": 0, "household": 0}
@@ -205,6 +208,7 @@ class World:
             "fx": fx,
             "fx0": list(fx),
             "gold_index": 100.0,
+            "us_stocks_index": 100.0,
             "sentiment_shift": [0.0] * len(fx),
             "last_auto_news": {},
         }

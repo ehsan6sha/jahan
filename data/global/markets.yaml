@@ -1,0 +1,97 @@
+# Market reactions to scheduled announcements: reduced-form event-study estimates, not a market model.
+#
+# The simulated people do not trade and do not set prices. When an `announcement` event happens, the engine
+# moves a US stock index, the gold index and the euro's exchange rate by the published estimates below times
+# the surprise: the announced value minus what markets expected the day before. Each effect stores the
+# paper's own number: `pct` percent per `per` units of surprise, so no conversion is done by hand.
+#
+# Window rule: a daily-window estimate for the same asset where one exists, otherwise the shortest window
+# published (labelled). Estimates from 5- or 30-minute windows applied to a whole day probably understate the
+# day's move, because other news and later reactions are left out.
+#
+# The dollar effect is applied to the euro only (Germany's rate, euros per dollar). There is no sourced
+# estimate for the other currencies in the world, so they do not move. An effect with `active: false` is kept
+# for comparison (the backtest shows it) but never moves the world.
+
+targets:
+  us_stocks: {variable: us_stocks, label: "US stocks (S&P 500)"}
+  gold: {variable: gold, label: "Gold"}
+  dollar: {variable: fx_local_per_usd, countries: [DEU], label: "US dollar (euro rate)"}
+
+indicators:
+  us_policy_rate:
+    label: Federal Reserve interest-rate decision
+    country: USA
+    unit: basis points (change in the federal funds target range; a 0.25-point hike is 25)
+    expected_hint: >-
+      what markets expected the day before, in the same unit: the probability-weighted change, e.g. a 92%
+      chance of a 25 bp hike is 23 (CME FedWatch or news reports of it)
+    guidance_unit: basis points of the 2-year Treasury yield beyond what the decision itself explains
+    surprise:
+      - target: us_stocks
+        pct: -3.961
+        per: 100
+        window: daily
+        source: markets.gss2005
+        quote: "Table 1, daily window, S&P 500: -3.961 per percentage point of target surprise (R2 .12)"
+      - target: dollar
+        pct: 0.19
+        per: 6
+        window: daily (same day +0.01, next day +0.18)
+        source: markets.roache_rossi2009
+        quote: "Table 3, U.S. dollar index, FOMC interest rate decision: 0.01 (same day), 0.18*** (lagged one day); percent per 1-s.d. surprise; s.d. 6 bp (Table A2)"
+        note: estimated on a dollar index; applied here to the euro rate, which is the largest part of such indexes
+      - target: gold
+        pct: -0.31
+        per: 6
+        window: daily (same day -0.05, next day -0.26)
+        source: markets.roache_rossi2009
+        quote: "Table 3, gold, FOMC interest rate decision: -0.05 (same day), -0.26*** (lagged one day); s.d. 6 bp"
+        active: false
+        note: >-
+          inactive: Gospodinov and Jamali (2013) find that contractionary monetary policy shocks raise gold prices,
+          the opposite sign, so Jahan does not move gold on rate decisions
+    guidance:
+      - target: us_stocks
+        pct: -0.14
+        per: 4.61
+        window: 30-minute
+        source: markets.swanson2021
+        quote: "Table 5(A): forward guidance -0.14*** per s.d. (S&P 500); Table 3: one s.d. moves the 2-year yield 4.61 bp"
+      - target: dollar
+        pct: 0.21
+        per: 4.61
+        window: 30-minute
+        source: markets.swanson2021
+        quote: "Table 5(A): forward guidance -0.21*** per s.d. on dollars per euro (the dollar rises)"
+    # The decision itself moves the 2-year yield 3.88 bp per 8.37 bp of target surprise (Swanson 2021 Table 3),
+    # so the part of a day's 2-year move that is guidance is: move - 0.4636 x target surprise.
+    target_share_of_2y: 0.4636
+
+  us_payrolls:
+    label: US jobs report (nonfarm payrolls)
+    country: USA
+    unit: thousand jobs (monthly change in nonfarm payrolls)
+    expected_hint: the consensus forecast published before the release, in thousand jobs
+    surprise:
+      - target: us_stocks
+        pct: -0.220
+        per: 77.5
+        window: 5-minute (S&P 500 futures)
+        source: markets.abdv2007
+        quote: "Table 5B, expansion sample, nonfarm payroll employment, S&P 500: -0.220** per s.d.; returns in percent"
+        note: >-
+          the sign flips in recessions (Table 5C: +0.415); ABDV publish no s.d. of the surprise, so Roache and
+          Rossi's 77.5k (1997-2009) is used for both, a mismatch
+      - target: gold
+        pct: -0.18
+        per: 77.5
+        window: daily
+        source: markets.roache_rossi2009
+        quote: "Table 3, gold, change in non-farm payrolls: -0.18* per s.d.; s.d. 77.5 thousand (Table A2)"
+      - target: dollar
+        pct: 0.13
+        per: 77.5
+        window: daily
+        source: markets.roache_rossi2009
+        quote: "Table 3, U.S. dollar index, change in non-farm payrolls: 0.13*** per s.d."

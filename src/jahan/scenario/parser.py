@@ -25,6 +25,10 @@ Rules:
 - Day offsets are relative to the injection day.  Percent moves for macro paths are per day.
 - Product prices: give price_usd unless the user states local prices.
 - Statements must use a speaker key from the list of notable figures.
+- A Federal Reserve rate decision or a US jobs report is an "announcement": give the announced value and
+  what markets expected the day before; the engine computes how stocks, gold and the dollar react from
+  published estimates.  If the text does not say what markets expected, ask a clarifying question; never
+  guess it.  Do not add macro paths for the same announcement, and never invent market percentages.
 - Keep "prompt" equal to the user's text.
 """
 
@@ -32,7 +36,7 @@ FEED_SYSTEM = (
     SYSTEM
     + """
 This prompt describes FUTURE world events the user wants to feed into the simulation (news and market
-moves only).  Use only "news" and "macro" event types.
+moves only).  Use only "news", "macro" and "announcement" event types.
 """
 )
 
@@ -54,6 +58,8 @@ def world_facts(world: World) -> str:
             f"{c.iso3} {c.currency} {fx[i] if i < len(fx) else c.fx_local_per_usd:,.4g}"
             for i, c in enumerate(world.countries)
         ),
+        f"Gold index {world.macro.get('gold_index', 100.0):.1f}, US stocks index "
+        f"{world.macro.get('us_stocks_index', 100.0):.1f} (both 100 at the world's start).",
         f"Products already launched: {', '.join(world.product_names) or 'none'}.",
         "Notable figures (speaker keys): "
         + "; ".join(f"{e['key']} = {e['holder_name']}, {e['office']}" for e in world.notables),
@@ -98,8 +104,8 @@ def parse_prompt(
                 return ParseResult(None, [str(q) for q in data["clarifying_questions"]], raw)
             payload = data.get("scenario", data) if isinstance(data, dict) else data
             sc = Scenario.model_validate(PromptScenario.model_validate(payload).model_dump(mode="json"))
-            if feed and any(ev.type not in ("news", "macro") for ev in sc.events):
-                raise ValueError("feed prompts may only contain news and macro events")
+            if feed and any(ev.type not in ("news", "macro", "announcement") for ev in sc.events):
+                raise ValueError("feed prompts may only contain news, macro and announcement events")
             for ev in sc.events:  # the model cannot pass a made-up story off as real fetched news
                 if isinstance(ev, NewsEvent):
                     ev.origin = "user_feed" if feed else "scenario"

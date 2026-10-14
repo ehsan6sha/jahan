@@ -13,12 +13,15 @@ import numpy as np
 
 from jahan.actors.actions import ACTOR_TYPES
 from jahan.model.enums import CHANNEL_KIND_NAMES, TOPIC_NAMES, VALUE_NAMES, EventKind, OriginKind
+from jahan.model.markets import Move, combined, market_moves
 from jahan.model.notables import SIMULATED_LABEL
 from jahan.model.world import MAX_PRODUCTS, World
 from jahan.scenario.posts import record_post
 from jahan.scenario.spec import (
     DEFAULT_SENTIMENT_WEIGHT,
+    Announcement,
     MacroPath,
+    MacroStep,
     NewsEvent,
     ProductLaunch,
     Scenario,
@@ -426,6 +429,111 @@ def _schedule_macro(world: World, ev: MacroPath) -> int:
     return n
 
 
+ANNOUNCEMENTS_KEPT = 50  # announcements remembered in world.macro for display
+
+
+def announcement_moves(world: World, ev: Announcement) -> list[Move]:
+    """The published estimates applied to an announcement (inactive ones included, for display)."""
+    cfg = world.markets
+    if cfg is None or ev.indicator not in cfg.indicators:
+        raise InjectError(f"no market estimates for {ev.indicator} (data/global/markets.yaml)")
+    return market_moves(cfg, ev.indicator, ev.actual, ev.expected, ev.guidance_bp)
+
+
+def preview_moves(world: World, scenario: Scenario) -> list[dict[str, Any]]:
+    """What each announcement in a scenario would do to markets, for previews (nothing is applied)."""
+    out = []
+    for ev in scenario.events:
+        if isinstance(ev, Announcement):
+            moves = announcement_moves(world, ev)
+            out.append(
+                {
+                    "headline": ev.headline,
+                    "surprise": ev.actual - ev.expected,
+                    "moves": [
+                        {
+                            "target": m.target,
+                            "label": m.label,
+                            "term": m.term,
+                            "pct": m.pct,
+                            "window": m.window,
+                            "source": m.source,
+                            "active": m.active,
+                        }
+                        for m in moves
+                    ],
+                }
+            )
+    return out
+
+
+def describe_moves(rows: list[dict[str, Any]]) -> list[str]:
+    """Plain-text lines for ``preview_moves`` output."""
+    lines = []
+    for r in rows:
+        parts = [
+            f"{m['label']} {m['pct']:+.2f}% ({m['term']}, {m['window']}, {m['source']}"
+            + ("; not applied" if not m["active"] else "")
+            + ")"
+            for m in r["moves"]
+            if m["pct"] != 0.0
+        ]
+        lines.append(
+            f"Markets on '{r['headline']}' (surprise {r['surprise']:+g}; published estimates, not the simulated "
+            f"people): " + ("; ".join(parts) or "no move, the announcement was fully expected")
+        )
+    return lines
+
+
+def _announce(world: World, ev: Announcement, log: EventLog, prompt_id: int, stats: dict[str, int]) -> None:
+    """The headline becomes news; markets move on the release day by the active estimates."""
+    moves = announcement_moves(world, ev)
+    assert world.markets is not None
+    codes = {c.iso3 for c in world.countries}
+    for target, pct in sorted(combined(moves).items()):
+        if pct == 0.0:
+            continue
+        spec = world.markets.targets[target]
+        where: list[str | None] = list(spec.countries) if spec.countries else [None]
+        for country in where:
+            if country is not None and country not in codes:
+                continue  # e.g. the euro rate in a world without Germany
+            path = MacroPath(
+                variable=spec.variable,
+                country=country,
+                steps=[MacroStep(start_day_offset=ev.start_day_offset, days=1, pct_per_day=pct)],
+            )
+            stats["scheduled"] += _schedule_macro(world, path)
+    _news(world, ev.news(), log, prompt_id, stats)
+    kept = world.macro.setdefault("announcements", [])
+    kept.append(
+        {
+            "day": world.day + ev.start_day_offset,
+            "indicator": ev.indicator,
+            "headline": ev.headline,
+            "actual": ev.actual,
+            "expected": ev.expected,
+            "guidance_bp": ev.guidance_bp,
+            "moves": [
+                {"target": m.target, "term": m.term, "pct": m.pct, "source": m.source, "active": m.active}
+                for m in moves
+            ],
+        }
+    )
+    del kept[:-ANNOUNCEMENTS_KEPT]
+
+
+def _news(world: World, ev: NewsEvent, log: EventLog, prompt_id: int, stats: dict[str, int]) -> None:
+    if ev.start_day_offset == 0:
+        stats["pushes"] += start_news(world, ev, log, prompt_id)
+    else:
+        spec: dict[str, Any] = ev.model_dump(mode="json")
+        world.scheduled.append(
+            {"day": world.day + ev.start_day_offset, "kind": "news", "prompt_id": prompt_id, "spec": spec}
+        )
+        stats["scheduled"] += 1
+
+
 def apply_scenario(world: World, scenario: Scenario, log: EventLog, prompt_id: int) -> dict[str, int]:
     log.add(world.day, EventKind.SCENARIO_INJECTED, -1, prompt_id, -1, 0.0, -1, scenario.prompt[:500])
     stats = {"events": len(scenario.events), "pushes": 0, "scheduled": 0}
@@ -437,16 +545,11 @@ def apply_scenario(world: World, scenario: Scenario, log: EventLog, prompt_id: i
         elif isinstance(ev, ProductLaunch):
             stats["pushes"] += _launch(world, ev, log, prompt_id)
         elif isinstance(ev, NewsEvent):
-            if ev.start_day_offset == 0:
-                stats["pushes"] += start_news(world, ev, log, prompt_id)
-            else:
-                spec: dict[str, Any] = ev.model_dump(mode="json")
-                world.scheduled.append(
-                    {"day": world.day + ev.start_day_offset, "kind": "news", "prompt_id": prompt_id, "spec": spec}
-                )
-                stats["scheduled"] += 1
+            _news(world, ev, log, prompt_id, stats)
         elif isinstance(ev, MacroPath):
             stats["scheduled"] += _schedule_macro(world, ev)
+        elif isinstance(ev, Announcement):
+            _announce(world, ev, log, prompt_id, stats)
         elif isinstance(ev, SocialPostEvent):
             if ev.start_day_offset == 0:
                 stats["pushes"] += start_social(world, ev, log, prompt_id)

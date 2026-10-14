@@ -675,7 +675,7 @@
     }
     if (rec.status !== "ok") { box.replaceChildren(errorNotice(jobError(rec))); return; }
     const data = lastJson(rec);
-    W.preview = { kind, text, day: data.day, scenario: data.scenario, cmdline: rec.cmdline };
+    W.preview = { kind, text, day: data.day, scenario: data.scenario, moves: data.market_moves || [], cmdline: rec.cmdline };
     W.answers = {};
     render();
   }
@@ -707,6 +707,7 @@
     return card("Check before adding", null,
       h("p", {}, "These events will be added to the world on day ", h("strong", {}, P.day), ":"),
       h("ul", { class: "events-list" }, ...(P.scenario.events || []).map((e) => h("li", {}, describeEvent(e)))),
+      ...(P.moves || []).map(marketMoves),
       P.scenario.horizon_days ? h("p", { class: "muted small" }, `Effects are followed for ${P.scenario.horizon_days} days when you measure them.`) : null,
       h("details", {}, h("summary", {}, "Exact events (as the simulator stores them)"), h("pre", { class: "out" }, JSON.stringify(P.scenario, null, 2))),
       stale ? h("div", { class: "notice warn" }, `The world moved to day ${st.day} since this preview; preview again so you add what you saw.`) : null,
@@ -714,6 +715,16 @@
         h("button", { class: "btn primary act", disabled: stale, onclick: confirm }, "Add to the world"),
         h("button", { class: "btn", onclick: () => { S.whatif.preview = null; render(); } }, "Discard")),
       h("div", { class: "cmd" }, P.cmdline), box);
+  }
+
+  function marketMoves(r) {
+    const moved = (r.moves || []).filter((m) => m.pct !== 0);
+    return h("div", { class: "notice" },
+      h("strong", {}, `Markets on “${r.headline}”: `),
+      moved.length
+        ? moved.map((m) => `${m.label} ${m.pct > 0 ? "+" : ""}${m.pct.toFixed(2)}%${m.active ? "" : " (shown only, not applied)"}`).join("; ")
+        : "no move: markets expected exactly this.",
+      h("div", { class: "muted small" }, "Computed by the engine from published estimates times the surprise (data/global/markets.yaml), not by the simulated people and not by Claude. Educational use only; not a forecast."));
   }
 
   function describeEvent(e) {
@@ -725,8 +736,10 @@
       case "news":
         return `News: “${e.headline}” in ${where(e.countries)}${e.language ? ` (${e.language})` : ""}${when(e.start_day_offset)} for ${e.duration_days} days; tone ${e.valence > 0 ? "good" : e.valence < 0 ? "bad" : "neutral"} (${e.valence}).`;
       case "macro":
-        return `${{ fx_local_per_usd: "Exchange rate (local currency per dollar)", gold: "Gold price", sentiment: "Economic mood" }[e.variable] || e.variable} in ${e.country || "the whole world"}: ` +
+        return `${{ fx_local_per_usd: "Exchange rate (local currency per dollar)", gold: "Gold price", us_stocks: "US stocks (S&P 500)", sentiment: "Economic mood" }[e.variable] || e.variable} in ${e.country || "the whole world"}: ` +
           (e.steps || []).map((s) => `${s.pct_per_day > 0 ? "+" : ""}${s.pct_per_day}% a day for ${s.days} day(s)${when(s.start_day_offset)}`).join(", then ") + ".";
+      case "announcement":
+        return `${{ us_policy_rate: "Federal Reserve decision", us_payrolls: "US jobs report" }[e.indicator] || e.indicator}${when(e.start_day_offset)}: “${e.headline}”. Announced ${e.actual}, markets expected ${e.expected}${e.guidance_bp ? `, guidance ${e.guidance_bp > 0 ? "+" : ""}${e.guidance_bp} bp on the 2-year yield` : ""}; news in ${where(e.countries)}.`;
       case "statement":
         return `Statement by ${String(e.speaker).replace(/^[A-Z]{3}\./, "").replace(/_/g, " ")} (${String(e.speaker).slice(0, 3)})${when(e.start_day_offset)}: “${e.headline}”; tone ${e.valence > 0 ? "good" : e.valence < 0 ? "bad" : "neutral"}.`;
       case "social":
@@ -747,7 +760,7 @@
       const rec = await run(["inject", "--run", S.world, "--scenario", ex.path, "--preview", "--json"], { quiet: true });
       if (rec.status !== "ok") { box.replaceChildren(errorNotice(jobError(rec))); return; }
       const data = lastJson(rec);
-      W.preview = { kind: "scenario", path: ex.path, day: data.day, scenario: data.scenario, cmdline: rec.cmdline };
+      W.preview = { kind: "scenario", path: ex.path, day: data.day, scenario: data.scenario, moves: data.market_moves || [], cmdline: rec.cmdline };
       render();
     };
     return h("div", {},

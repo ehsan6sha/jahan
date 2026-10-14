@@ -21,7 +21,8 @@ from jahan.gen.registry import confidence_summary
 from jahan.model.enums import ChannelKind, EventKind, InfoTier, Sex
 from jahan.model.world import World
 from jahan.rng import Stream, u01
-from jahan.scenario.spec import MacroPath, NewsEvent, ProductLaunch, Scenario
+from jahan.scenario.inject import announcement_moves
+from jahan.scenario.spec import Announcement, MacroPath, NewsEvent, ProductLaunch, Scenario
 from jahan.sim.decisions import income_basis
 from jahan.sim.trust import effective_trust
 from jahan.store.rundir import RunDir
@@ -183,16 +184,17 @@ def build_report(rundir: RunDir, prompt_id: int) -> Path:
         if isinstance(ev, ProductLaunch):
             _product_section(ctx, ev, w, curve_rows)
     news = [ev for ev in sc.events if isinstance(ev, NewsEvent)]
+    news += [ev.news() for ev in sc.events if isinstance(ev, Announcement)]
     auto = [
         (it, lab)
         for it, lab in ctx.created
-        if lab.startswith(("Gold price", "IRR", "USD")) or " against the US dollar" in lab
+        if lab.startswith(("Gold price", "IRR", "USD", "US stocks")) or " against the US dollar" in lab
     ]
     if news or auto:
         _news_section(ctx, news, auto, w)
     _mood_section(ctx, w)
-    if any(isinstance(ev, MacroPath) for ev in sc.events):
-        _macro_section(ctx, w)
+    if any(isinstance(ev, MacroPath | Announcement) for ev in sc.events):
+        _macro_section(ctx, w, [ev for ev in sc.events if isinstance(ev, Announcement)])
     _exposure_section(ctx, w)
     with (ctx.out_dir / "curves.csv").open("w", newline="", encoding="utf-8") as f:
         cw = csv.writer(f)
@@ -455,9 +457,25 @@ def _mood_section(ctx: Context, w: Any) -> None:
     w("")
 
 
-def _macro_section(ctx: Context, w: Any) -> None:
+def _macro_section(ctx: Context, w: Any, announcements: list[Announcement]) -> None:
     w("## Macro paths (treated, seed 0)")
     w("")
+    for ev in announcements:
+        moves = [mv for mv in announcement_moves(ctx.pre, ev) if mv.pct != 0.0]
+        w(
+            f"- {ev.headline}: actual {ev.actual:g}, expected {ev.expected:g}. Market reaction from published "
+            "estimates times the surprise (not from the simulated people): "
+            + (
+                "; ".join(
+                    f"{mv.label} {mv.pct:+.2f}% ({mv.term}, {mv.window}, {mv.source}"
+                    + (", not applied" if not mv.active else "")
+                    + ")"
+                    for mv in moves
+                )
+                or "no move (the decision was fully expected)"
+            )
+            + "."
+        )
     m = ctx.metrics[(0, "treated")]
     last = ctx.d0 + ctx.horizon - 1
     for c, iso in enumerate(ctx.countries):
@@ -472,6 +490,10 @@ def _macro_section(ctx: Context, w: Any) -> None:
     g1 = m.get("gold_index", -1, -1, last, float("nan"))
     if np.isfinite(g0) and np.isfinite(g1) and abs(g1 / g0 - 1) > 1e-9:
         w(f"- Gold index: {g0:.1f} to {g1:.1f} ({100 * (g1 / g0 - 1):+.1f}%).")
+    s0 = float(ctx.pre.macro.get("us_stocks_index", 100.0))  # worlds made before the index start at 100
+    s1 = m.get("us_stocks_index", -1, -1, last, float("nan"))
+    if np.isfinite(s1) and abs(s1 / s0 - 1) > 1e-9:
+        w(f"- US stocks index: {s0:.1f} to {s1:.1f} ({100 * (s1 / s0 - 1):+.2f}%).")
     w("")
 
 

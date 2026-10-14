@@ -51,6 +51,8 @@ class SnapshotError(RuntimeError):
 def data_hashes(config: RunConfig, data_dir: Path) -> dict[str, str]:
     out = {}
     files = [data_dir / "global" / "languages.yaml"]
+    if (data_dir / "global" / "markets.yaml").exists():
+        files.append(data_dir / "global" / "markets.yaml")  # old snapshots never stored it, so they still load
     for c in config.countries:
         files.append(data_dir / "countries" / f"{c}.yaml")
         files.extend(generated_files(data_dir, c))

@@ -250,6 +250,13 @@ launch as prompt 1, run some days, inject the dollar rise as prompt 2, and run t
   the truth; acceptance depends on trust and a bounded-confidence window. Buzz fades with novelty.
 - **Mood and markets.** Exchange-rate and gold paths move local prices of dollar-priced goods and create
   headlines; each agent's economic mood follows the news they know and shifts purchase decisions.
+  Jahan has no market model: the simulated people do not trade or set prices. An *announcement* (a Federal
+  Reserve rate decision or a US jobs report) moves a US stock index, the dollar against the euro and, for
+  jobs reports, gold by published event-study estimates times the surprise, which is the announced value
+  minus what markets expected the day before (`data/global/markets.yaml`, each estimate cited in the
+  registry). A fully expected decision moves nothing. The estimate for gold after rate decisions is shown
+  but not applied, because studies disagree on its sign. Other currencies do not move, for lack of a
+  sourced estimate. Every other market move must be scripted in a prompt.
 - **Time travel.** Every prompt writes a snapshot first. `reset` restores it and truncates the logs;
   re-running produces the identical timeline.
 
@@ -287,7 +294,15 @@ Several numbers for player actions and public-figure autonomy are heuristics, no
   the log-odds scale) and the discount for foreign figures (0.8);
 - the US gap between camps borrowed for figures without a breakdown, and halving it outside the US;
 - the social feed weights (interest, trust in the author), each platform's default share where no
-  figure is published, post reach from followers and engagement, and every repost coefficient.
+  figure is published, post reach from followers and engagement, and every repost coefficient;
+- the salience of an announcement's headline (0.9), the 1% move that makes US stocks news, and the tone
+  and weight of stock headlines in people's mood.
+
+Market reactions use estimates from 1990-2019 samples, some measured over 5 or 30 minutes rather than a
+whole day; they apply the same sign every time, although about a third of Fed announcements move rates and
+stocks in the same direction (Jarociński and Karadi 2020). A Fed chair's own decisions in the simulation
+(`set_interest_rate`, by a player or by autonomy) still use the placeholder mood effect in `roles.yaml` and
+do not move markets.
 
 Worlds created before political camps existed (snapshot schema 5) cannot be opened; create a new world.
 

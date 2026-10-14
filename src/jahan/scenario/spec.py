@@ -134,16 +134,72 @@ class MacroPath(BaseModel):
 
     variable ``fx_local_per_usd``: local currency per US dollar (a rising dollar = positive pct);
     ``country`` None applies it to every non-USD country.  ``gold``: global gold price index.
+    ``us_stocks``: US stock index (S&P 500), news in the USA.
     ``sentiment``: direct shift of economic mood in a country (or everywhere).
     Large moves generate automatic headlines in the affected countries when ``auto_news`` is true.
+    For a Fed rate decision or a jobs report use an ``announcement`` instead: the engine computes the market
+    moves from published estimates.
     """
 
     model_config = ConfigDict(extra="forbid")
     type: Literal["macro"] = "macro"
-    variable: Literal["fx_local_per_usd", "gold", "sentiment"]
+    variable: Literal["fx_local_per_usd", "gold", "us_stocks", "sentiment"]
     country: str | None = None
     steps: list[MacroStep]
     auto_news: bool = True
+
+
+class Announcement(BaseModel):
+    """A scheduled policy decision or data release whose market reaction the engine computes.
+
+    ``indicator`` ``us_policy_rate``: a Federal Reserve decision; ``actual`` is the change in the target range
+    in basis points (25 for a quarter-point hike, 0 for a hold) and ``expected`` what markets expected the day
+    before in the same unit (the probability-weighted change: a 92% chance of a 25 bp hike is 23).
+    ``us_payrolls``: a US jobs report; ``actual`` and ``expected`` (the consensus forecast) are the monthly
+    change in nonfarm payrolls in thousands.  Never guess ``expected``: ask when the text does not give it.
+    ``guidance_bp`` (rate decisions only): how far the announcement moved 2-year rate expectations beyond the
+    decision itself (hawkish > 0); leave 0 unless the user states it.
+    US stocks, gold and the euro's dollar rate move on the release day by published event-study estimates
+    times the surprise (data/global/markets.yaml), never by numbers in the prompt; the headline becomes news.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+    type: Literal["announcement"] = "announcement"
+    indicator: Literal["us_policy_rate", "us_payrolls"]
+    actual: float
+    expected: float
+    guidance_bp: float = 0.0
+    headline: str
+    valence: float = Field(0.0, ge=-1, le=1)  # how good the news looks to ordinary people
+    salience: float = Field(0.9, ge=0, le=1)  # HEURISTIC: a top national economic headline
+    countries: list[str] = Field(default_factory=lambda: ["USA"])  # where the headline is news
+    channel_kinds: list[str] = Field(default_factory=lambda: ["tv", "online", "social", "radio", "newspaper"])
+    start_day_offset: int = Field(0, ge=0)
+    duration_days: int = Field(3, ge=1)
+    release_utc_hour: int = Field(18, ge=0, le=23)  # FOMC statements: 14:00 New York time
+
+    @field_validator("channel_kinds")
+    @classmethod
+    def _kinds(cls, v: list[str]) -> list[str]:
+        bad = [k for k in v if k not in CHANNEL_KIND_NAMES]
+        if bad:
+            raise ValueError(f"unknown channel kinds {bad}")
+        return v
+
+    def news(self) -> NewsEvent:
+        """The headline as a news story (the market moves are added by the engine)."""
+        return NewsEvent(
+            headline=self.headline,
+            topic="economy",
+            valence=self.valence,
+            accuracy=1.0,
+            salience=self.salience,
+            countries=self.countries,
+            channel_kinds=self.channel_kinds,
+            start_day_offset=self.start_day_offset,
+            duration_days=self.duration_days,
+            release_utc_hour=self.release_utc_hour,
+        )
 
 
 class Statement(BaseModel):
@@ -234,11 +290,12 @@ class SocialDigest(BaseModel):
 
 # What a free-text prompt may produce.  Actor events (control, messages, posts, ...) and fetched social
 # posts are deliberately not in this union: only the actor commands and `jahan ingest` create them.
-ScenarioEvent = Annotated[ProductLaunch | NewsEvent | MacroPath | Statement, Field(discriminator="type")]
+ScenarioEvent = Annotated[ProductLaunch | NewsEvent | MacroPath | Announcement | Statement, Field(discriminator="type")]
 AnyEvent = Annotated[
     ProductLaunch
     | NewsEvent
     | MacroPath
+    | Announcement
     | Statement
     | SocialPostEvent
     | SocialDigest

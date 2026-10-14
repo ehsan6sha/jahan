@@ -10,6 +10,7 @@ import yaml
 from pydantic import BaseModel
 
 from jahan.model.country import CountrySpec, DataError, load_country
+from jahan.model.markets import load_markets
 from jahan.model.notables import (
     camp_priors,
     camp_shares,
@@ -101,6 +102,28 @@ def _social_problems(data_dir: Path, countries: list[str], reg: dict[str, Regist
     return out
 
 
+def _markets_problems(data_dir: Path, reg: dict[str, RegistryEntry], strict: bool) -> list[str]:
+    """data/global/markets.yaml: every estimate cites the registry; strict mode lists weak ones."""
+    try:
+        cfg = load_markets(data_dir)
+    except Exception as e:  # noqa: BLE001 - reported as a data problem
+        return [f"global/markets.yaml: {e}"]
+    if cfg is None:
+        return []
+    out = []
+    for name, ind in cfg.indicators.items():
+        for eff in ind.surprise + ind.guidance:
+            if eff.target not in cfg.targets:
+                out.append(f"global/markets.yaml: {name} uses unknown target {eff.target}")
+    for sid in cfg.source_ids():
+        entry = reg.get(sid)
+        if entry is None:
+            out.append(f"global/markets.yaml: source id '{sid}' not in registry")
+        elif strict and entry.confidence in WEAK:
+            out.append(f"global/markets.yaml: source '{sid}' is {entry.confidence} (strict mode)")
+    return out
+
+
 def validate_data(
     data_dir: Path, countries: list[str], strict: bool = False, start_date: dt.date | None = None
 ) -> list[str]:
@@ -128,6 +151,7 @@ def validate_data(
         if strict:
             problems += _politics_placeholders(data_dir, iso, spec)
     problems += _social_problems(data_dir, countries, reg, strict)
+    problems += _markets_problems(data_dir, reg, strict)
     if strict:
         try:
             roles = load_roles(data_dir)
