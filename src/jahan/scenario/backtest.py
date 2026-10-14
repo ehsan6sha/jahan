@@ -362,7 +362,7 @@ def render_markdown(report: Report) -> str:
             s = score(sim, real, noise.get(t))
             misses.append(f"{abs(s['err_sd']):.1f}")
             if s["major"]:
-                majors.append(LABELS[t].lower())
+                majors.append(LABELS[t])
         w(
             f"| {ev.date.isoformat()} | {ev.title} | {_surprise_text(ev, r.surprise)} | "
             + " | ".join(cells)

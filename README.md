@@ -353,13 +353,13 @@ was fitted to 2026 data.
 
 | Date | Event | Surprise | US stocks | Gold | Dollar | Miss (s.d.): stocks, gold, dollar | Major miss |
 |---|---|---|---|---|---|---|---|
-| 2026-01-28 | Fed holds at 3.50-3.75% | +0.7 bp | -0.03% / -0.01% | 0.00% / +4.44% | +0.02% / +0.24% | 0.0, 3.5, 0.5 | gold |
-| 2026-03-18 | Fed holds at 3.50-3.75% | +0.0 bp | 0.00% / -1.36% | 0.00% / -3.63% | 0.00% / +0.51% | 1.5, 2.8, 1.2 | gold |
+| 2026-01-28 | Fed holds at 3.50-3.75% | +0.7 bp | -0.03% / -0.01% | 0.00% / +4.44% | +0.02% / +0.24% | 0.0, 3.5, 0.5 | Gold |
+| 2026-03-18 | Fed holds at 3.50-3.75% | +0.0 bp | 0.00% / -1.36% | 0.00% / -3.63% | 0.00% / +0.51% | 1.5, 2.8, 1.2 | Gold |
 | 2026-04-29 | Fed holds at 3.50-3.75% | +0.0 bp | 0.00% / -0.04% | 0.00% / -1.02% | 0.00% / +0.30% | 0.0, 0.8, 0.7 | none |
 | 2026-06-17 | Fed holds at 3.50-3.75% (Warsh's first meeting; median 2026 dot 3.4 to 3.8) | +0.0 bp | 0.00% / -1.21% | 0.00% / -1.50% | 0.00% / +0.55% | 1.3, 1.2, 1.3 | none |
-| 2026-07-29 | Fed holds at 3.50-3.75% (three officials wanted a hike) | -8.3 bp | +0.33% / -1.52% | 0.00% / +1.32% | -0.26% / -0.57% | 2.0, 1.0, 0.7 | us stocks |
+| 2026-07-29 | Fed holds at 3.50-3.75% (three officials wanted a hike) | -8.3 bp | +0.33% / -1.52% | 0.00% / +1.32% | -0.26% / -0.57% | 2.0, 1.0, 0.7 | US stocks |
 | 2026-09-16 | Fed raises 0.25 pt to 3.75-4.00% (first hike since 2023) | +2.0 bp | -0.08% / -0.45% | 0.00% / -0.71% | +0.06% / +0.66% | 0.4, 0.6, 1.5 | none |
-| 2026-06-05 | May jobs +172k vs about 85k expected | +87k jobs | -0.25% / -2.64% | -0.20% / -3.36% | +0.15% / +0.66% | 2.6, 2.5, 1.3 | us stocks, gold |
+| 2026-06-05 | May jobs +172k vs about 85k expected | +87k jobs | -0.25% / -2.64% | -0.20% / -3.36% | +0.15% / +0.66% | 2.6, 2.5, 1.3 | US stocks, Gold |
 | 2026-08-07 | July jobs -23k vs about +80k expected | -103k jobs | +0.29% / +0.62% | +0.24% / +2.37% | -0.17% / -0.37% | 0.4, 1.7, 0.5 | none |
 
 Summary over these events. US stocks: Jahan misses by 1.03 s.d. on average, "no change" by 1.07; direction called 3 times, right 2. Gold: Jahan misses by 1.75 s.d. on average, "no change" by 1.79; direction called 0 times, right 0. Dollar: Jahan misses by 0.97 s.d. on average, "no change" by 1.18; direction called 3 times, right 3.
@@ -399,8 +399,8 @@ In surveys around 12 Fed press conferences (2015-2018), about 30% of US consumer
 - **18 Mar.** The Iran war and oil prices moved gold (-3.6%) and stocks (-1.4%).
 - **29 Jul, US stocks.** The Fed held when markets gave about a one-in-three chance of a hike, so the
   decision alone looked like good news and Jahan forecast +0.33%. In fact three officials dissented in
-  favour of a hike, long-term yields jumped (the 30-year yield to its highest since 2007) and the S&P 500
-  fell 1.52% ([CNN](https://www.cnn.com/2026/07/29/business/live-news/federal-reserve-interest-rate-07-29-26),
+  favour of a hike, long-term yields jumped (the 30-year Treasury yield rose 11 bp to 5.20% on FRED, which
+  market reports called its highest since 2007) and the S&P 500 fell 1.52% ([CNN](https://www.cnn.com/2026/07/29/business/live-news/federal-reserve-interest-rate-07-29-26),
   [Yahoo Finance](https://finance.yahoo.com/markets/live/stock-market-today-wednesday-july-29-dow-sp-500-nasdaq-082009165.html)).
   The surprise was in the vote and the guidance, which a forecast made the day before cannot know.
 - **5 Jun jobs report.** Jahan got the direction right but only about a tenth of the size. The stock
