@@ -334,7 +334,15 @@ PreviewOpt = Annotated[
 ]
 
 
-def _show_preview(world, spec: Scenario) -> None:  # noqa: ANN001
+JsonOpt = Annotated[bool, typer.Option("--json", help="Machine-readable output (used by `jahan ui`)")]
+
+
+def _show_preview(world, spec: Scenario, as_json: bool = False) -> None:  # noqa: ANN001
+    if as_json:
+        import json
+
+        typer.echo(json.dumps({"day": world.day, "scenario": spec.model_dump(mode="json")}, ensure_ascii=False))
+        return
     typer.echo(spec.dump_yaml())
     typer.echo(f"Preview only: nothing was injected. The world is on day {world.day} ({world.date().isoformat()}).")
 
@@ -347,6 +355,7 @@ def inject(
     provider: ProviderOpt = "anthropic",
     yes: Annotated[bool, typer.Option("--yes", "-y", help="Skip confirmation")] = False,
     preview: PreviewOpt = False,
+    as_json: JsonOpt = False,
 ) -> None:
     """Inject a scenario (YAML or free text) at the current day; writes a pre-prompt snapshot first."""
     if (scenario is None) == (prompt is None):
@@ -358,7 +367,7 @@ def inject(
     else:
         spec, source = _parse_interactive(rd, world, str(prompt), provider, feed=False), "llm"
     if preview:
-        _show_preview(world, spec)
+        _show_preview(world, spec, as_json)
         return
     _inject_spec(rd, world, spec, yes, source=source)
 
@@ -370,6 +379,7 @@ def feed(
     provider: ProviderOpt = "anthropic",
     yes: Annotated[bool, typer.Option("--yes", "-y")] = False,
     preview: PreviewOpt = False,
+    as_json: JsonOpt = False,
 ) -> None:
     """Feed news and market moves for simulated days beyond today's real date (there is no real news yet)."""
     rd = RunDir(run_dir)
@@ -378,7 +388,7 @@ def feed(
     offset = (real_today - world.date()).days + 1 if world.date() <= real_today else None
     spec = _parse_interactive(rd, world, text, provider, feed=True, first_future_offset=offset)
     if preview:
-        _show_preview(world, spec)
+        _show_preview(world, spec, as_json)
         return
     _inject_spec(rd, world, spec, yes, source="feed")
 
@@ -661,9 +671,6 @@ def reset(
     typer.echo(f"Reset to day {day} (before prompt {before_prompt}); removed {len(removed)} log chunks.")
 
 
-JsonOpt = Annotated[bool, typer.Option("--json", help="Machine-readable output (used by `jahan ui`)")]
-
-
 @app.command()
 def status(run_dir: RunOpt, as_json: JsonOpt = False) -> None:
     """Where the world is: date, prompts so far, who you play, reports, and what Claude has cost."""
@@ -714,6 +721,22 @@ def agent(run_dir: RunOpt, agent_id: Annotated[int, typer.Argument()]) -> None:
 
     world = _load_head(RunDir(run_dir))
     typer.echo(agent_card(world, agent_id))
+
+
+@app.command()
+def ui(
+    port: Annotated[int, typer.Option(help="First port to try (the next free one is used if taken)")] = 8765,
+    runs_dir: Annotated[Path, typer.Option(help="Folder holding your worlds")] = Path("runs"),
+    browser: Annotated[bool, typer.Option(help="Open the page in your browser")] = True,
+    key_file: Annotated[
+        Path | None, typer.Option(help="Read the Anthropic API key from this file (instead of ANTHROPIC_API_KEY)")
+    ] = None,
+) -> None:
+    """Open the browser interface: every button runs a jahan command on this computer and shows its output."""
+    from jahan.ui.server import serve
+
+    project = paths.data_dir().parent
+    serve(project, runs_dir if runs_dir.is_absolute() else Path.cwd() / runs_dir, port, browser, key_file)
 
 
 @app.command("validate-data")

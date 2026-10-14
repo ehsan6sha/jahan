@@ -17,11 +17,40 @@ prompt.
 > prompts, fed future events, persona interviews, readable transcripts and live news ingest. People can
 > create agents or take control of any agent (including a head of state), talk, post, decide and use the
 > powers of an office, turn by turn; public figures nobody controls decide on salient days. Everything is
-> recorded for exact replay. Not yet built: the web UI and multiplayer (Milestone 2). See `docs/plan.md`.
+> recorded for exact replay. A browser interface (`jahan ui`) covers every command. Not yet built:
+> multiplayer (Milestone 2). See `docs/plan.md`.
 
 ## Quickstart
 
 Requires Python 3.12 and [uv](https://docs.astral.sh/uv/).
+
+### In your browser
+
+```
+uv sync --extra llm                                    # the extra is only needed for Claude features
+uv run jahan ui                                        # opens the interface in your browser
+uv run jahan ui --key-file $HOME\.anthropic_key        # same, with your Anthropic key read from a file
+```
+
+The page is a remote control for the commands below. Every button runs a `jahan` command on your own
+computer and shows its output and the exact command, so you can learn and script them later. Nothing is
+simulated in the browser. You can:
+
+- create and open worlds, and move time forward;
+- add what-ifs in plain words, future events, ready-made examples, or today's real news, after checking a
+  preview of the exact events;
+- browse and filter people, open anyone's view of the world, ask them questions, and replay one of their
+  days as a story;
+- play anyone, including public figures: message your circle, post, decide, use the powers of an office,
+  then finish the day;
+- measure effects with experiments and read the reports;
+- undo to before any prompt and replay your sessions.
+
+The server listens only on `127.0.0.1`. It prints a private link containing a session key, and other
+websites cannot use it to run commands. It runs one command per world at a time; a running command can be
+cancelled.
+
+### In a terminal
 
 ```
 uv sync

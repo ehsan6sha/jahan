@@ -231,7 +231,9 @@ Honesty note: percentages in the first release will be a mix of `high` and `low`
 
 **If the schedule slips, cut in this order** (not before): (1) life events and travel-lite move to 1b/M2; (2) L2/L3 language routing simplified to L1 + a multilingual flag; (3) vision/hearing effects reduced to columns without behavioural effect; (4) report prose. Country count stays at 8 (two high-fidelity + six provisional), because multi-country interaction is a core requirement.
 
-**Milestone 2 (roadmap, not planned in detail):** read-only web UI (FastAPI + HTMX) for browsing agents/perspectives; cross-border gravity model, travel and migration; economy (prices, wages, fx pass-through, savings); 4 sub-day diffusion phases; sparse beliefs; IPF with microdata; more countries; GDELT historical calibration mode; optional Rust hot loops.
+**Browser interface (built 2026-10-14, replacing the planned FastAPI + HTMX browser):** `jahan ui` serves one static page from a standard-library server on 127.0.0.1; every button runs an allow-listed `jahan` command as a subprocess and streams its output, so the browser computes nothing (user decision: an add-on layer over the CLI, not a browser-side engine).
+
+**Milestone 2 (roadmap, not planned in detail):** cross-border gravity model, travel and migration; economy (prices, wages, fx pass-through, savings); 4 sub-day diffusion phases; sparse beliefs; IPF with microdata; more countries; GDELT historical calibration mode; optional Rust hot loops.
 
 **Explicitly out of Milestone 1** (deliberate sequencing of first-prompt items, to be confirmed by the user at plan approval): web UI for browsing agents (CLI `agents`/`agent`/`ask` cover the requirement minimally in M1; FastAPI + HTMX browser in M2); travel beyond travel-lite; full economy; same-sex marriage/cohabitation modelling (data-driven simplification flagged in README, not a design stance); sub-national regions beyond urban/rural; multilingual LLM output (English only; agents' languages still gate information flow).
 

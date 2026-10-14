@@ -55,7 +55,7 @@ def _policies(world: World, row: int) -> list[dict[str, Any]]:
     out = []
     for kind, spec in sorted(world.roles[entry["role"]].policies.items()):
         param = None if spec.param is None else {"name": spec.param.name, "min": spec.param.min, "max": spec.param.max}
-        out.append({"kind": kind, "effect": spec.effect, "param": param, "note": spec.note})
+        out.append({"kind": kind, "effect": spec.effect, "scope": spec.scope, "param": param, "note": spec.note})
     return out
 
 
@@ -149,6 +149,7 @@ def world_status(rd: RunDir, world: World) -> dict[str, Any]:
             "marital": [m.name.lower() for m in Marital],
             "info_tiers": INFO_TIERS,
             "audiences": ["circle", "community", "national", "global"],
+            "roles": [{"key": k, "label": r.label} for k, r in sorted(world.roles.items())],
         },
         "session": {"current": sid, "agents": played},
         "sessions": [

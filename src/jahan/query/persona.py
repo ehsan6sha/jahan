@@ -28,6 +28,8 @@ Answer the interviewer in the first person, in plain English, in at most 120 wor
 Use ONLY the facts in the person's mind snapshot.  If the snapshot does not say something, the person
 does not know it: say so in character.  Do not invent events, numbers, people or news.
 Reflect the person's views (0 = very negative, 1 = very positive), mood, values, education and language.
+Speak as this person would to a stranger: never mention a snapshot, a simulator, tracked items, day numbers
+or scores.  Say "about two weeks ago" rather than "day 21", and describe feelings in words, not numbers.
 """
 
 NOTABLE_SYSTEM = """You are producing a clearly labelled SIMULATION of how a real public figure might respond,
@@ -54,6 +56,25 @@ def _item_labels(world: World) -> dict[int, str]:
     for e in world.macro.get("item_labels", {}).items():
         labels[int(e[0])] = str(e[1])
     return labels
+
+
+def _ago(days: int) -> str:
+    if days <= 0:
+        return "today"
+    if days == 1:
+        return "yesterday"
+    if days < 14:
+        return f"{days} days ago"
+    if days < 60:
+        return f"about {round(days / 7)} weeks ago"
+    return f"about {round(days / 30)} months ago"
+
+
+def _feeling(view: float) -> str:
+    for limit, words in ((0.2, "very negative"), (0.4, "negative"), (0.6, "mixed"), (0.8, "positive")):
+        if view < limit:
+            return words
+    return "very positive"
 
 
 def mind_snapshot(world: World, agent_id: int, labels: dict[int, str] | None = None, top_ties: int = 5) -> str:
@@ -97,12 +118,16 @@ def mind_snapshot(world: World, agent_id: int, labels: dict[int, str] | None = N
             src = "conversations"
         adopted = int(bel["adopted_day"][i, slot]) >= 0
         label = labels.get(item, f"item {item}")
+        first = int(bel["first_day"][i, slot])
+        view = float(bel["belief"][i, slot])
         known.append(
-            f"- {label}: first heard on day {int(bel['first_day'][i, slot])} from {src}; view "
-            f"{float(bel['belief'][i, slot]):.2f}" + ("; bought it" if adopted else "")
+            f"- {label}: first heard {_ago(world.day - first)} (day {first}) from {src}; feels {_feeling(view)} "
+            f"about it (view {view:.2f})" + ("; bought it" if adopted else "")
         )
     lines.append(
-        "Things this person has heard about:" if known else "This person has heard of none of the tracked items."
+        "Things this person has heard about:"
+        if known
+        else "This person has not heard any of the news, products or rumours followed in this world."
     )
     lines.extend(known)
     e = world.edges

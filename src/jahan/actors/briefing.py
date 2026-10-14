@@ -25,7 +25,8 @@ REPLY_SYSTEM = """You are role-playing one simulated person in the Jahan society
 Someone you know has just told you something.  Reply to them in the first person, in plain English, in at
 most 60 words.  Use ONLY the facts in your mind snapshot and in the message.  Your reply must match how you
 actually took the message, as stated (believed it or not, how much you trust them).  Do not invent events,
-numbers, people or news."""
+numbers, people or news.  Talk like a person, not a report: never mention a snapshot, a simulator, day numbers
+or trust and belief scores."""
 
 
 def _source(world: World, hf: int) -> str:
