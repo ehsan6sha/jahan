@@ -1,0 +1,170 @@
+# India. Every block cites a registry id (data/registry.yaml).
+iso3: IND
+name: India
+currency: INR
+languages_official: [hi]
+
+generated:
+  - {source: wpp2024.IND, kind: wpp, file: generated/wpp2024/IND.yaml}
+  - {source: wdi.IND, kind: wdi, file: generated/wdi/IND.yaml}
+  - {source: ilo.IND, kind: ilo, file: generated/ilo/IND.yaml}
+
+vital:
+  source: ind.vital
+  marriage_rate_per_1000: 7.0   # registration incomplete; provisional estimate
+  divorce_rate_per_1000: 0.2
+  job_change_per_year: 0.08
+  job_loss_per_month: 0.008
+  job_find_per_month: 0.18
+  marriage_age_peak: 24
+  marriage_age_sd: 5
+
+time_zones:
+  source: ind.tz
+  rows:
+    - {offset_min: 330, share: 100}   # India Standard Time +05:30
+
+ethnicity:
+  source: ind.ethnicity
+  shares:   # proxy: mother-tongue community (Census 2011 language shares)
+    hindi: 43.6
+    bengali: 8.0
+    marathi: 6.9
+    telugu: 6.7
+    tamil: 5.7
+    gujarati: 4.6
+    urdu: 4.2
+    kannada: 3.6
+    odia: 3.1
+    malayalam: 2.9
+    punjabi: 2.7
+    other: 8.0
+
+religion:
+  source: ind.religion
+  shares:   # Census 2011
+    hindu: 79.8
+    muslim: 14.2
+    christian: 2.3
+    sikh: 1.7
+    buddhist: 0.7
+    jain: 0.4
+    other: 0.9
+  by_ethnicity:
+    urdu: {muslim: 95, hindu: 5}
+    punjabi: {sikh: 58, hindu: 38, muslim: 2, christian: 2}
+    malayalam: {hindu: 55, muslim: 27, christian: 18}
+    bengali: {hindu: 70, muslim: 28, christian: 1, buddhist: 1}
+    tamil: {hindu: 88, christian: 6, muslim: 6}
+    marathi: {hindu: 82, muslim: 8, buddhist: 7, jain: 1, christian: 1, other: 1}
+
+languages:
+  source: ind.languages
+  l1:
+    default: {other: 100}
+    by_ethnicity:
+      hindi: {hi: 100}
+      bengali: {bn: 100}
+      marathi: {mr: 100}
+      telugu: {te: 100}
+      tamil: {ta: 100}
+      urdu: {ur: 100}
+  l2_given_l1:
+    hi: {en: 0.10}
+    ur: {hi: 0.5, en: 0.08}
+    bn: {hi: 0.2, en: 0.10}
+    mr: {hi: 0.45, en: 0.10}
+    te: {hi: 0.15, en: 0.12}
+    ta: {en: 0.14, hi: 0.05}
+    other: {hi: 0.25, en: 0.12}
+  l2_education_multiplier: [0.3, 1.0, 3.5]
+
+income:
+  source: ind.income
+  currency: INR
+  by_occupation:   # GNI per capita x US relativities^1.5; large informal sector; provisional
+    0: {median: 12914, sigma: 0.55}
+    1: {median: 27788, sigma: 0.8}
+    2: {median: 22418, sigma: 0.75}
+    3: {median: 14235, sigma: 0.65}
+    4: {median: 9634, sigma: 0.55}
+    5: {median: 6008, sigma: 0.7}
+    6: {median: 7036, sigma: 0.75}
+    7: {median: 12070, sigma: 0.6}
+    8: {median: 9634, sigma: 0.55}
+    9: {median: 5672, sigma: 0.65}
+
+household:
+  source: ind.household
+  size_pct: {1: 4, 2: 12, 3: 15, 4: 22, 5: 19, 6: 12, 7: 16}   # mean ~4.4 (NFHS-5); joint families under-represented
+  married_share_by_age:
+    - {age_min: 18, age_max: 25, share: 0.35}
+    - {age_min: 25, age_max: 35, share: 0.82}
+    - {age_min: 35, age_max: 45, share: 0.92}
+    - {age_min: 45, age_max: 55, share: 0.90}
+    - {age_min: 55, age_max: 65, share: 0.82}
+    - {age_min: 65, age_max: 75, share: 0.68}
+    - {age_min: 75, age_max: 120, share: 0.45}
+  spouse_age_gap_mean: 5.0
+  spouse_age_gap_sd: 4.0
+  adult_child_at_home_by_age:
+    - {age_min: 18, age_max: 25, share: 0.92}
+    - {age_min: 25, age_max: 35, share: 0.60}
+  mother_age_at_birth: {min: 15, max: 45, mean: 25.5, sd: 4.5}
+
+internet:
+  source: global.internet_profile
+  rows:
+    - {age_min: 0, age_max: 10, share: 0.3}
+    - {age_min: 10, age_max: 18, share: 0.8}
+    - {age_min: 18, age_max: 30, share: 1.0}
+    - {age_min: 30, age_max: 50, share: 0.85}
+    - {age_min: 50, age_max: 65, share: 0.55}
+    - {age_min: 65, age_max: 120, share: 0.3}
+
+info_tier:
+  source: global.info_tier
+  by_edu_group:
+    low: [35, 45, 17, 3]
+    mid: [20, 50, 25, 5]
+    high: [8, 37, 42, 13]
+
+sensory:
+  source: ind.vision_hearing
+  vision_pct:
+    - {age_min: 0, age_max: 50, share: 2.5}
+    - {age_min: 50, age_max: 65, share: 7.5}
+    - {age_min: 65, age_max: 75, share: 15.0}
+    - {age_min: 75, age_max: 120, share: 35.0}
+  hearing_pct:
+    - {age_min: 0, age_max: 50, share: 1.5}
+    - {age_min: 50, age_max: 60, share: 5.0}
+    - {age_min: 60, age_max: 70, share: 12.0}
+    - {age_min: 70, age_max: 80, share: 26.0}
+    - {age_min: 80, age_max: 120, share: 50.0}
+
+big5:
+  source: global.big5_placeholder
+  mean: [0.0, 0.0, 0.0, 0.0, 0.0]
+  sd: [1.0, 1.0, 1.0, 1.0, 1.0]
+
+values:
+  source: ind.values
+  mean: {self: 0.12, money: 0.18, culture: 0.17, freedom: 0.10, family: 0.28, security: 0.15}
+  concentration: 15.0
+
+media:
+  source: ind.media
+  channels:
+    - {name: tv_hindi, kind: tv, lang: hi, reach_by_tier: [0.40, 0.55, 0.50, 0.45], credibility: 0.45, local_hours: [19, 23]}
+    - {name: tv_regional, kind: tv, lang: other, reach_by_tier: [0.40, 0.55, 0.50, 0.45], credibility: 0.45, local_hours: [19, 23]}
+    - {name: tv_bengali, kind: tv, lang: bn, reach_by_tier: [0.40, 0.55, 0.50, 0.45], credibility: 0.45, local_hours: [19, 23]}
+    - {name: tv_tamil, kind: tv, lang: ta, reach_by_tier: [0.40, 0.55, 0.50, 0.45], credibility: 0.45, local_hours: [19, 23]}
+    - {name: online_news_english, kind: online, lang: en, reach_by_tier: [0.02, 0.30, 0.60, 0.65], credibility: 0.50, local_hours: [7, 24]}
+    - {name: messaging_social_hindi, kind: social, lang: hi, reach_by_tier: [0.30, 0.50, 0.50, 0.45], credibility: 0.30, local_hours: [7, 24]}
+    - {name: messaging_social_regional, kind: social, lang: other, reach_by_tier: [0.30, 0.50, 0.50, 0.45], credibility: 0.30, local_hours: [7, 24]}
+    - {name: newspaper_hindi, kind: newspaper, lang: hi, reach_by_tier: [0.10, 0.35, 0.45, 0.45], credibility: 0.55, local_hours: [6, 10]}
+
+names:
+  source: ind.names
+  file: names/IND.yaml

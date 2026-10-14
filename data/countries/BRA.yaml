@@ -1,0 +1,144 @@
+# Brazil. Every block cites a registry id (data/registry.yaml).
+iso3: BRA
+name: Brazil
+currency: BRL
+languages_official: [pt]
+
+generated:
+  - {source: wpp2024.BRA, kind: wpp, file: generated/wpp2024/BRA.yaml}
+  - {source: wdi.BRA, kind: wdi, file: generated/wdi/BRA.yaml}
+  - {source: ilo.BRA, kind: ilo, file: generated/ilo/BRA.yaml}
+
+vital:
+  source: bra.vital
+  marriage_rate_per_1000: 4.8   # ~970k civil marriages (IBGE Registro Civil 2022), provisional
+  divorce_rate_per_1000: 2.1    # ~420k divorces 2022, provisional
+  job_change_per_year: 0.25
+  job_loss_per_month: 0.012
+  job_find_per_month: 0.19
+  marriage_age_peak: 29
+  marriage_age_sd: 8
+
+time_zones:
+  source: bra.tz
+  rows:
+    - {offset_min: -180, share: 92.0}   # Brasilia time
+    - {offset_min: -240, share: 7.6}    # Amazon time
+    - {offset_min: -300, share: 0.4}    # Acre time
+
+ethnicity:
+  source: bra.ethnicity
+  shares:   # IBGE 2022 census colour/race
+    pardo: 45.3
+    white: 43.5
+    black: 10.2
+    indigenous: 0.6
+    asian: 0.4
+
+religion:
+  source: bra.religion
+  shares:   # IBGE 2022 census religion results (provisional transcription)
+    catholic: 56.7
+    evangelical: 26.9
+    none: 9.3
+    spiritist: 1.8
+    afro_brazilian: 1.0
+    other: 4.3
+
+languages:
+  source: bra.languages
+  l1:
+    default: {pt: 99.5, other: 0.5}
+    by_ethnicity:
+      indigenous: {pt: 70, other: 30}
+      asian: {pt: 92, other: 8}
+  l2_given_l1:
+    pt: {en: 0.05, es: 0.03}
+    other: {pt: 0.9}
+  l2_education_multiplier: [0.3, 1.0, 3.0]
+
+income:
+  source: bra.income
+  currency: BRL
+  by_occupation:   # derived from GNI per capita x US occupational relativities^1.3; provisional
+    0: {median: 3093, sigma: 0.5}
+    1: {median: 6006, sigma: 0.7}
+    2: {median: 4985, sigma: 0.65}
+    3: {median: 3364, sigma: 0.55}
+    4: {median: 2398, sigma: 0.45}
+    5: {median: 1592, sigma: 0.5}
+    6: {median: 1825, sigma: 0.6}
+    7: {median: 2916, sigma: 0.5}
+    8: {median: 2398, sigma: 0.45}
+    9: {median: 1515, sigma: 0.45}
+
+household:
+  source: bra.household
+  size_pct: {1: 18.9, 2: 26.0, 3: 24.0, 4: 18.5, 5: 7.6, 6: 2.9, 7: 2.1}   # mean ~2.8 (2022 census)
+  married_share_by_age:   # formal and consensual unions
+    - {age_min: 18, age_max: 25, share: 0.15}
+    - {age_min: 25, age_max: 35, share: 0.45}
+    - {age_min: 35, age_max: 45, share: 0.60}
+    - {age_min: 45, age_max: 55, share: 0.62}
+    - {age_min: 55, age_max: 65, share: 0.60}
+    - {age_min: 65, age_max: 75, share: 0.52}
+    - {age_min: 75, age_max: 120, share: 0.35}
+  spouse_age_gap_mean: 3.0
+  spouse_age_gap_sd: 5.0
+  adult_child_at_home_by_age:
+    - {age_min: 18, age_max: 25, share: 0.75}
+    - {age_min: 25, age_max: 35, share: 0.35}
+  mother_age_at_birth: {min: 14, max: 46, mean: 27.5, sd: 6.0}
+
+internet:
+  source: global.internet_profile
+  rows:
+    - {age_min: 0, age_max: 10, share: 0.5}
+    - {age_min: 10, age_max: 18, share: 0.9}
+    - {age_min: 18, age_max: 30, share: 1.0}
+    - {age_min: 30, age_max: 50, share: 0.95}
+    - {age_min: 50, age_max: 65, share: 0.8}
+    - {age_min: 65, age_max: 120, share: 0.5}
+
+info_tier:
+  source: global.info_tier
+  by_edu_group:
+    low: [35, 45, 17, 3]
+    mid: [20, 50, 25, 5]
+    high: [8, 37, 42, 13]
+
+sensory:
+  source: bra.vision_hearing
+  vision_pct:
+    - {age_min: 0, age_max: 50, share: 1.5}
+    - {age_min: 50, age_max: 65, share: 4.5}
+    - {age_min: 65, age_max: 75, share: 9.0}
+    - {age_min: 75, age_max: 120, share: 22.0}
+  hearing_pct:
+    - {age_min: 0, age_max: 50, share: 1.2}
+    - {age_min: 50, age_max: 60, share: 4.8}
+    - {age_min: 60, age_max: 70, share: 12.0}
+    - {age_min: 70, age_max: 80, share: 26.0}
+    - {age_min: 80, age_max: 120, share: 50.0}
+
+big5:
+  source: global.big5_placeholder
+  mean: [0.0, 0.0, 0.0, 0.0, 0.0]
+  sd: [1.0, 1.0, 1.0, 1.0, 1.0]
+
+values:
+  source: bra.values
+  mean: {self: 0.15, money: 0.17, culture: 0.13, freedom: 0.17, family: 0.25, security: 0.13}
+  concentration: 15.0
+
+media:
+  source: bra.media
+  channels:
+    - {name: broadcast_tv, kind: tv, lang: pt, reach_by_tier: [0.40, 0.60, 0.60, 0.55], credibility: 0.50, local_hours: [19, 24]}
+    - {name: online_news, kind: online, lang: pt, reach_by_tier: [0.05, 0.35, 0.60, 0.60], credibility: 0.50, local_hours: [7, 24]}
+    - {name: messaging_social, kind: social, lang: pt, reach_by_tier: [0.40, 0.55, 0.50, 0.45], credibility: 0.30, local_hours: [7, 24]}
+    - {name: radio, kind: radio, lang: pt, reach_by_tier: [0.25, 0.25, 0.20, 0.15], credibility: 0.50, local_hours: [6, 22]}
+
+names:
+  source: bra.names
+  file: names/BRA.yaml

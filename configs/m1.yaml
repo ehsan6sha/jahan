@@ -1,0 +1,11 @@
+# Milestone 1 world: eight countries, 10k agents, square-root allocation (every agent carries a
+# population weight so aggregates are re-weighted to true population shares).
+name: m1
+seed: 20261013
+countries: [USA, BRA, DEU, NGA, IRN, IND, CHN, IDN]
+n_agents: 10000
+allocation: sqrt
+# start_date defaults to today, so `jahan ingest` can add real news; pin it (or pass --start-date) to
+# reproduce a world exactly.
+snapshot_every: 30
+max_slots: 64

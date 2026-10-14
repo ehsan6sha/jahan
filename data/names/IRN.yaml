@@ -1,0 +1,73 @@
+# Iranian names (registry id irn.names, confidence provisional): common names reported by the
+# National Organization for Civil Registration in recent years; weights are approximate ranks.
+# Women keep their own family name on marriage; children take the father's.
+family_name_first: false
+mononym_share: 0.0
+surname_adoption: 0.0
+female:
+  Fatemeh: 30
+  Zahra: 26
+  Maryam: 20
+  Masoumeh: 12
+  Zeinab: 14
+  Narges: 10
+  Somayeh: 9
+  Leila: 8
+  Sara: 9
+  Hasti: 6
+  Reyhaneh: 6
+  Mahsa: 6
+  Mina: 5
+  Elham: 5
+  Parisa: 5
+  Nazanin: 5
+  Hanieh: 5
+  Mahdieh: 4
+  Ava: 3
+  Helma: 3
+male:
+  Mohammad: 35
+  Ali: 28
+  Hossein: 22
+  Mohammadreza: 14
+  Mehdi: 14
+  Reza: 13
+  Amir: 10
+  Abolfazl: 10
+  Hassan: 10
+  Ahmad: 8
+  Amirhossein: 8
+  Mohsen: 7
+  Saeed: 7
+  Javad: 6
+  Hamid: 6
+  Majid: 5
+  Ebrahim: 5
+  Arash: 4
+  Kourosh: 3
+  Dariush: 3
+surnames:
+  Mohammadi: 30
+  Hosseini: 28
+  Ahmadi: 22
+  Rezaei: 20
+  Mousavi: 18
+  Karimi: 16
+  Hashemi: 14
+  Rahimi: 13
+  Jafari: 12
+  Sadeghi: 12
+  Moradi: 11
+  Ghasemi: 11
+  Ebrahimi: 10
+  Kazemi: 10
+  Rostami: 9
+  Akbari: 9
+  Heidari: 9
+  Alizadeh: 9
+  Abbasi: 8
+  Amiri: 8
+  Ghorbani: 8
+  Hosseinzadeh: 7
+  Salehi: 7
+  Rahmani: 7

@@ -1,0 +1,35 @@
+# Notable public figures, India (real names; verified 2026-10-13 unless noted). Text generated for them is [simulated].
+as_of: 2026-10-13
+entries:
+  - key: IND.head_of_state
+    role: head_of_state
+    office: Prime Minister of India
+    holder_name: Narendra Modi
+    sex: M
+    birth_year: 1950
+    verified: "Marked 25 years in governance in October 2026 (Tribune report)"
+    sources:
+      - https://tribuneindia.com/news/asean-india/pm-modi-thanks-global-leaders-for-congratulatory-wishes-on-completing-25-years-in-governance
+    visibility: 8.4
+    approval: {value: 0.6, source: "placeholder; global leader-approval trackers not verified this session"}
+    platforms: [x, tv, radio]
+    languages: [hi, en]
+    values: {self: 0.12, money: 0.18, culture: 0.25, freedom: 0.08, family: 0.15, security: 0.22}
+    stances: []
+    confidence: low
+  - key: IND.central_bank_governor
+    role: central_bank_governor
+    office: Governor of the Reserve Bank of India
+    holder_name: Sanjay Malhotra
+    sex: M
+    birth_year: null
+    verified: "Governor since December 2024 (RBI governor lists, 2026)"
+    sources:
+      - https://vajiramandravi.com/current-affairs/rbi-governors-list/
+    visibility: 6.2
+    approval: {value: 0.5, source: "placeholder"}
+    platforms: [press, tv]
+    languages: [hi, en]
+    values: {self: 0.10, money: 0.30, culture: 0.12, freedom: 0.12, family: 0.12, security: 0.24}
+    stances: []
+    confidence: low

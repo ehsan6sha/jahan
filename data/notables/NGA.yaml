@@ -1,0 +1,19 @@
+# Notable public figures, Nigeria (real names; verified 2026-10-13). Text generated for them is [simulated].
+as_of: 2026-10-13
+entries:
+  - key: NGA.head_of_state
+    role: head_of_state
+    office: President of Nigeria
+    holder_name: Bola Ahmed Tinubu
+    sex: M
+    birth_year: 1952
+    verified: "Statement from the Nigerian Presidency reported 2026-10-07"
+    sources:
+      - https://tribuneindia.com/news/asean-india/pm-modi-thanks-global-leaders-for-congratulatory-wishes-on-completing-25-years-in-governance
+    visibility: 7.4
+    approval: {value: 0.4, source: "placeholder; no verified 2026 poll"}
+    platforms: [tv, radio, x]
+    languages: [en, yo]
+    values: {self: 0.15, money: 0.22, culture: 0.15, freedom: 0.10, family: 0.18, security: 0.20}
+    stances: []
+    confidence: low

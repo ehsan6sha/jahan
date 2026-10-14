@@ -1,0 +1,102 @@
+# Roles and what their holders may do (checked by the engine for humans and LLM-driven notables).
+# A PolicyAction kind not listed for a role is rejected with ACTION_REJECTED.
+#
+# Each policy maps to engine events.  The actor chooses only the policy's own parameter (for example a
+# tariff rate); the engine converts it to an effect with ``per_unit`` (effect per unit of the parameter,
+# applied for ``days`` days), clipped to the parameter's range.  Every elasticity below is an invented
+# PLACEHOLDER, not a calibrated estimate, and is marked so; `validate-data --strict` reports them.
+#   macro / sentiment: points on the -100..100 mood scale per unit
+#   macro / fx_local_per_usd: percent change in local currency per US dollar per unit (positive = weaker)
+# Every policy also produces a public announcement (national news from the actor).
+roles:
+  head_of_state:
+    label: Head of state or government
+    can_post: [national, global]
+    policies:
+      tariff:
+        effect: macro
+        variable: sentiment
+        scope: own_country
+        param: {name: rate_pct, min: 0, max: 100}
+        per_unit: -0.05
+        days: 1
+        confidence: placeholder
+        note: "tariff announcement lowers economic mood at home (no retaliation or trade model in M1)"
+      sanctions:
+        effect: macro
+        variable: fx_local_per_usd
+        scope: target_country
+        param: {name: level, min: 1, max: 3}
+        per_unit: 1.0
+        days: 5
+        confidence: placeholder
+        note: "pressure on the target country's currency"
+      public_statement: {effect: news}
+  supreme_leader:
+    label: Supreme Leader (Iran)
+    can_post: [national, global]
+    policies:
+      public_statement: {effect: news}
+      directive: {effect: news, salience_bonus: 0.1, note: "binding guidance; modelled as high-salience news in M1"}
+  finance_minister:
+    label: Finance minister / Treasury secretary
+    can_post: [national, global]
+    policies:
+      sanctions:
+        effect: macro
+        variable: fx_local_per_usd
+        scope: target_country
+        param: {name: level, min: 1, max: 3}
+        per_unit: 1.0
+        days: 5
+        confidence: placeholder
+      public_statement: {effect: news}
+  central_bank_governor:
+    label: Central bank governor
+    can_post: [national, global]
+    meeting_every_days: 42  # scheduled decision turns for autonomous governors (about eight a year)
+    policies:
+      set_interest_rate:
+        effect: macro
+        variable: sentiment
+        scope: own_country
+        param: {name: change_bp, min: -500, max: 500}
+        per_unit: -0.01
+        days: 1
+        confidence: placeholder
+        note: "rate path; a hike lowers mood (mood proxy in M1, no credit model)"
+      fx_intervention:
+        effect: macro
+        variable: fx_local_per_usd
+        scope: own_country
+        param: {name: target_pct, min: -5, max: 5}
+        per_unit: 0.5
+        days: 1
+        confidence: placeholder
+        note: "intervention achieves half the intended move"
+      public_statement: {effect: news}
+  foreign_minister:
+    label: Foreign minister
+    can_post: [national, global]
+    policies:
+      public_statement: {effect: news}
+  legislative_speaker:
+    label: Speaker of parliament
+    can_post: [national]
+    policies:
+      public_statement: {effect: news}
+  business_leader:
+    label: Chief executive / business leader
+    can_post: [national, global]
+    policies:
+      price_change:
+        effect: product_price
+        param: {name: pct, min: -90, max: 200}
+        note: "own company's products only (products this agent launched)"
+      product_launch: {effect: product}
+      public_statement: {effect: news}
+  opinion_leader:
+    label: Key opinion leader (media, influencer)
+    can_post: [national, global]
+    policies:
+      public_statement: {effect: news}

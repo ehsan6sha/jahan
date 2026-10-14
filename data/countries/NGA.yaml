@@ -1,0 +1,162 @@
+# Nigeria. Every block cites a registry id (data/registry.yaml).
+iso3: NGA
+name: Nigeria
+currency: NGN
+languages_official: [en]
+
+generated:
+  - {source: wpp2024.NGA, kind: wpp, file: generated/wpp2024/NGA.yaml}
+  - {source: wdi.NGA, kind: wdi, file: generated/wdi/NGA.yaml}
+  - {source: ilo.NGA, kind: ilo, file: generated/ilo/NGA.yaml}
+
+vital:
+  source: nga.vital
+  marriage_rate_per_1000: 8.0   # no complete civil registration; estimate consistent with early, near-universal marriage
+  divorce_rate_per_1000: 0.5
+  job_change_per_year: 0.10
+  job_loss_per_month: 0.012
+  job_find_per_month: 0.37
+  marriage_age_peak: 24
+  marriage_age_sd: 7
+
+time_zones:
+  source: nga.tz
+  rows:
+    - {offset_min: 60, share: 100}   # West Africa Time
+
+ethnicity:
+  source: nga.ethnicity
+  shares:   # CIA World Factbook 2018 estimate; no recent census breakdown
+    hausa: 30.0
+    yoruba: 15.5
+    igbo: 15.2
+    fulani: 6.0
+    tiv: 2.4
+    kanuri: 2.4
+    ibibio: 1.8
+    ijaw: 1.8
+    other: 24.9
+
+religion:
+  source: nga.religion
+  shares:
+    muslim: 53.5
+    catholic: 10.6
+    other_christian: 35.3
+    traditional: 0.6
+  by_ethnicity:
+    hausa: {muslim: 95, other_christian: 4, traditional: 1}
+    fulani: {muslim: 97, other_christian: 3}
+    kanuri: {muslim: 97, other_christian: 3}
+    yoruba: {muslim: 45, other_christian: 42, catholic: 10, traditional: 3}
+    igbo: {catholic: 45, other_christian: 54, muslim: 1}
+    ibibio: {other_christian: 70, catholic: 28, traditional: 2}
+    ijaw: {other_christian: 75, catholic: 20, traditional: 5}
+    tiv: {other_christian: 60, catholic: 35, traditional: 5}
+
+languages:
+  source: nga.languages
+  l1:
+    default: {other: 100}
+    by_ethnicity:
+      hausa: {ha: 100}
+      yoruba: {yo: 100}
+      igbo: {ig: 100}
+      fulani: {other: 60, ha: 40}
+      kanuri: {other: 80, ha: 20}
+      other: {other: 85, en: 15}
+  l2_given_l1:
+    ha: {en: 0.35}
+    yo: {en: 0.6}
+    ig: {en: 0.65}
+    en: {yo: 0.1}
+    other: {en: 0.5, ha: 0.25}
+  l2_education_multiplier: [0.5, 1.2, 1.8]
+
+income:
+  source: nga.income
+  currency: NGN
+  by_occupation:   # GNI per capita x US relativities^1.5; much work is informal; provisional
+    0: {median: 110800, sigma: 0.55}
+    1: {median: 238500, sigma: 0.8}
+    2: {median: 192400, sigma: 0.75}
+    3: {median: 122200, sigma: 0.65}
+    4: {median: 82700, sigma: 0.55}
+    5: {median: 51600, sigma: 0.7}
+    6: {median: 60400, sigma: 0.75}
+    7: {median: 103600, sigma: 0.6}
+    8: {median: 82700, sigma: 0.55}
+    9: {median: 48700, sigma: 0.65}
+
+household:
+  source: nga.household
+  size_pct: {1: 11, 2: 11, 3: 13, 4: 14, 5: 14, 6: 12, 7: 25}   # 7 = 7 or more; mean ~4.7 (DHS 2018)
+  married_share_by_age:
+    - {age_min: 18, age_max: 25, share: 0.35}
+    - {age_min: 25, age_max: 35, share: 0.70}
+    - {age_min: 35, age_max: 45, share: 0.85}
+    - {age_min: 45, age_max: 55, share: 0.85}
+    - {age_min: 55, age_max: 65, share: 0.78}
+    - {age_min: 65, age_max: 75, share: 0.65}
+    - {age_min: 75, age_max: 120, share: 0.45}
+  spouse_age_gap_mean: 8.0   # large gaps; polygamy is not modelled in M1
+  spouse_age_gap_sd: 6.0
+  adult_child_at_home_by_age:
+    - {age_min: 18, age_max: 25, share: 0.70}
+    - {age_min: 25, age_max: 35, share: 0.30}
+  mother_age_at_birth: {min: 14, max: 48, mean: 28.0, sd: 7.0}
+
+internet:
+  source: global.internet_profile
+  rows:
+    - {age_min: 0, age_max: 10, share: 0.2}
+    - {age_min: 10, age_max: 18, share: 0.7}
+    - {age_min: 18, age_max: 30, share: 1.0}
+    - {age_min: 30, age_max: 50, share: 0.85}
+    - {age_min: 50, age_max: 65, share: 0.55}
+    - {age_min: 65, age_max: 120, share: 0.25}
+
+info_tier:
+  source: global.info_tier
+  by_edu_group:
+    low: [35, 45, 17, 3]
+    mid: [20, 50, 25, 5]
+    high: [8, 37, 42, 13]
+
+sensory:
+  source: nga.vision_hearing
+  vision_pct:
+    - {age_min: 0, age_max: 50, share: 2.5}
+    - {age_min: 50, age_max: 65, share: 7.5}
+    - {age_min: 65, age_max: 75, share: 15.0}
+    - {age_min: 75, age_max: 120, share: 35.0}
+  hearing_pct:
+    - {age_min: 0, age_max: 50, share: 1.5}
+    - {age_min: 50, age_max: 60, share: 5.0}
+    - {age_min: 60, age_max: 70, share: 12.0}
+    - {age_min: 70, age_max: 80, share: 26.0}
+    - {age_min: 80, age_max: 120, share: 50.0}
+
+big5:
+  source: global.big5_placeholder
+  mean: [0.0, 0.0, 0.0, 0.0, 0.0]
+  sd: [1.0, 1.0, 1.0, 1.0, 1.0]
+
+values:
+  source: nga.values
+  mean: {self: 0.12, money: 0.20, culture: 0.17, freedom: 0.10, family: 0.26, security: 0.15}
+  concentration: 15.0
+
+media:
+  source: nga.media
+  channels:
+    - {name: radio_hausa, kind: radio, lang: ha, reach_by_tier: [0.50, 0.55, 0.45, 0.40], credibility: 0.55, local_hours: [6, 22]}
+    - {name: radio_yoruba, kind: radio, lang: yo, reach_by_tier: [0.45, 0.50, 0.40, 0.35], credibility: 0.55, local_hours: [6, 22]}
+    - {name: radio_igbo, kind: radio, lang: ig, reach_by_tier: [0.45, 0.50, 0.40, 0.35], credibility: 0.55, local_hours: [6, 22]}
+    - {name: tv_english, kind: tv, lang: en, reach_by_tier: [0.15, 0.35, 0.45, 0.45], credibility: 0.45, local_hours: [19, 23]}
+    - {name: online_news, kind: online, lang: en, reach_by_tier: [0.02, 0.25, 0.55, 0.60], credibility: 0.45, local_hours: [7, 24]}
+    - {name: messaging_social, kind: social, lang: en, reach_by_tier: [0.25, 0.45, 0.50, 0.45], credibility: 0.30, local_hours: [7, 24]}
+
+names:
+  source: nga.names
+  file: names/NGA.yaml

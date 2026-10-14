@@ -1,0 +1,16 @@
+prompt: "Iran-US tensions intensify: alarming headlines for two weeks; the rial loses 15% in ten days."
+horizon_days: 90
+events:
+  - type: news
+    headline: "Iran-US confrontation escalates"
+    topic: world
+    valence: -0.9
+    accuracy: 0.8
+    salience: 0.9
+    countries: null              # reported everywhere
+    duration_days: 14
+  - type: macro
+    variable: fx_local_per_usd
+    country: IRN
+    steps:
+      - {start_day_offset: 0, days: 10, pct_per_day: 1.42}   # (1.0142)^10 = 1.15

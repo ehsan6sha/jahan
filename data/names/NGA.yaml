@@ -1,0 +1,26 @@
+# Nigerian names (registry id nga.names, provisional): common names by major group; weights are
+# approximate.  No national name-frequency registry is published.
+family_name_first: false
+mononym_share: 0.0
+surname_adoption: 0.8
+female: {Blessing: 6, Grace: 5, Mary: 5, Esther: 4, Joy: 4, Precious: 3, Faith: 3, Fatima: 4, Aisha: 3}
+male: {John: 5, Samuel: 5, Emmanuel: 5, Joseph: 4, Peter: 4, Daniel: 4, Musa: 3, Ibrahim: 3, David: 4}
+surnames: {Okafor: 3, Adeyemi: 3, Musa: 3, Ibrahim: 3, Eze: 3, Bello: 3, Abubakar: 3, Okon: 2, Ade: 2}
+groups:
+  - ethnicities: [hausa, fulani, kanuri]
+    female: {Fatima: 8, Aisha: 7, Zainab: 6, Hauwa: 6, Maryam: 5, Hadiza: 5, Khadija: 4, Amina: 5, Halima: 4}
+    male: {Muhammad: 10, Abubakar: 6, Ibrahim: 6, Aminu: 5, Musa: 6, Usman: 5, Abdullahi: 6, Yusuf: 4, Sani: 4, Bello: 3}
+    surnames: {Muhammad: 8, Abubakar: 6, Ibrahim: 6, Musa: 6, Usman: 5, Bello: 5, Aliyu: 4, Yusuf: 4, Garba: 4, Sani: 4, Abdullahi: 5}
+  - ethnicities: [yoruba]
+    religions: [muslim]
+    female: {Aishat: 4, Kafayat: 3, Rukayat: 3, Basirat: 3, Fatimah: 4, Mariam: 3, Folake: 3}
+    male: {Abdulrahman: 3, Ismail: 3, Rasheed: 3, Lateef: 3, Musiliu: 3, Kehinde: 3, Taiwo: 3, Tunde: 3}
+    surnames: {Adewale: 3, Lawal: 4, Bakare: 3, Ogunleye: 3, Adeyemi: 4, Afolabi: 3, Salami: 3, Balogun: 3}
+  - ethnicities: [yoruba]
+    female: {Funmilayo: 4, Folake: 4, Adebola: 3, Oluwaseun: 3, Temitope: 4, Bukola: 3, Yetunde: 3, Abosede: 3}
+    male: {Oluwaseun: 4, Adebayo: 4, Olumide: 3, Tunde: 4, Babatunde: 3, Ayodele: 3, Segun: 3, Femi: 4}
+    surnames: {Adeyemi: 4, Ogunleye: 3, Adewale: 3, Akinola: 3, Oladipo: 3, Afolabi: 3, Olawale: 3, Adeleke: 3}
+  - ethnicities: [igbo]
+    female: {Ngozi: 5, Chioma: 5, Nkechi: 4, Adaeze: 3, Chinwe: 3, Ifeoma: 4, Uchechi: 3, Blessing: 3}
+    male: {Chinedu: 5, Emeka: 5, Chukwuemeka: 4, Obinna: 4, Ikenna: 3, Uchenna: 4, Nnamdi: 3, Ifeanyi: 3}
+    surnames: {Okafor: 5, Okeke: 4, Eze: 5, Nwosu: 3, Okonkwo: 3, Obi: 3, Nwachukwu: 3, Onyeka: 2, Okoro: 3}

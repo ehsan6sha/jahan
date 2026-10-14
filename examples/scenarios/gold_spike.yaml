@@ -1,0 +1,8 @@
+prompt: "Gold rises 1% a day for a week, then drops 10% suddenly."
+horizon_days: 60
+events:
+  - type: macro
+    variable: gold
+    steps:
+      - {start_day_offset: 0, days: 7, pct_per_day: 1.0}
+      - {start_day_offset: 7, days: 1, pct_per_day: -10.0}

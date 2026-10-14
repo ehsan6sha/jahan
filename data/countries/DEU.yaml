@@ -1,0 +1,158 @@
+# Germany. Every block cites a registry id (data/registry.yaml).
+iso3: DEU
+name: Germany
+currency: EUR
+languages_official: [de]
+
+generated:
+  - {source: wpp2024.DEU, kind: wpp, file: generated/wpp2024/DEU.yaml}
+  - {source: wdi.DEU, kind: wdi, file: generated/wdi/DEU.yaml}
+  - {source: ilo.DEU, kind: ilo, file: generated/ilo/DEU.yaml}
+
+vital:
+  source: deu.vital
+  marriage_rate_per_1000: 4.3   # ~360k marriages (Destatis 2023), provisional
+  divorce_rate_per_1000: 1.6    # ~129k divorces 2023, provisional
+  job_change_per_year: 0.12
+  job_loss_per_month: 0.006
+  job_find_per_month: 0.156
+  marriage_age_peak: 33
+  marriage_age_sd: 8
+
+time_zones:
+  source: deu.tz
+  rows:
+    - {offset_min: 60, share: 100}   # CET (DST ignored in M1)
+
+ethnicity:
+  source: deu.ethnicity
+  shares:   # proxy: migration background (Mikrozensus); Germany records no ethnicity
+    no_migration_background: 70.5
+    turkey: 3.4
+    poland: 2.6
+    russia_kazakhstan: 3.6
+    syria_iraq_afghanistan: 3.0
+    other_europe: 9.5
+    other: 7.4
+
+religion:
+  source: deu.religion
+  shares:
+    catholic: 23.7
+    protestant: 21.9
+    muslim: 6.6
+    orthodox: 1.9
+    other: 1.4
+    none: 44.5
+  by_ethnicity:
+    turkey: {muslim: 80, none: 18, other: 2}
+    syria_iraq_afghanistan: {muslim: 85, orthodox: 5, none: 8, other: 2}
+    poland: {catholic: 80, none: 18, protestant: 2}
+    russia_kazakhstan: {orthodox: 30, protestant: 15, catholic: 5, none: 50}
+
+languages:
+  source: deu.languages
+  l1:
+    default: {de: 100}
+    by_ethnicity:
+      turkey: {tr: 55, de: 45}
+      russia_kazakhstan: {ru: 45, de: 55}
+      syria_iraq_afghanistan: {ar: 60, other: 25, de: 15}
+      poland: {other: 45, de: 55}
+      other_europe: {de: 45, other: 55}
+      other: {de: 40, other: 45, en: 15}
+  l2_given_l1:
+    de: {en: 0.45, fr: 0.05}
+    tr: {de: 0.85, en: 0.15}
+    ru: {de: 0.85, en: 0.15}
+    ar: {de: 0.75, en: 0.2}
+    en: {de: 0.7}
+    other: {de: 0.8, en: 0.3}
+  l2_education_multiplier: [0.5, 1.0, 1.5]
+
+income:
+  source: deu.income
+  currency: EUR
+  by_occupation:   # monthly gross incl. part-time, anchored near the statutory minimum wage; provisional
+    0: {median: 3747, sigma: 0.35}
+    1: {median: 6245, sigma: 0.5}
+    2: {median: 5413, sigma: 0.45}
+    3: {median: 3997, sigma: 0.4}
+    4: {median: 3081, sigma: 0.4}
+    5: {median: 2248, sigma: 0.45}
+    6: {median: 2498, sigma: 0.45}
+    7: {median: 3581, sigma: 0.35}
+    8: {median: 3081, sigma: 0.35}
+    9: {median: 2165, sigma: 0.45}
+
+household:
+  source: deu.household
+  size_pct: {1: 41.1, 2: 33.6, 3: 11.9, 4: 9.3, 5: 3.0, 6: 0.8, 7: 0.3}   # mean ~2.0 (Mikrozensus)
+  married_share_by_age:
+    - {age_min: 18, age_max: 25, share: 0.03}
+    - {age_min: 25, age_max: 35, share: 0.25}
+    - {age_min: 35, age_max: 45, share: 0.53}
+    - {age_min: 45, age_max: 55, share: 0.58}
+    - {age_min: 55, age_max: 65, share: 0.60}
+    - {age_min: 65, age_max: 75, share: 0.62}
+    - {age_min: 75, age_max: 120, share: 0.45}
+  spouse_age_gap_mean: 2.8
+  spouse_age_gap_sd: 4.0
+  adult_child_at_home_by_age:
+    - {age_min: 18, age_max: 25, share: 0.65}
+    - {age_min: 25, age_max: 35, share: 0.12}
+  mother_age_at_birth: {min: 16, max: 47, mean: 31.5, sd: 5.0}
+
+internet:
+  source: global.internet_profile
+  rows:
+    - {age_min: 0, age_max: 10, share: 0.6}
+    - {age_min: 10, age_max: 18, share: 0.95}
+    - {age_min: 18, age_max: 30, share: 1.0}
+    - {age_min: 30, age_max: 50, share: 0.99}
+    - {age_min: 50, age_max: 65, share: 0.95}
+    - {age_min: 65, age_max: 120, share: 0.8}
+
+info_tier:
+  source: global.info_tier
+  by_edu_group:
+    low: [35, 45, 17, 3]
+    mid: [20, 50, 25, 5]
+    high: [8, 37, 42, 13]
+
+sensory:
+  source: deu.vision_hearing
+  vision_pct:
+    - {age_min: 0, age_max: 50, share: 1.0}
+    - {age_min: 50, age_max: 65, share: 3.0}
+    - {age_min: 65, age_max: 75, share: 6.0}
+    - {age_min: 75, age_max: 120, share: 15.0}
+  hearing_pct:
+    - {age_min: 0, age_max: 50, share: 1.0}
+    - {age_min: 50, age_max: 60, share: 4.0}
+    - {age_min: 60, age_max: 70, share: 10.0}
+    - {age_min: 70, age_max: 80, share: 22.0}
+    - {age_min: 80, age_max: 120, share: 45.0}
+
+big5:
+  source: global.big5_placeholder
+  mean: [0.0, 0.0, 0.0, 0.0, 0.0]
+  sd: [1.0, 1.0, 1.0, 1.0, 1.0]
+
+values:
+  source: deu.values
+  mean: {self: 0.17, money: 0.14, culture: 0.12, freedom: 0.25, family: 0.17, security: 0.15}
+  concentration: 15.0
+
+media:
+  source: deu.media
+  channels:
+    - {name: public_tv, kind: tv, lang: de, reach_by_tier: [0.30, 0.55, 0.60, 0.55], credibility: 0.65, local_hours: [19, 23]}
+    - {name: online_news, kind: online, lang: de, reach_by_tier: [0.05, 0.35, 0.60, 0.60], credibility: 0.60, local_hours: [7, 23]}
+    - {name: social_media, kind: social, lang: de, reach_by_tier: [0.30, 0.40, 0.40, 0.35], credibility: 0.30, local_hours: [7, 24]}
+    - {name: radio, kind: radio, lang: de, reach_by_tier: [0.30, 0.40, 0.35, 0.30], credibility: 0.65, local_hours: [6, 20]}
+    - {name: turkish_tv, kind: tv, lang: tr, reach_by_tier: [0.40, 0.50, 0.45, 0.40], credibility: 0.45, local_hours: [19, 24]}
+
+names:
+  source: deu.names
+  file: names/DEU.yaml

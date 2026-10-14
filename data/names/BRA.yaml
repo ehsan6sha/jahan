@@ -1,0 +1,68 @@
+# Brazilian names (registry id bra.names, provisional): IBGE "Nomes no Brasil" (2010 census) ranks,
+# weights approximate (millions of bearers where known).
+family_name_first: false
+mononym_share: 0.0
+surname_adoption: 0.6
+female:
+  Maria: 11.7
+  Ana: 3.1
+  Francisca: 0.73
+  Antonia: 0.59
+  Adriana: 0.57
+  Juliana: 0.56
+  Marcia: 0.55
+  Fernanda: 0.53
+  Patricia: 0.53
+  Aline: 0.51
+  Sandra: 0.45
+  Camila: 0.45
+  Amanda: 0.43
+  Bruna: 0.42
+  Jessica: 0.42
+  Leticia: 0.41
+  Julia: 0.41
+  Luciana: 0.41
+  Vanessa: 0.40
+  Mariana: 0.38
+male:
+  Jose: 5.7
+  Joao: 2.97
+  Antonio: 2.57
+  Francisco: 1.77
+  Carlos: 1.49
+  Paulo: 1.42
+  Pedro: 1.22
+  Lucas: 1.13
+  Luiz: 1.11
+  Marcos: 1.11
+  Luis: 0.94
+  Gabriel: 0.93
+  Rafael: 0.81
+  Daniel: 0.71
+  Marcelo: 0.69
+  Bruno: 0.67
+  Eduardo: 0.63
+  Felipe: 0.62
+  Raimundo: 0.61
+  Rodrigo: 0.60
+surnames:
+  Silva: 10
+  Santos: 7
+  Oliveira: 5
+  Souza: 4.5
+  Rodrigues: 3
+  Ferreira: 3
+  Alves: 3
+  Pereira: 3
+  Lima: 2.5
+  Gomes: 2.5
+  Costa: 2
+  Ribeiro: 2
+  Martins: 2
+  Carvalho: 1.8
+  Almeida: 1.8
+  Lopes: 1.5
+  Soares: 1.5
+  Fernandes: 1.5
+  Vieira: 1.4
+  Barbosa: 1.4

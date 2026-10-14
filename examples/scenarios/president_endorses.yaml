@@ -1,0 +1,21 @@
+prompt: "Smart Ring X launches in the US; a week later the US President praises it in a national statement."
+horizon_days: 90
+events:
+  - type: product_launch
+    name: Smart Ring X
+    topic: tech
+    attributes: {self: 0.4, security: 0.35, freedom: 0.25}
+    true_quality: 0.65
+    price_usd: 199
+    countries: [USA]
+    pushes:
+      - {channel_kinds: [tv, online, social], duration_days: 30}
+  - type: statement
+    speaker: USA.head_of_state
+    headline: "Smart Ring X is a fantastic American product"
+    topic: tech
+    valence: 0.9
+    about_product: Smart Ring X
+    audience: national
+    start_day_offset: 7
+    duration_days: 3

@@ -1,0 +1,77 @@
+# German names (registry id deu.names, provisional): common given names across living cohorts and
+# the most frequent surnames; group lists for Turkish and Arabic-speaking backgrounds.
+family_name_first: false
+mononym_share: 0.0
+surname_adoption: 0.75
+female:
+  Maria: 12
+  Ursula: 8
+  Monika: 7
+  Petra: 7
+  Elisabeth: 6
+  Sabine: 7
+  Renate: 5
+  Helga: 5
+  Karin: 5
+  Brigitte: 5
+  Andrea: 6
+  Claudia: 5
+  Stefanie: 5
+  Julia: 5
+  Anna: 6
+  Laura: 4
+  Lena: 4
+  Emma: 4
+  Mia: 4
+  Sophia: 4
+male:
+  Peter: 9
+  Michael: 10
+  Thomas: 10
+  Andreas: 9
+  Wolfgang: 7
+  Klaus: 7
+  Juergen: 6
+  Stefan: 8
+  Christian: 7
+  Martin: 6
+  Frank: 5
+  Uwe: 5
+  Markus: 5
+  Daniel: 5
+  Alexander: 5
+  Jan: 4
+  Lukas: 4
+  Leon: 4
+  Paul: 4
+  Felix: 4
+surnames:
+  Mueller: 10
+  Schmidt: 7
+  Schneider: 4.5
+  Fischer: 4.2
+  Weber: 3.6
+  Meyer: 3.4
+  Wagner: 3.2
+  Becker: 3.0
+  Schulz: 2.9
+  Hoffmann: 2.8
+  Schaefer: 2.4
+  Koch: 2.3
+  Bauer: 2.3
+  Richter: 2.2
+  Klein: 2.2
+  Wolf: 2.1
+  Schroeder: 2.0
+  Neumann: 2.0
+  Schwarz: 1.9
+  Zimmermann: 1.8
+groups:
+  - ethnicities: [turkey]
+    female: {Fatma: 5, Ayse: 5, Emine: 4, Elif: 4, Zeynep: 4, Merve: 3, Esra: 3}
+    male: {Mehmet: 6, Mustafa: 5, Ahmet: 5, Ali: 4, Huseyin: 3, Murat: 3, Emre: 3, Can: 3}
+    surnames: {Yilmaz: 5, Kaya: 4, Demir: 4, Sahin: 3, Celik: 3, Yildiz: 3, Ozturk: 3, Aydin: 3}
+  - ethnicities: [syria_iraq_afghanistan]
+    female: {Fatima: 5, Aisha: 3, Maryam: 4, Noor: 3, Zainab: 3, Rania: 2}
+    male: {Mohammed: 7, Ahmad: 5, Ali: 4, Omar: 3, Hassan: 3, Khaled: 2, Yusuf: 3}
+    surnames: {Al-Ahmad: 3, Hassan: 3, Ali: 3, Ibrahim: 3, Haidari: 2, Mohammadi: 2, Khalil: 2}

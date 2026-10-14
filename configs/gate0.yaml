@@ -1,0 +1,9 @@
+# Gate 0 vertical slice: one country, ~1k agents.
+name: gate0
+seed: 20261013
+countries: [USA]
+n_agents: 1000
+allocation: sqrt
+start_date: 2026-10-13
+snapshot_every: 30
+max_slots: 64

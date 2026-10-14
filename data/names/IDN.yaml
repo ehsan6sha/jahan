@@ -1,0 +1,21 @@
+# Indonesian names (registry id idn.names, provisional).  Many Indonesians, especially Javanese, have
+# a single name; family names are common among Batak, Minahasa and Chinese-Indonesians.
+family_name_first: false
+mononym_share: 0.45
+surname_adoption: 0.0
+female: {Siti: 8, Sri: 7, Nur: 5, Dewi: 5, Ani: 3, Rina: 3, Putri: 4, Wati: 3, Yuliani: 2, Indah: 3, Lestari: 3, Rahmawati: 3, Fitri: 3, Ayu: 3}
+male: {Muhammad: 9, Ahmad: 6, Budi: 4, Agus: 5, Andi: 4, Joko: 3, Bambang: 3, Eko: 3, Rudi: 3, Dedi: 3, Hendra: 3, Rizky: 3, Dimas: 2, Fajar: 2}
+surnames: {Saputra: 4, Wijaya: 3, Setiawan: 3, Hidayat: 3, Pratama: 3, Kusuma: 2, Santoso: 3, Gunawan: 2, Rahman: 3, Hakim: 2, Nugroho: 3, Susanto: 2}
+groups:
+  - ethnicities: [batak]
+    female: {Maria: 4, Rosmawati: 3, Lina: 3, Erni: 3, Sri: 2}
+    male: {Johannes: 3, Robert: 3, Martin: 3, Andi: 2, Hotman: 3}
+    surnames: {Siregar: 5, Nasution: 5, Simanjuntak: 4, Hutapea: 3, Lubis: 4, Sitompul: 3, Simatupang: 3}
+  - ethnicities: [chinese]
+    female: {Lina: 4, Susanti: 3, Melinda: 3, Wendy: 2, Linda: 3}
+    male: {Hendra: 4, Budi: 3, Wijaya: 2, Kevin: 3, Andreas: 3}
+    surnames: {Tan: 5, Lim: 5, Wijaya: 4, Gunawan: 3, Halim: 3, Salim: 3}
+  - ethnicities: [balinese]
+    female: {Ni Made: 4, Ni Kadek: 4, Ni Putu: 4, Ni Ketut: 3, Ni Wayan: 4}
+    male: {I Made: 4, I Wayan: 5, I Ketut: 3, I Putu: 4, I Nyoman: 3}
+    surnames: {}

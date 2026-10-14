@@ -1,0 +1,20 @@
+# Notable public figures, China (real names; verified 2026-10-13 via the 2026 G20 participant list).
+# Text generated for them is [simulated].
+as_of: 2026-10-13
+entries:
+  - key: CHN.head_of_state
+    role: head_of_state
+    office: President of China and General Secretary of the Communist Party
+    holder_name: Xi Jinping
+    sex: M
+    birth_year: 1953
+    verified: "Listed as President of China for the 2026 G20 summit"
+    sources:
+      - https://en.wikipedia.org/wiki/2026_G20_Miami_summit
+    visibility: 8.6
+    approval: {value: 0.5, source: "placeholder; no independent polling"}
+    platforms: [state_tv, press]
+    languages: [zh]
+    values: {self: 0.10, money: 0.18, culture: 0.20, freedom: 0.05, family: 0.17, security: 0.30}
+    stances: []
+    confidence: low

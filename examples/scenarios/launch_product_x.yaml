@@ -1,0 +1,16 @@
+prompt: "Launch a $199 smart ring that tracks health and unlocks doors, with a 30-day TV, online and social campaign."
+horizon_days: 180
+events:
+  - type: product_launch
+    name: Smart Ring X
+    topic: tech
+    attributes: {self: 0.4, security: 0.35, freedom: 0.25}
+    true_quality: 0.65
+    price_usd: 199
+    countries: [USA]
+    available_from_day_offset: 0
+    salience: 0.6
+    valence: 1.0
+    release_utc_hour: 14
+    pushes:
+      - {channel_kinds: [tv, online, social], start_day_offset: 0, duration_days: 30, intensity: 1.0}

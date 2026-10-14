@@ -1,0 +1,55 @@
+# Notable public figures, Brazil (real names; verified 2026-10-13 unless noted). Text generated for them is [simulated].
+as_of: 2026-10-13
+entries:
+  - key: BRA.head_of_state
+    role: head_of_state
+    office: President of Brazil
+    holder_name: Luiz Inacio Lula da Silva
+    sex: M
+    birth_year: 1945
+    verified: "Incumbent; finished second (45.2%) in the 2026-10-04 first round and faces Flavio Bolsonaro in the 2026-10-25 runoff"
+    sources:
+      - https://www.npr.org/2026/10/04/nx-s1-5981181/brazil-presidential-lula-bolsonaro
+      - https://en.wikipedia.org/wiki/2026_Brazilian_general_election
+    visibility: 7.8
+    approval: {value: 0.45, source: "first-round vote share 45.2% used as a proxy, not an approval poll"}
+    platforms: [tv, x, instagram]
+    languages: [pt]
+    values: {self: 0.10, money: 0.15, culture: 0.15, freedom: 0.15, family: 0.20, security: 0.25}
+    stances:
+      - {topic: politics, position: 0.0, summary: "Running for re-election; runoff on 2026-10-25", source: "https://www.npr.org/2026/10/04/nx-s1-5981181/brazil-presidential-lula-bolsonaro"}
+    confidence: low
+  - key: BRA.opposition.flavio_bolsonaro
+    role: opinion_leader
+    office: Presidential candidate (PL), first place in the 2026 first round
+    holder_name: Flavio Bolsonaro
+    sex: M
+    birth_year: 1981
+    verified: "47.0% in the 2026-10-04 first round (TSE count)"
+    sources:
+      - https://www.pontalbrazil.com/en/eleicoes-2026
+      - https://www.americasquarterly.org/article/reaction-flavio-bolsonaro-and-lula-advance-to-brazils-presidential-runoff/
+    visibility: 7.4
+    approval: {value: 0.47, source: "first-round vote share used as a proxy"}
+    platforms: [x, instagram, tv]
+    languages: [pt]
+    values: {self: 0.15, money: 0.18, culture: 0.20, freedom: 0.17, family: 0.18, security: 0.12}
+    stances:
+      - {topic: politics, position: 0.0, summary: "Right-wing PL candidate; advanced to the runoff in first place", source: "https://www.americasquarterly.org/article/reaction-flavio-bolsonaro-and-lula-advance-to-brazils-presidential-runoff/"}
+    confidence: low
+  - key: BRA.central_bank_governor
+    role: central_bank_governor
+    office: Governor of the Banco Central do Brasil
+    holder_name: Gabriel Galipolo
+    sex: M
+    birth_year: 1982
+    verified: "Named in a January 2026 statement; not re-verified for October 2026"
+    sources:
+      - https://www.rba.gov.au/media-releases/2026/mr-26-01.html
+    visibility: 6.0
+    approval: {value: 0.5, source: "placeholder"}
+    platforms: [press, tv]
+    languages: [pt]
+    values: {self: 0.10, money: 0.30, culture: 0.10, freedom: 0.15, family: 0.10, security: 0.25}
+    stances: []
+    confidence: low

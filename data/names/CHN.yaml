@@ -1,0 +1,13 @@
+# Chinese names (registry id chn.names, provisional): surname shares from Ministry of Public Security
+# releases (approximate %); common given names.  Family name is written first; women keep their surname.
+family_name_first: true
+mononym_share: 0.0
+surname_adoption: 0.0
+female: {Fang: 5, Xiuying: 5, Na: 5, Min: 4, Jing: 5, Li: 4, Yan: 4, Juan: 4, Xia: 3, Hui: 3, Ying: 3, Yu: 3, Xin: 3, Ting: 3, Yuxin: 2, Zihan: 2}
+male: {Wei: 6, Qiang: 4, Lei: 4, Jun: 4, Yang: 4, Yong: 4, Jie: 4, Tao: 3, Ming: 3, Chao: 3, Hao: 3, Gang: 3, Bin: 3, Hui: 2, Haoran: 2, Yuxuan: 2}
+surnames: {Wang: 7.4, Li: 7.2, Zhang: 6.8, Liu: 5.4, Chen: 4.5, Yang: 3.1, Huang: 2.4, Zhao: 2.3, Wu: 2.0, Zhou: 1.9, Xu: 1.4, Sun: 1.3, Ma: 1.2, Zhu: 1.2, Hu: 1.1, Guo: 1.0, He: 1.0, Gao: 0.9, Lin: 0.9, Luo: 0.8}
+groups:
+  - ethnicities: [uyghur]
+    female: {Aygul: 4, Gulnar: 4, Mihrigul: 3, Patigul: 3, Ayshem: 3}
+    male: {Abdulla: 4, Muhammad: 4, Ablimit: 3, Ahmet: 3, Tursun: 3}
+    surnames: {Abdulla: 3, Tursun: 3, Ahmet: 3, Memet: 3, Ismail: 2}

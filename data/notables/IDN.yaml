@@ -1,0 +1,37 @@
+# Notable public figures, Indonesia (real names; verified 2026-10-13 unless noted). Text generated for them is [simulated].
+as_of: 2026-10-13
+entries:
+  - key: IDN.head_of_state
+    role: head_of_state
+    office: President of Indonesia
+    holder_name: Prabowo Subianto
+    sex: M
+    birth_year: 1951
+    verified: "President since 2024-10-20; listed for the 2026 G20 summit"
+    sources:
+      - https://en.wikipedia.org/wiki/List_of_international_presidential_trips_made_by_Prabowo_Subianto
+      - https://en.wikipedia.org/wiki/2026_G20_Miami_summit
+    visibility: 7.7
+    approval: {value: 0.6, source: "placeholder; no verified 2026 poll"}
+    platforms: [tv, instagram, x]
+    languages: [id]
+    values: {self: 0.12, money: 0.18, culture: 0.20, freedom: 0.08, family: 0.17, security: 0.25}
+    stances: []
+    confidence: low
+  - key: IDN.central_bank_governor
+    role: central_bank_governor
+    office: Governor of Bank Indonesia (acting)
+    holder_name: Destry Damayanti
+    sex: F
+    birth_year: null
+    verified: "Acting governor after Perry Warjiyo resigned on 2026-07-27; sole nominee in August 2026, formal installation not confirmed"
+    sources:
+      - https://www.bloomberg.com/news/articles/2026-08-13/prabowo-picks-insiders-for-top-indonesia-central-bank-posts
+      - https://www.centralbanking.com/central-banks/governance/people/7976720/people-july-to-september-2026
+    visibility: 6.0
+    approval: {value: 0.5, source: "placeholder"}
+    platforms: [press, tv]
+    languages: [id, en]
+    values: {self: 0.10, money: 0.30, culture: 0.12, freedom: 0.10, family: 0.12, security: 0.26}
+    stances: []
+    confidence: low

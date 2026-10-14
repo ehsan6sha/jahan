@@ -1,0 +1,28 @@
+# Global language code list. The integer id is the position in this list and is
+# part of the snapshot format: only append.
+languages:
+  - en   # English
+  - es   # Spanish
+  - zh   # Chinese (Mandarin + other varieties, M1 simplification)
+  - hi   # Hindi
+  - pt   # Portuguese
+  - de   # German
+  - fa   # Persian
+  - ar   # Arabic
+  - ru   # Russian
+  - fr   # French
+  - id   # Indonesian
+  - jv   # Javanese
+  - yo   # Yoruba
+  - ha   # Hausa
+  - ig   # Igbo
+  - bn   # Bengali
+  - te   # Telugu
+  - mr   # Marathi
+  - ta   # Tamil
+  - ur   # Urdu
+  - tr   # Turkish
+  - az   # Azerbaijani
+  - ku   # Kurdish
+  - su   # Sundanese
+  - other

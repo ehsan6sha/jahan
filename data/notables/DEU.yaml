@@ -1,0 +1,35 @@
+# Notable public figures, Germany (real names; verified 2026-10-13 unless noted). Text generated for them is [simulated].
+as_of: 2026-10-13
+entries:
+  - key: DEU.head_of_state
+    role: head_of_state
+    office: Chancellor of Germany
+    holder_name: Friedrich Merz
+    sex: M
+    birth_year: 1955
+    verified: "UK government readout of a meeting with Chancellor Merz on 2026-10-08"
+    sources:
+      - https://www.gov.uk/government/news/pm-meeting-with-chancellor-merz-of-germany-8-october-2026
+    visibility: 7.3
+    approval: {value: 0.4, source: "placeholder; no verified 2026 poll"}
+    platforms: [tv, x]
+    languages: [de, en]
+    values: {self: 0.12, money: 0.22, culture: 0.14, freedom: 0.20, family: 0.14, security: 0.18}
+    stances: []
+    confidence: low
+  - key: DEU.central_bank_governor
+    role: central_bank_governor
+    office: President of the European Central Bank (euro area, incl. Germany)
+    holder_name: Christine Lagarde
+    sex: F
+    birth_year: 1956
+    verified: "ECB press release of May 2026 names her as president"
+    sources:
+      - https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.pr260510~e8a674e2fb.en.html
+    visibility: 6.8
+    approval: {value: 0.5, source: "placeholder"}
+    platforms: [press, tv]
+    languages: [fr, en]
+    values: {self: 0.10, money: 0.30, culture: 0.10, freedom: 0.18, family: 0.10, security: 0.22}
+    stances: []
+    confidence: low

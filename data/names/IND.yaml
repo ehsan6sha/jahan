@@ -1,0 +1,21 @@
+# Indian names (registry id ind.names, provisional): common names by religious community; surnames
+# vary strongly by region and caste and are simplified here.
+family_name_first: false
+mononym_share: 0.0
+surname_adoption: 0.7
+female: {Priya: 5, Sunita: 5, Anita: 5, Pooja: 5, Neha: 4, Kavita: 4, Lakshmi: 4, Rekha: 3, Asha: 3, Geeta: 3, Savita: 3, Meena: 3, Kiran: 3, Sita: 3, Anjali: 4, Divya: 3}
+male: {Rahul: 5, Amit: 5, Rajesh: 5, Suresh: 5, Ramesh: 5, Sanjay: 4, Vijay: 4, Anil: 4, Raju: 3, Ravi: 4, Ajay: 3, Arjun: 3, Manoj: 4, Sunil: 4, Deepak: 3, Krishna: 3}
+surnames: {Kumar: 10, Singh: 8, Sharma: 6, Devi: 5, Yadav: 4, Patel: 4, Gupta: 3, Das: 3, Reddy: 3, Verma: 3, Rao: 3, Mishra: 2, Joshi: 2, Pandey: 2, Jha: 2, Nair: 2, Iyer: 1, Pillai: 1}
+groups:
+  - religions: [muslim]
+    female: {Fatima: 5, Ayesha: 4, Shabana: 3, Nazia: 3, Rukhsana: 3, Saima: 3, Zainab: 3}
+    male: {Mohammed: 8, Abdul: 5, Imran: 4, Salman: 3, Irfan: 3, Arif: 3, Shahid: 3, Faisal: 3}
+    surnames: {Khan: 8, Shaikh: 6, Ansari: 4, Ali: 4, Qureshi: 3, Siddiqui: 3, Ahmed: 4, Hussain: 3}
+  - religions: [sikh]
+    female: {Gurpreet: 5, Harpreet: 5, Manpreet: 4, Simran: 4, Jaspreet: 3}
+    male: {Gurpreet: 5, Harjit: 4, Manjit: 4, Jaswinder: 3, Harpreet: 4, Balwinder: 3}
+    surnames: {Singh: 10, Kaur: 8, Gill: 2, Sandhu: 2, Dhillon: 2}
+  - religions: [christian]
+    female: {Mary: 5, Grace: 3, Jessy: 3, Sheela: 3, Annie: 3}
+    male: {Joseph: 5, Thomas: 4, George: 4, John: 4, Paul: 3}
+    surnames: {Thomas: 4, Joseph: 4, Mathew: 3, George: 3, DSouza: 2, Fernandes: 2}

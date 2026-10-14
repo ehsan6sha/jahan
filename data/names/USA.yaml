@@ -1,0 +1,101 @@
+# Weighted name lists (registry id usa.names, confidence provisional).
+family_name_first: false
+mononym_share: 0.0
+surname_adoption: 0.7   # approximate share of US women taking the husband's surname (survey-based, provisional)
+# Surname weights approximate US Census 2010 counts (thousands). First-name weights are
+# approximate relative frequencies across living cohorts; to be replaced by SSA data by birth year
+# and conditioned on ethnicity.
+female:
+  Mary: 30
+  Patricia: 15
+  Jennifer: 15
+  Linda: 14
+  Elizabeth: 13
+  Barbara: 12
+  Susan: 11
+  Jessica: 11
+  Sarah: 11
+  Karen: 10
+  Lisa: 10
+  Nancy: 9
+  Betty: 8
+  Sandra: 8
+  Margaret: 8
+  Ashley: 8
+  Emily: 8
+  Kimberly: 8
+  Michelle: 8
+  Donna: 7
+  Emma: 6
+  Olivia: 6
+  Sophia: 5
+  Maria: 7
+  Ava: 4
+  Isabella: 4
+  Mia: 4
+  Camila: 3
+  Aaliyah: 2
+  Mei: 1
+  Priya: 1
+male:
+  James: 30
+  Michael: 28
+  Robert: 27
+  John: 26
+  David: 23
+  William: 21
+  Richard: 15
+  Joseph: 15
+  Thomas: 13
+  Christopher: 13
+  Charles: 12
+  Daniel: 12
+  Matthew: 11
+  Anthony: 9
+  Mark: 9
+  Donald: 8
+  Steven: 8
+  Andrew: 7
+  Joshua: 7
+  Kevin: 6
+  Brian: 6
+  Jose: 7
+  Juan: 5
+  Liam: 5
+  Noah: 5
+  Ethan: 4
+  Jacob: 4
+  Mateo: 3
+  Wei: 1
+  Raj: 1
+surnames:
+  Smith: 2443
+  Johnson: 1933
+  Williams: 1626
+  Brown: 1437
+  Jones: 1426
+  Garcia: 1166
+  Miller: 1161
+  Davis: 1116
+  Rodriguez: 1095
+  Martinez: 1060
+  Hernandez: 1044
+  Lopez: 875
+  Gonzalez: 841
+  Wilson: 802
+  Anderson: 784
+  Thomas: 757
+  Taylor: 752
+  Moore: 725
+  Jackson: 709
+  Martin: 703
+  Lee: 694
+  Perez: 682
+  Thompson: 665
+  White: 661
+  Harris: 625
+  Nguyen: 438
+  Kim: 290
+  Patel: 230
+  Chen: 200
+  Singh: 150

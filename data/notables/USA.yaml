@@ -1,0 +1,83 @@
+# Notable public figures, United States. Real names by default (user decision, 2026-10-13).
+# Every office holder was verified by web search on the as_of date; stances cite public sources.
+# Values vectors are maintainer judgements from cited positions (confidence low), not personality tests.
+# All text generated for these people is labelled [simulated].
+as_of: 2026-10-13
+entries:
+  - key: USA.head_of_state
+    role: head_of_state
+    office: President of the United States
+    holder_name: Donald Trump
+    sex: M
+    birth_year: 1946
+    verified: "Opinion polling pages and news coverage dated October 2026"
+    sources:
+      - https://en.wikipedia.org/wiki/Opinion_polling_on_the_second_Trump_presidency
+      - https://fiftyplusone.news/polls/approval/president
+    visibility: 8.7
+    approval: {value: 0.346, source: "FiftyPlusOne average, 2026-10-12 (approve 34.6%, disapprove 62.0%)", url: "https://fiftyplusone.news/polls/approval/president"}
+    platforms: [truth_social, x, tv]
+    languages: [en]
+    values: {self: 0.22, money: 0.22, culture: 0.16, freedom: 0.10, family: 0.10, security: 0.20}
+    stances:
+      - {topic: world, position: -0.6, summary: "Prosecuting a war with Iran since February 2026, now near its eighth month", source: "https://thehill.com/homenews/administration/6143968-bessent-unsure-iran-war-end/"}
+      - {topic: economy, position: -0.3, summary: "Economic pressure campaign on Iran; administration also faces rising Treasury yields (~5.3%)", source: "https://townhall.com/news/dmitri-bolt/2026/10/12/scott-bessent-wrote-another-letter-for-elizabeth-warren-n2684501"}
+    confidence: low
+  - key: USA.finance_minister
+    role: finance_minister
+    office: Secretary of the Treasury
+    holder_name: Scott Bessent
+    sex: M
+    birth_year: 1962
+    verified: "Treasury press releases dated 2026-10-09; CNBC transcript 2026-09-21"
+    sources:
+      - https://home.treasury.gov/news/press-releases/sb0614
+      - https://www.cnbc.com/2026/09/21/cnbc-transcript-us-treasury-secretary-scott-bessent-speaks-with-cnbcs-squawk-box-today.html
+    visibility: 6.8
+    approval: {value: 0.5, source: "no verified poll; placeholder"}
+    platforms: [x, tv]
+    languages: [en]
+    values: {self: 0.15, money: 0.30, culture: 0.10, freedom: 0.15, family: 0.10, security: 0.20}
+    stances:
+      - {topic: world, position: -0.7, summary: "Leads 'Operation Economic Outcast' sanctions against Iran", source: "https://home.treasury.gov/news/press-releases/sb0614"}
+      - {topic: world, position: -0.2, summary: "Said on 2026-10-11 he is unsure how the Iran war will end", source: "https://thehill.com/homenews/administration/6143968-bessent-unsure-iran-war-end/"}
+    confidence: low
+  - key: USA.central_bank_governor
+    role: central_bank_governor
+    office: Chair of the Federal Reserve
+    holder_name: Kevin Warsh
+    sex: M
+    birth_year: 1970
+    verified: "Confirmed by the Senate 54-45 in May 2026; took office 2026-05-22"
+    sources:
+      - https://www.aljazeera.com/economy/2026/5/13/kevin-warsh-confirmed-as-new-us-federal-reserve-chair-amid-controversy
+      - https://spectrumlocalnews.com/us/snplus/politics/2026/05/15/jerome-powell-term-chair-kevin-warsh-president-trump-interest-rates-criticim-
+    visibility: 6.5
+    approval: {value: 0.5, source: "no verified poll; placeholder"}
+    platforms: [tv, press]
+    languages: [en]
+    values: {self: 0.12, money: 0.30, culture: 0.08, freedom: 0.20, family: 0.10, security: 0.20}
+    stances:
+      - {topic: economy, position: 0.0, summary: "New Fed chair since May 2026; confirmation was the narrowest since 1977", source: "https://www.aljazeera.com/economy/2026/5/13/kevin-warsh-confirmed-as-new-us-federal-reserve-chair-amid-controversy"}
+    confidence: low
+  - key: USA.business.musk
+    role: business_leader
+    office: CEO of Tesla; CEO, CTO and chairman of SpaceX (parent of xAI and X)
+    holder_name: Elon Musk
+    sex: M
+    birth_year: 1971
+    verified: "Company profiles updated 2026-09; xAI acquired by SpaceX February 2026; X Corp a SpaceX subsidiary since 2026-02-02"
+    sources:
+      - https://en.wikipedia.org/wiki/Elon_Musk
+      - https://en.wikipedia.org/wiki/X_Corp.
+      - https://www.britannica.com/money/xAI
+    visibility: 8.3
+    audience_note: "Very large X following; exact 2026 follower count not verified"
+    approval: {value: 0.45, source: "no verified 2026 favourability poll; placeholder"}
+    platforms: [x]
+    languages: [en]
+    values: {self: 0.26, money: 0.18, culture: 0.08, freedom: 0.28, family: 0.08, security: 0.12}
+    stances:
+      - {topic: tech, position: 0.9, summary: "Runs Tesla and SpaceX, which now owns xAI and X", source: "https://en.wikipedia.org/wiki/X_Corp."}
+    communication_style: "Posts frequently and informally on X, often short replies; documented across news coverage"
+    confidence: low

@@ -1,0 +1,6 @@
+post national We will announce new trade measures this week topic=economy stance=0
+next
+act tariff rate_pct=25
+post national New tariffs take effect today topic=economy stance=-0.5
+next
+auto 5

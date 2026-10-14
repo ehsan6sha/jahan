@@ -1,0 +1,166 @@
+# Iran (Islamic Republic of). Every block cites a registry id (data/registry.yaml).
+iso3: IRN
+name: Iran
+currency: IRR
+# Open-market rate, not the World Bank official rate (42,000 IRR/USD in 2023), because prices people
+# face follow the free market.  Alanchand sell quote on 2026-10-12; quotes move daily.
+fx_local_per_usd: 2639000
+fx_note: "free-market rate, alanchand.com 2026-10-12 (official/NIMA rates differ); update via scenario MacroPath"
+languages_official: [fa]
+
+generated:
+  - {source: wpp2024.IRN, kind: wpp, file: generated/wpp2024/IRN.yaml}
+  - {source: wdi.IRN, kind: wdi, file: generated/wdi/IRN.yaml}
+  - {source: ilo.IRN, kind: ilo, file: generated/ilo/IRN.yaml}
+
+vital:
+  source: irn.vital
+  marriage_rate_per_1000: 5.2   # ~470k marriages/yr annualised from NOCR 7-month figures, provisional
+  divorce_rate_per_1000: 2.1    # ~186k divorces/yr, provisional
+  job_change_per_year: 0.12
+  job_loss_per_month: 0.012
+  job_find_per_month: 0.13      # steady-state unemployment near the ILO estimate (8.3%)
+  marriage_age_peak: 27
+  marriage_age_sd: 6
+
+time_zones:
+  source: irn.tz
+  rows:
+    - {offset_min: 210, share: 100}   # Iran Standard Time +03:30 (no DST since 2022)
+
+ethnicity:
+  source: irn.ethnicity
+  shares:   # no official ethnic statistics; widely cited estimates (CIA World Factbook), low confidence
+    persian: 61
+    azeri: 16
+    kurd: 10
+    lur: 6
+    baloch: 2
+    arab: 2
+    turkmen: 2
+    other: 1
+
+religion:
+  source: irn.religion
+  shares:   # census-style affiliation; surveys of belief (e.g. GAMAAN 2020) report far lower identification
+    shia: 90.0
+    sunni: 9.0
+    christian: 0.3
+    bahai: 0.3
+    zoroastrian: 0.1
+    jewish: 0.1
+    none_other: 0.2
+  by_ethnicity:
+    kurd: {shia: 35, sunni: 65}
+    baloch: {sunni: 95, shia: 5}
+    turkmen: {sunni: 95, shia: 5}
+    arab: {shia: 85, sunni: 15}
+    lur: {shia: 100}
+
+languages:
+  source: irn.languages
+  l1:
+    default: {fa: 100}
+    by_ethnicity:
+      persian: {fa: 100}           # includes Gilaki and Mazandarani speakers (M1 simplification)
+      azeri: {az: 100}
+      kurd: {ku: 100}
+      lur: {other: 70, fa: 30}
+      baloch: {other: 100}
+      arab: {ar: 100}
+      turkmen: {other: 100}
+      other: {fa: 50, other: 50}
+  l2_given_l1:
+    fa: {en: 0.12, ar: 0.03}
+    az: {fa: 0.85, en: 0.05}
+    ku: {fa: 0.8, en: 0.05}
+    ar: {fa: 0.85}
+    other: {fa: 0.85}
+  l2_education_multiplier: [0.6, 1.0, 1.6]
+
+income:
+  source: irn.income
+  currency: IRR
+  by_occupation:   # monthly, anchored on the 1405 (2026) minimum wage ~166 million IRR; provisional
+    0: {median: 326000000, sigma: 0.45}
+    1: {median: 634000000, sigma: 0.65}
+    2: {median: 526000000, sigma: 0.55}
+    3: {median: 355000000, sigma: 0.5}
+    4: {median: 253000000, sigma: 0.45}
+    5: {median: 168000000, sigma: 0.55}
+    6: {median: 193000000, sigma: 0.6}
+    7: {median: 308000000, sigma: 0.5}
+    8: {median: 253000000, sigma: 0.45}
+    9: {median: 160000000, sigma: 0.5}
+
+household:
+  source: irn.household
+  size_pct: {1: 8.5, 2: 20.0, 3: 26.5, 4: 28.0, 5: 11.0, 6: 4.0, 7: 2.0}   # mean 3.3 (2016 census)
+  married_share_by_age:
+    - {age_min: 18, age_max: 25, share: 0.25}
+    - {age_min: 25, age_max: 35, share: 0.62}
+    - {age_min: 35, age_max: 45, share: 0.85}
+    - {age_min: 45, age_max: 55, share: 0.88}
+    - {age_min: 55, age_max: 65, share: 0.86}
+    - {age_min: 65, age_max: 75, share: 0.78}
+    - {age_min: 75, age_max: 120, share: 0.55}
+  spouse_age_gap_mean: 4.5
+  spouse_age_gap_sd: 4.0
+  adult_child_at_home_by_age:
+    - {age_min: 18, age_max: 25, share: 0.92}
+    - {age_min: 25, age_max: 35, share: 0.55}
+  mother_age_at_birth: {min: 15, max: 46, mean: 29.0, sd: 5.5}
+
+internet:
+  source: global.internet_profile
+  rows:
+    - {age_min: 0, age_max: 10, share: 0.5}
+    - {age_min: 10, age_max: 18, share: 0.9}
+    - {age_min: 18, age_max: 30, share: 1.0}
+    - {age_min: 30, age_max: 50, share: 0.95}
+    - {age_min: 50, age_max: 65, share: 0.75}
+    - {age_min: 65, age_max: 120, share: 0.45}
+
+info_tier:
+  source: global.info_tier
+  by_edu_group:
+    low: [35, 45, 17, 3]
+    mid: [20, 50, 25, 5]
+    high: [8, 37, 42, 13]
+
+sensory:
+  source: irn.vision_hearing
+  vision_pct:
+    - {age_min: 0, age_max: 50, share: 1.5}
+    - {age_min: 50, age_max: 65, share: 4.5}
+    - {age_min: 65, age_max: 75, share: 9.0}
+    - {age_min: 75, age_max: 120, share: 22.0}
+  hearing_pct:
+    - {age_min: 0, age_max: 50, share: 1.2}
+    - {age_min: 50, age_max: 60, share: 4.8}
+    - {age_min: 60, age_max: 70, share: 12.0}
+    - {age_min: 70, age_max: 80, share: 26.0}
+    - {age_min: 80, age_max: 120, share: 50.0}
+
+big5:
+  source: global.big5_placeholder
+  mean: [0.0, 0.0, 0.0, 0.0, 0.0]
+  sd: [1.0, 1.0, 1.0, 1.0, 1.0]
+
+values:
+  source: irn.values
+  mean: {self: 0.14, money: 0.16, culture: 0.17, freedom: 0.15, family: 0.25, security: 0.13}
+  concentration: 15.0
+
+media:
+  source: irn.media
+  channels:
+    - {name: state_tv, kind: tv, lang: fa, reach_by_tier: [0.40, 0.50, 0.40, 0.35], credibility: 0.30, local_hours: [19, 24]}
+    - {name: satellite_tv, kind: tv, lang: fa, reach_by_tier: [0.20, 0.40, 0.50, 0.50], credibility: 0.45, local_hours: [19, 24]}
+    - {name: online_news, kind: online, lang: fa, reach_by_tier: [0.05, 0.35, 0.60, 0.60], credibility: 0.45, local_hours: [7, 24]}
+    - {name: messaging_social, kind: social, lang: fa, reach_by_tier: [0.35, 0.50, 0.50, 0.45], credibility: 0.35, local_hours: [7, 24]}
+    - {name: state_radio, kind: radio, lang: fa, reach_by_tier: [0.20, 0.20, 0.15, 0.10], credibility: 0.30, local_hours: [6, 22]}
+
+names:
+  source: irn.names
+  file: names/IRN.yaml

@@ -1,0 +1,155 @@
+# United States. Every block cites a registry id (data/registry.yaml).
+# Percent tables may be given in percent or as fractions; they are normalised on load
+# after checking that they sum to 100 (or 1) within 1.5%.
+iso3: USA
+name: United States of America
+currency: USD
+languages_official: [en]
+start_dow: 0   # day-of-week of world day 0 (0 = Monday); overridden by the real start date
+
+generated:   # produced by scripts/data/build_*.py; supply the blocks noted in model/country.py GeneratedRef
+  - {source: wpp2024.USA, kind: wpp, file: generated/wpp2024/USA.yaml}   # population, age/sex, fertility, life table
+  - {source: wdi.USA, kind: wdi, file: generated/wdi/USA.yaml}           # urban share, internet users, exchange rate
+  - {source: ilo.USA, kind: ilo, file: generated/ilo/USA.yaml}           # education, employment status, occupation
+vital:
+  source: usa.vital
+  marriage_rate_per_1000: 6.2
+  divorce_rate_per_1000: 2.4
+  job_change_per_year: 0.22
+  job_loss_per_month: 0.012
+  job_find_per_month: 0.25
+
+time_zones:
+  source: usa.tz
+  rows:   # standard-time UTC offsets (minutes) and population share (%)
+    - {offset_min: -300, share: 47.0}   # Eastern
+    - {offset_min: -360, share: 29.0}   # Central
+    - {offset_min: -420, share: 7.0}    # Mountain
+    - {offset_min: -480, share: 16.0}   # Pacific
+    - {offset_min: -540, share: 0.4}    # Alaska
+    - {offset_min: -600, share: 0.6}    # Hawaii
+
+ethnicity:
+  source: usa.ethnicity
+  shares:
+    hispanic: 18.7
+    white: 57.8
+    black: 12.1
+    asian: 5.9
+    american_indian_alaska_native: 0.7
+    pacific_islander: 0.2
+    other: 0.5
+    multiracial: 4.1
+
+religion:
+  source: usa.religion
+  shares:
+    christian: 62
+    unaffiliated: 29
+    jewish: 2
+    muslim: 1
+    buddhist: 1
+    hindu: 1
+    other: 4
+
+languages:
+  source: usa.languages
+  l1:               # first language, possibly conditioned on ethnicity
+    default: {en: 78.0, es: 13.4, zh: 1.1, other: 7.5}
+    by_ethnicity:
+      hispanic: {en: 28.0, es: 70.0, other: 2.0}
+      asian: {en: 40.0, zh: 22.0, hi: 8.0, other: 30.0}
+      white: {en: 95.0, es: 1.0, other: 4.0}
+  l2_given_l1:      # probability of a second language given L1 (lower bound; scaled by education)
+    en: {es: 0.07, fr: 0.02}
+    es: {en: 0.72}
+    zh: {en: 0.62}
+    hi: {en: 0.85}
+    other: {en: 0.78}
+  l2_education_multiplier: [0.7, 1.0, 1.4]   # low / mid / high education group
+
+income:
+  source: usa.income
+  currency: USD
+  by_occupation:   # monthly median (local currency) and lognormal sigma
+    0: {median: 4500, sigma: 0.35}
+    1: {median: 7500, sigma: 0.55}
+    2: {median: 6500, sigma: 0.50}
+    3: {median: 4800, sigma: 0.45}
+    4: {median: 3700, sigma: 0.40}
+    5: {median: 2700, sigma: 0.45}
+    6: {median: 3000, sigma: 0.50}
+    7: {median: 4300, sigma: 0.40}
+    8: {median: 3700, sigma: 0.40}
+    9: {median: 2600, sigma: 0.45}
+
+household:
+  source: usa.household
+  size_pct: {1: 28.9, 2: 34.8, 3: 15.0, 4: 12.5, 5: 5.6, 6: 2.1, 7: 1.1}
+  married_share_by_age:
+    - {age_min: 18, age_max: 25, share: 0.07}
+    - {age_min: 25, age_max: 35, share: 0.40}
+    - {age_min: 35, age_max: 45, share: 0.60}
+    - {age_min: 45, age_max: 55, share: 0.62}
+    - {age_min: 55, age_max: 65, share: 0.62}
+    - {age_min: 65, age_max: 75, share: 0.60}
+    - {age_min: 75, age_max: 120, share: 0.45}
+  spouse_age_gap_mean: 2.3
+  spouse_age_gap_sd: 4.0
+  adult_child_at_home_by_age:   # share of unmarried adults living with a parent
+    - {age_min: 18, age_max: 25, share: 0.55}
+    - {age_min: 25, age_max: 35, share: 0.18}
+  mother_age_at_birth: {min: 16, max: 46, mean: 29.5, sd: 5.5}
+
+internet:   # relative age profile; rescaled so the population mean matches the World Bank total
+  source: usa.internet
+  rows:
+    - {age_min: 0, age_max: 10, share: 0.60}
+    - {age_min: 10, age_max: 18, share: 0.95}
+    - {age_min: 18, age_max: 30, share: 0.98}
+    - {age_min: 30, age_max: 50, share: 0.97}
+    - {age_min: 50, age_max: 65, share: 0.94}
+    - {age_min: 65, age_max: 120, share: 0.88}
+
+info_tier:
+  source: global.info_tier
+  by_edu_group:   # tiers 0..3 percent for low / mid / high education
+    low: [35, 45, 17, 3]
+    mid: [20, 50, 25, 5]
+    high: [8, 37, 42, 13]
+
+sensory:
+  source: usa.vision_hearing
+  vision_pct:
+    - {age_min: 0, age_max: 50, share: 1.0}
+    - {age_min: 50, age_max: 65, share: 3.0}
+    - {age_min: 65, age_max: 75, share: 6.0}
+    - {age_min: 75, age_max: 120, share: 15.0}
+  hearing_pct:
+    - {age_min: 0, age_max: 50, share: 1.0}
+    - {age_min: 50, age_max: 60, share: 4.0}
+    - {age_min: 60, age_max: 70, share: 10.0}
+    - {age_min: 70, age_max: 80, share: 22.0}
+    - {age_min: 80, age_max: 120, share: 45.0}
+
+big5:
+  source: usa.big5
+  mean: [0.0, 0.0, 0.0, 0.0, 0.0]
+  sd: [1.0, 1.0, 1.0, 1.0, 1.0]
+
+values:
+  source: usa.values
+  mean: {self: 0.17, money: 0.17, culture: 0.12, freedom: 0.22, family: 0.20, security: 0.12}
+  concentration: 15.0
+
+media:
+  source: usa.media
+  channels:
+    - {name: national_tv_news, kind: tv, lang: en, reach_by_tier: [0.25, 0.45, 0.55, 0.50], credibility: 0.55, local_hours: [18, 23]}
+    - {name: online_news, kind: online, lang: en, reach_by_tier: [0.05, 0.35, 0.60, 0.60], credibility: 0.55, local_hours: [7, 23]}
+    - {name: social_media, kind: social, lang: en, reach_by_tier: [0.30, 0.45, 0.45, 0.40], credibility: 0.35, local_hours: [7, 24]}
+    - {name: spanish_tv, kind: tv, lang: es, reach_by_tier: [0.30, 0.50, 0.50, 0.50], credibility: 0.55, local_hours: [18, 23]}
+
+names:
+  source: usa.names
+  file: names/USA.yaml

@@ -1,0 +1,171 @@
+# Indonesia. Every block cites a registry id (data/registry.yaml).
+iso3: IDN
+name: Indonesia
+currency: IDR
+languages_official: [id]
+
+generated:
+  - {source: wpp2024.IDN, kind: wpp, file: generated/wpp2024/IDN.yaml}
+  - {source: wdi.IDN, kind: wdi, file: generated/wdi/IDN.yaml}
+  - {source: ilo.IDN, kind: ilo, file: generated/ilo/IDN.yaml}
+
+vital:
+  source: idn.vital
+  marriage_rate_per_1000: 5.6   # ~1.58M marriages (BPS 2023), provisional
+  divorce_rate_per_1000: 1.6    # ~460k divorces 2023, provisional
+  job_change_per_year: 0.12
+  job_loss_per_month: 0.008
+  job_find_per_month: 0.24
+  marriage_age_peak: 25
+  marriage_age_sd: 6
+
+time_zones:
+  source: idn.tz
+  rows:
+    - {offset_min: 420, share: 80}   # WIB: Java, Sumatra, West and Central Kalimantan
+    - {offset_min: 480, share: 17}   # WITA: Bali, Nusa Tenggara, Sulawesi, other Kalimantan
+    - {offset_min: 540, share: 3}    # WIT: Maluku, Papua
+
+ethnicity:
+  source: idn.ethnicity
+  shares:   # 2010 census
+    javanese: 40.1
+    sundanese: 15.5
+    malay: 3.7
+    batak: 3.6
+    madurese: 3.0
+    betawi: 2.9
+    minangkabau: 2.7
+    buginese: 2.7
+    bantenese: 2.0
+    banjarese: 1.7
+    balinese: 1.7
+    acehnese: 1.4
+    dayak: 1.4
+    sasak: 1.3
+    chinese: 1.2
+    other: 15.1
+
+religion:
+  source: idn.religion
+  shares:   # 2010 census
+    muslim: 87.2
+    protestant: 7.0
+    catholic: 2.9
+    hindu: 1.7
+    buddhist: 0.7
+    other: 0.5
+  by_ethnicity:
+    balinese: {hindu: 90, muslim: 7, protestant: 2, catholic: 1}
+    batak: {protestant: 60, muslim: 35, catholic: 5}
+    chinese: {buddhist: 45, protestant: 25, catholic: 15, other: 15}
+    dayak: {protestant: 45, catholic: 30, muslim: 25}
+    javanese: {muslim: 96, protestant: 2, catholic: 1, other: 1}
+    sundanese: {muslim: 99.5, protestant: 0.5}
+    minangkabau: {muslim: 99.5, protestant: 0.5}
+    acehnese: {muslim: 100}
+    madurese: {muslim: 99.5, protestant: 0.5}
+
+languages:
+  source: idn.languages
+  l1:
+    default: {id: 50, other: 50}
+    by_ethnicity:
+      javanese: {jv: 85, id: 15}
+      sundanese: {su: 85, id: 15}
+      betawi: {id: 100}
+      malay: {id: 70, other: 30}
+      chinese: {id: 70, zh: 30}
+  l2_given_l1:
+    jv: {id: 0.9, en: 0.06}
+    su: {id: 0.9, en: 0.06}
+    id: {en: 0.10}
+    zh: {id: 0.95, en: 0.15}
+    other: {id: 0.9, en: 0.05}
+  l2_education_multiplier: [0.7, 1.0, 1.3]
+
+income:
+  source: idn.income
+  currency: IDR
+  by_occupation:   # GNI per capita x US relativities^1.3; provisional
+    0: {median: 4425000, sigma: 0.5}
+    1: {median: 8592000, sigma: 0.7}
+    2: {median: 7131000, sigma: 0.65}
+    3: {median: 4812000, sigma: 0.55}
+    4: {median: 3431000, sigma: 0.45}
+    5: {median: 2277000, sigma: 0.55}
+    6: {median: 2611000, sigma: 0.6}
+    7: {median: 4171000, sigma: 0.5}
+    8: {median: 3431000, sigma: 0.45}
+    9: {median: 2167000, sigma: 0.5}
+
+household:
+  source: idn.household
+  size_pct: {1: 9, 2: 17, 3: 22, 4: 24, 5: 15, 6: 7, 7: 6}   # mean ~3.6
+  married_share_by_age:
+    - {age_min: 18, age_max: 25, share: 0.30}
+    - {age_min: 25, age_max: 35, share: 0.75}
+    - {age_min: 35, age_max: 45, share: 0.88}
+    - {age_min: 45, age_max: 55, share: 0.88}
+    - {age_min: 55, age_max: 65, share: 0.82}
+    - {age_min: 65, age_max: 75, share: 0.70}
+    - {age_min: 75, age_max: 120, share: 0.50}
+  spouse_age_gap_mean: 4.0
+  spouse_age_gap_sd: 4.0
+  adult_child_at_home_by_age:
+    - {age_min: 18, age_max: 25, share: 0.75}
+    - {age_min: 25, age_max: 35, share: 0.35}
+  mother_age_at_birth: {min: 15, max: 46, mean: 27.5, sd: 5.5}
+
+internet:
+  source: global.internet_profile
+  rows:
+    - {age_min: 0, age_max: 10, share: 0.4}
+    - {age_min: 10, age_max: 18, share: 0.9}
+    - {age_min: 18, age_max: 30, share: 1.0}
+    - {age_min: 30, age_max: 50, share: 0.9}
+    - {age_min: 50, age_max: 65, share: 0.65}
+    - {age_min: 65, age_max: 120, share: 0.35}
+
+info_tier:
+  source: global.info_tier
+  by_edu_group:
+    low: [35, 45, 17, 3]
+    mid: [20, 50, 25, 5]
+    high: [8, 37, 42, 13]
+
+sensory:
+  source: idn.vision_hearing
+  vision_pct:
+    - {age_min: 0, age_max: 50, share: 2.0}
+    - {age_min: 50, age_max: 65, share: 6.0}
+    - {age_min: 65, age_max: 75, share: 12.0}
+    - {age_min: 75, age_max: 120, share: 30.0}
+  hearing_pct:
+    - {age_min: 0, age_max: 50, share: 1.2}
+    - {age_min: 50, age_max: 60, share: 4.8}
+    - {age_min: 60, age_max: 70, share: 12.0}
+    - {age_min: 70, age_max: 80, share: 26.0}
+    - {age_min: 80, age_max: 120, share: 50.0}
+
+big5:
+  source: global.big5_placeholder
+  mean: [0.0, 0.0, 0.0, 0.0, 0.0]
+  sd: [1.0, 1.0, 1.0, 1.0, 1.0]
+
+values:
+  source: idn.values
+  mean: {self: 0.12, money: 0.16, culture: 0.18, freedom: 0.10, family: 0.28, security: 0.16}
+  concentration: 15.0
+
+media:
+  source: idn.media
+  channels:
+    - {name: broadcast_tv, kind: tv, lang: id, reach_by_tier: [0.45, 0.60, 0.55, 0.50], credibility: 0.50, local_hours: [18, 23]}
+    - {name: online_news, kind: online, lang: id, reach_by_tier: [0.05, 0.35, 0.60, 0.60], credibility: 0.50, local_hours: [6, 24]}
+    - {name: messaging_social, kind: social, lang: id, reach_by_tier: [0.40, 0.55, 0.50, 0.45], credibility: 0.30, local_hours: [6, 24]}
+    - {name: radio, kind: radio, lang: id, reach_by_tier: [0.20, 0.20, 0.15, 0.10], credibility: 0.50, local_hours: [5, 21]}
+
+names:
+  source: idn.names
+  file: names/IDN.yaml

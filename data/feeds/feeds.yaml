@@ -1,0 +1,24 @@
+# Live news feeds per country (fetched by `jahan ingest`; network access happens only there).
+# Each headline pushed into the world goes to the listed channel kinds in that country, in the feed's
+# language, so only agents who use those channels and speak the language can see it.
+# Google News has no Iran edition (it returns international English news), so Iran uses outlet feeds:
+# BBC Persian (outside Iran, widely read via VPN) and IRNA (state news agency).
+feeds:
+  USA:
+    - {name: google_news_us, url: "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en", lang: en, channel_kinds: [tv, online, social]}
+  BRA:
+    - {name: google_news_br, url: "https://news.google.com/rss?hl=pt-BR&gl=BR&ceid=BR:pt-419", lang: pt, channel_kinds: [tv, online, social, radio]}
+  DEU:
+    - {name: google_news_de, url: "https://news.google.com/rss?hl=de&gl=DE&ceid=DE:de", lang: de, channel_kinds: [tv, online, social, radio]}
+  NGA:
+    - {name: google_news_ng, url: "https://news.google.com/rss?hl=en-NG&gl=NG&ceid=NG:en", lang: en, channel_kinds: [tv, online, social]}
+  IRN:
+    - {name: bbc_persian, url: "https://feeds.bbci.co.uk/persian/rss.xml", lang: fa, channel_kinds: [online, social, tv]}
+    - {name: irna, url: "https://www.irna.ir/rss", lang: fa, channel_kinds: [tv, radio, online]}
+  IND:
+    - {name: google_news_in_hi, url: "https://news.google.com/rss?hl=hi&gl=IN&ceid=IN:hi", lang: hi, channel_kinds: [tv, social, newspaper]}
+    - {name: google_news_in_en, url: "https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en", lang: en, channel_kinds: [online]}
+  CHN:
+    - {name: google_news_cn, url: "https://news.google.com/rss?hl=zh-CN&gl=CN&ceid=CN:zh-Hans", lang: zh, channel_kinds: [tv, online, social]}
+  IDN:
+    - {name: google_news_id, url: "https://news.google.com/rss?hl=id&gl=ID&ceid=ID:id", lang: id, channel_kinds: [tv, online, social, radio]}

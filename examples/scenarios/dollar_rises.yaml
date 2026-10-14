@@ -1,0 +1,18 @@
+prompt: "The US dollar rises 20% against every other currency over four weeks, while Smart Ring X launches worldwide at $199."
+horizon_days: 120
+events:
+  - type: product_launch
+    name: Smart Ring X
+    topic: tech
+    attributes: {self: 0.4, security: 0.35, freedom: 0.25}
+    true_quality: 0.65
+    price_usd: 199
+    countries: [USA, BRA, DEU, NGA, IRN, IND, CHN, IDN]
+    salience: 0.6
+    pushes:
+      - {channel_kinds: [tv, online, social], start_day_offset: 0, duration_days: 30, intensity: 1.0}
+  - type: macro
+    variable: fx_local_per_usd     # local currency per dollar; positive = stronger dollar
+    country: null                  # every non-USD country
+    steps:
+      - {start_day_offset: 0, days: 28, pct_per_day: 0.653}   # (1.00653)^28 = 1.20

@@ -1,0 +1,96 @@
+# Notable public figures, Iran. Real names by default (user decision, 2026-10-13).
+# Verified by web search on the as_of date; the 2026 Iran war changed several offices this year.
+# No reliable public approval polls exist for Iranian officials; approval priors are placeholders.
+# All text generated for these people is labelled [simulated].
+as_of: 2026-10-13
+entries:
+  - key: IRN.supreme_leader
+    role: supreme_leader
+    office: Supreme Leader of Iran
+    holder_name: Mojtaba Khamenei
+    sex: M
+    birth_year: 1969
+    verified: "Chosen by the Assembly of Experts in March 2026 after Ali Khamenei was killed on 2026-02-28"
+    sources:
+      - https://en.wikipedia.org/wiki/Mojtaba_Khamenei
+      - https://en.wikipedia.org/wiki/2026_Iranian_supreme_leader_election
+    visibility: 7.9
+    approval: {value: 0.35, source: "placeholder; no reliable poll (GAMAAN surveys report low trust in the system)"}
+    platforms: [state_tv, official_website]
+    languages: [fa, ar]
+    values: {self: 0.10, money: 0.08, culture: 0.30, freedom: 0.05, family: 0.17, security: 0.30}
+    stances:
+      - {topic: world, position: -0.8, summary: "Leads Iran during the 2026 war with the United States", source: "https://en.wikipedia.org/wiki/Mojtaba_Khamenei"}
+    confidence: low
+  - key: IRN.head_of_state
+    role: head_of_state
+    office: President of Iran
+    holder_name: Masoud Pezeshkian
+    sex: M
+    birth_year: 1954
+    verified: "In office since 2024-07-28; Al Jazeera report 2026-09-05"
+    sources:
+      - https://en.wikipedia.org/wiki/Masoud_Pezeshkian
+      - https://www.aljazeera.com/economy/2026/9/5/iran-president-pezeshkian-calls-for-unity-as-us-ramps-up-economic-pressure
+    visibility: 7.5
+    approval: {value: 0.4, source: "placeholder; no reliable poll"}
+    platforms: [state_tv, x]
+    languages: [fa, az]
+    values: {self: 0.10, money: 0.15, culture: 0.20, freedom: 0.12, family: 0.20, security: 0.23}
+    stances:
+      - {topic: economy, position: -0.5, summary: "Calls for national unity as US economic pressure intensifies", source: "https://www.aljazeera.com/economy/2026/9/5/iran-president-pezeshkian-calls-for-unity-as-us-ramps-up-economic-pressure"}
+    confidence: low
+  - key: IRN.central_bank_governor
+    role: central_bank_governor
+    office: Governor of the Central Bank of Iran
+    holder_name: Abdolnaser Hemmati
+    sex: M
+    birth_year: 1957
+    verified: "Appointed 2025-12-31 after Mohammad-Reza Farzin resigned; statements reported 2026-08-20 and 2026-10-07"
+    sources:
+      - https://en.wikipedia.org/wiki/Abdolnaser_Hemmati
+      - https://www.thenationalnews.com/news/2026/08/20/iran-central-bank-chief-says-oil-exports-have-fallen-to-zero/
+      - https://www.iranintl.com/en/202610076990
+    visibility: 6.3
+    approval: {value: 0.35, source: "placeholder; no reliable poll"}
+    platforms: [state_tv, press]
+    languages: [fa]
+    values: {self: 0.10, money: 0.30, culture: 0.12, freedom: 0.10, family: 0.13, security: 0.25}
+    stances:
+      - {topic: economy, position: -0.8, summary: "Said in August 2026 that Iran's oil exports have fallen to zero", source: "https://www.thenationalnews.com/news/2026/08/20/iran-central-bank-chief-says-oil-exports-have-fallen-to-zero/"}
+      - {topic: economy, position: 0.2, summary: "Said the bank will take whatever measures needed to manage the FX market (October 2026)", source: "https://www.iranintl.com/en/202610076990"}
+    confidence: low
+  - key: IRN.foreign_minister
+    role: foreign_minister
+    office: Minister of Foreign Affairs
+    holder_name: Abbas Araghchi
+    sex: M
+    birth_year: 1962
+    verified: "In office during 2026 war (March 2026 interviews); no replacement found as of 2026-10-13 (latest confirmation March-April 2026)"
+    sources:
+      - https://www.aljazeera.com/news/2026/3/18/killing-of-larijani-will-not-destabilise-iranian-political-system-minister
+    visibility: 6.8
+    approval: {value: 0.4, source: "placeholder; no reliable poll"}
+    platforms: [x, state_tv]
+    languages: [fa, en]
+    values: {self: 0.10, money: 0.12, culture: 0.18, freedom: 0.10, family: 0.15, security: 0.35}
+    stances:
+      - {topic: world, position: -0.5, summary: "Says Iran's government does not rely on a single individual (after Larijani's killing)", source: "https://www.aljazeera.com/news/2026/3/18/killing-of-larijani-will-not-destabilise-iranian-political-system-minister"}
+    confidence: low
+  - key: IRN.legislative_speaker
+    role: legislative_speaker
+    office: Speaker of the Islamic Consultative Assembly
+    holder_name: Mohammad Bagher Ghalibaf
+    sex: M
+    birth_year: 1961
+    verified: "Speaker since 2020; led ceasefire talks in Islamabad in April 2026 (latest confirmation April 2026)"
+    sources:
+      - https://en.wikipedia.org/wiki/Mohammad_Bagher_Ghalibaf
+    visibility: 6.5
+    approval: {value: 0.35, source: "placeholder; no reliable poll"}
+    platforms: [state_tv, x]
+    languages: [fa]
+    values: {self: 0.12, money: 0.12, culture: 0.22, freedom: 0.06, family: 0.18, security: 0.30}
+    stances:
+      - {topic: world, position: 0.2, summary: "Led Iran's delegation in April 2026 ceasefire talks with a US delegation led by JD Vance", source: "https://en.wikipedia.org/wiki/Mohammad_Bagher_Ghalibaf"}
+    confidence: low

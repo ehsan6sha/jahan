@@ -1,0 +1,63 @@
+[project]
+name = "jahan"
+version = "0.0.1"
+description = "Open-source real-world society simulator: research-grounded agents, social circles, trust, information diffusion, scenarios and time travel."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.0",
+    "pydantic>=2.6",
+    "pyyaml>=6.0",
+    "pyarrow>=15",
+    "typer>=0.12",
+]
+
+[project.optional-dependencies]
+llm = ["anthropic>=0.40", "httpx>=0.27"]
+
+[project.scripts]
+jahan = "jahan.cli:app"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "hypothesis>=6.100",
+    "ruff>=0.5",
+    "mypy>=1.10",
+    "types-PyYAML",
+    "openpyxl>=3.1.5",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/jahan"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q -m 'not slow and not perf and not network'"
+markers = [
+    "slow: long-running statistical tests",
+    "perf: performance budget tests",
+    "network: tests that need internet access",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "NPY"]
+ignore = ["E741"]
+
+[tool.mypy]
+python_version = "3.12"
+packages = ["jahan"]
+mypy_path = "src"
+ignore_missing_imports = true
+warn_unused_ignores = true
+plugins = ["pydantic.mypy"]  # understands Field(default, ...) and validators
