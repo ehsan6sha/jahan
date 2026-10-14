@@ -103,23 +103,35 @@ def _product_label(world: World, item: int) -> str:
     return f"item {item}"
 
 
-def circle_listing(world: World, agent_id: int, limit: int = 25) -> str:
+def circle_members(world: World, agent_id: int, limit: int | None = None) -> list[dict[str, Any]]:
+    """People who listen to this agent, most trusting first: id, name, tie kind, trust in the agent."""
     from jahan.sim.trust import effective_trust
 
     e = world.edges
     rows = np.flatnonzero((e["dst"] == agent_id) & e["active"])
     rows = rows[world.pop["alive"][e["src"][rows]]]
     if rows.size == 0:
-        return "Nobody listens to this agent."
+        return []
     t = effective_trust(world, rows, world.config.params)
     order = np.argsort(-t, kind="stable")[:limit]
-    out = [f"{rows.size} people listen to agent {agent_id} (their trust in you):"]
-    for k in order:
-        other = int(e["src"][rows[k]])
-        out.append(
-            f"  {other:>7}  {display_name(world, world.agent_row(other))}  "
-            f"({EdgeKind(int(e['kind'][rows[k]])).name.lower()}, trust {t[k]:.2f})"
-        )
+    return [
+        {
+            "id": int(e["src"][rows[k]]),
+            "name": display_name(world, world.agent_row(int(e["src"][rows[k]]))),
+            "tie": EdgeKind(int(e["kind"][rows[k]])).name.lower(),
+            "trust": float(t[k]),
+        }
+        for k in order
+    ]
+
+
+def circle_listing(world: World, agent_id: int, limit: int = 25) -> str:
+    members = circle_members(world, agent_id)
+    if not members:
+        return "Nobody listens to this agent."
+    out = [f"{len(members)} people listen to agent {agent_id} (their trust in you):"]
+    for m in members[:limit]:
+        out.append(f"  {m['id']:>7}  {m['name']}  ({m['tie']}, trust {m['trust']:.2f})")
     return "\n".join(out)
 
 

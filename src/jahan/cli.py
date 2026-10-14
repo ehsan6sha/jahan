@@ -326,6 +326,19 @@ def _parse_interactive(  # noqa: ANN202
     return result.scenario
 
 
+PreviewOpt = Annotated[
+    bool,
+    typer.Option(
+        "--preview", help="Show the scenario the prompt becomes and inject nothing (re-run with --yes to inject)"
+    ),
+]
+
+
+def _show_preview(world, spec: Scenario) -> None:  # noqa: ANN001
+    typer.echo(spec.dump_yaml())
+    typer.echo(f"Preview only: nothing was injected. The world is on day {world.day} ({world.date().isoformat()}).")
+
+
 @app.command()
 def inject(
     run_dir: RunOpt,
@@ -333,6 +346,7 @@ def inject(
     prompt: Annotated[str | None, typer.Option(help="Free-text what-if prompt (parsed by the LLM)")] = None,
     provider: ProviderOpt = "anthropic",
     yes: Annotated[bool, typer.Option("--yes", "-y", help="Skip confirmation")] = False,
+    preview: PreviewOpt = False,
 ) -> None:
     """Inject a scenario (YAML or free text) at the current day; writes a pre-prompt snapshot first."""
     if (scenario is None) == (prompt is None):
@@ -340,10 +354,13 @@ def inject(
     rd = RunDir(run_dir)
     world = _load_head(rd)
     if scenario is not None:
-        _inject_spec(rd, world, Scenario.load(scenario), yes, source=str(scenario))
+        spec, source = Scenario.load(scenario), str(scenario)
     else:
-        spec = _parse_interactive(rd, world, str(prompt), provider, feed=False)
-        _inject_spec(rd, world, spec, yes, source="llm")
+        spec, source = _parse_interactive(rd, world, str(prompt), provider, feed=False), "llm"
+    if preview:
+        _show_preview(world, spec)
+        return
+    _inject_spec(rd, world, spec, yes, source=source)
 
 
 @app.command()
@@ -352,6 +369,7 @@ def feed(
     text: Annotated[str, typer.Argument(help='Future events, e.g. "gold +1%/day for a week then -10%"')],
     provider: ProviderOpt = "anthropic",
     yes: Annotated[bool, typer.Option("--yes", "-y")] = False,
+    preview: PreviewOpt = False,
 ) -> None:
     """Feed news and market moves for simulated days beyond today's real date (there is no real news yet)."""
     rd = RunDir(run_dir)
@@ -359,6 +377,9 @@ def feed(
     real_today = dt.datetime.now(dt.UTC).date()
     offset = (real_today - world.date()).days + 1 if world.date() <= real_today else None
     spec = _parse_interactive(rd, world, text, provider, feed=True, first_future_offset=offset)
+    if preview:
+        _show_preview(world, spec)
+        return
     _inject_spec(rd, world, spec, yes, source="feed")
 
 
@@ -640,20 +661,47 @@ def reset(
     typer.echo(f"Reset to day {day} (before prompt {before_prompt}); removed {len(removed)} log chunks.")
 
 
+JsonOpt = Annotated[bool, typer.Option("--json", help="Machine-readable output (used by `jahan ui`)")]
+
+
+@app.command()
+def status(run_dir: RunOpt, as_json: JsonOpt = False) -> None:
+    """Where the world is: date, prompts so far, who you play, reports, and what Claude has cost."""
+    import json
+
+    from jahan.query.status import status_text, world_status
+
+    rd = RunDir(run_dir)
+    st = world_status(rd, _load_head(rd))
+    typer.echo(json.dumps(st, ensure_ascii=False) if as_json else status_text(st))
+
+
 @app.command()
 def agents(
     run_dir: RunOpt,
     filter: Annotated[str | None, typer.Option("--filter", "-f", help='e.g. "age > 30 and info_tier >= 2"')] = None,
     limit: Annotated[int, typer.Option()] = 20,
+    as_json: JsonOpt = False,
 ) -> None:
     """List agents, optionally filtered."""
-    from jahan.query.scope import evaluate
+    from jahan.query.scope import FilterError, evaluate
     from jahan.query.views import list_row
 
     world = _load_head(RunDir(run_dir))
-    mask = evaluate(world, filter) if filter else np.ones(world.pop.n, dtype=bool)
+    try:
+        mask = evaluate(world, filter) if filter else np.ones(world.pop.n, dtype=bool)
+    except FilterError as e:
+        raise typer.BadParameter(str(e)) from e
     mask &= world.pop["alive"]
     idx = np.flatnonzero(mask)
+    if as_json:
+        import json
+
+        from jahan.query.status import agent_summary
+
+        rows = [agent_summary(world, int(i)) for i in idx[:limit]]
+        typer.echo(json.dumps({"matches": int(idx.size), "agents": rows}, ensure_ascii=False))
+        return
     typer.echo(f"{idx.size} agents match.")
     for i in idx[:limit]:
         typer.echo(list_row(world, int(i)))

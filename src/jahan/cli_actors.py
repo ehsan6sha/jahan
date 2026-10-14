@@ -20,7 +20,7 @@ from pydantic import ValidationError
 
 from jahan.actors import engine, session
 from jahan.actors.actions import Claim, Control, CreateAgent, Decision, Message, Post
-from jahan.actors.briefing import briefing, circle_listing, pending_replies, reply
+from jahan.actors.briefing import briefing, circle_listing, circle_members, pending_replies, reply
 from jahan.actors.extract import claim_from_flags, extract_claim, profile_from_text
 from jahan.actors.policy import PolicyError, compile_policy, default_utc_hour
 from jahan.cli import (
@@ -460,11 +460,20 @@ def _print_replies(rd: RunDir, world, aid: int, client) -> None:  # noqa: ANN001
 
 
 @app.command()
-def circle(run_dir: RunOpt, as_: AsOpt = None) -> None:
+def circle(
+    run_dir: RunOpt,
+    as_: AsOpt = None,
+    as_json: Annotated[bool, typer.Option("--json", help="Machine-readable output (used by `jahan ui`)")] = False,
+) -> None:
     """Who listens to your agent, and how much they trust it."""
     rd = RunDir(run_dir)
     world = _load_head(rd)
     _, aid = _actor(rd, world, as_)
+    if as_json:
+        import json
+
+        typer.echo(json.dumps({"agent": aid, "listeners": circle_members(world, aid)}, ensure_ascii=False))
+        return
     typer.echo(circle_listing(world, aid))
 
 
