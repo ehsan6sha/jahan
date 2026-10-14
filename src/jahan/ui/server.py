@@ -214,7 +214,9 @@ def kill_tree(proc: subprocess.Popen[str]) -> None:
             pass
 
     signal_group(signal.SIGTERM)
-    threading.Timer(3.0, signal_group, args=(signal.SIGKILL,)).start()
+    force = threading.Timer(3.0, signal_group, args=(signal.SIGKILL,))
+    force.daemon = True  # never keeps the server from exiting
+    force.start()
 
 
 class Jobs:
@@ -558,10 +560,13 @@ def serve(project: Path, runs: Path, port: int, open_browser: bool, key_file: Pa
     url = f"http://127.0.0.1:{s.port}/#t={s.token}"
     print(f"Jahan is open at {url}", flush=True)
     print("This link carries a private key for this session; keep it to yourself. Press Ctrl+C to stop.", flush=True)
+    page: Path | None = None
     if open_browser:
         page = redirect_file(url)
         webbrowser.open(page.as_uri())
-        threading.Timer(120.0, lambda: page.unlink(missing_ok=True)).start()
+        tidy = threading.Timer(120.0, lambda: page.unlink(missing_ok=True) if page else None)
+        tidy.daemon = True  # Ctrl+C must not wait for it
+        tidy.start()
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
@@ -569,3 +574,5 @@ def serve(project: Path, runs: Path, port: int, open_browser: bool, key_file: Pa
     finally:
         jobs.shutdown()
         httpd.server_close()
+        if page is not None:
+            page.unlink(missing_ok=True)
