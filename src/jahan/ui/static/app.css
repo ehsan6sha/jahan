@@ -126,6 +126,7 @@ p { margin: 0 0 0.8em; }
 .nav-item[aria-current="page"] .nav-title { color: var(--accent); font-weight: 600; }
 .nav-item:disabled { opacity: 0.45; cursor: not-allowed; }
 .nav-sep { height: 1px; background: var(--line); margin: 10px 6px; }
+.nav-disclaimer { font-size: 11px; color: var(--muted); margin: 14px 12px 0; line-height: 1.4; }
 main { padding: 22px 28px 40px; max-width: 1160px; width: 100%; outline: none; }
 
 /* cards and grids */

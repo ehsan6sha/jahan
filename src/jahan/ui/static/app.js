@@ -357,7 +357,8 @@
         title: disabled ? "Open or create a world first" : v.hint,
         onclick: () => { go(v.id); $("#sidebar").classList.remove("open"); },
       }, h("span", { class: "nav-title" }, v.title), h("span", { class: "nav-hint" }, v.hint));
-    }));
+    }), h("p", { class: "nav-disclaimer" },
+      "Educational and testing use only. Not financial or any other advice; not a forecast. No warranty; use at your own risk (Apache-2.0)."));
   }
 
   function go(view) {

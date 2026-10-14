@@ -20,6 +20,18 @@ prompt.
 > recorded for exact replay. A browser interface (`jahan ui`) covers every command. Not yet built:
 > multiplayer (Milestone 2). See `docs/plan.md`.
 
+## Disclaimer
+
+Jahan is open-source software provided "as is", without warranty of any kind, express or implied. It is
+a solely educational and testing project, meant for learning, research and experiments.
+
+- **Not advice.** Nothing it produces is financial, investment, trading, legal, medical or any other
+  professional advice.
+- **Not a forecast.** Simulated people, opinions, news reach and market moves are not predictions of real
+  ones. No accuracy is promised.
+- **Your own risk.** You use it at your own risk. The developers and contributors accept no liability for
+  any loss or damage arising from its use. See sections 7 and 8 of the [LICENSE](LICENSE).
+
 ## Quickstart
 
 Requires Python 3.12 and [uv](https://docs.astral.sh/uv/).
@@ -300,4 +312,5 @@ The UN WPP CSVs (about 265 MB) and the migrant stock workbook are downloaded by 
 
 ## License
 
-Apache-2.0.
+Apache-2.0; the full text is in [LICENSE](LICENSE). Sections 7 and 8 disclaim all warranties and limit
+liability; see also the [Disclaimer](#disclaimer).
