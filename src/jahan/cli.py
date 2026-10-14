@@ -40,9 +40,16 @@ RunOpt = Annotated[Path, typer.Option("--run", "-r", help="Run directory")]
 
 
 def _load_head(rd: RunDir):  # noqa: ANN202
+    from jahan.store.snapshot import SnapshotError
+
     if not rd.exists():
         raise typer.BadParameter(f"{rd.root} has no world; run `jahan gen` first")
-    return load_snapshot(rd.head)
+    try:
+        return load_snapshot(rd.head)
+    except SnapshotError as e:
+        raise typer.BadParameter(
+            f"{rd.root} cannot be opened by this version of Jahan ({e}). Create a new world with `jahan gen`."
+        ) from e
 
 
 @app.command()
@@ -735,6 +742,10 @@ def ui(
     """Open the browser interface: every button runs a jahan command on this computer and shows its output."""
     from jahan.ui.server import serve
 
+    if key_file is not None and not key_file.expanduser().is_file():
+        raise typer.BadParameter(f"no key file at {key_file} (a text file holding only your Anthropic API key)")
+    if runs_dir.exists() and not runs_dir.is_dir():
+        raise typer.BadParameter(f"{runs_dir} is a file, not a folder of worlds")
     project = paths.data_dir().parent
     serve(project, runs_dir if runs_dir.is_absolute() else Path.cwd() / runs_dir, port, browser, key_file)
 

@@ -38,15 +38,68 @@ def test_allow_list_and_paths(tmp_path):
         ["run", f"--run={world}"],  # path options must be separate arguments
         ["inject", "--run", str(world), "--scenario", str(tmp_path / "evil.yaml")],
         ["session", "delete", "--run", str(world)],
+        ["run", "--run", str(world), f"-r{tmp_path / 'elsewhere'}"],  # a glued short option the CLI would honour
+        ["inject", "--run", str(world), "-yr", str(tmp_path / "elsewhere")],  # a cluster hiding -r
+        ["run", "--run", str(world), "--run", str(tmp_path / "runs" / "other")],  # the CLI keeps the last one
         "run --run x",  # not a list
         [],
     ):
         with pytest.raises(ArgvError):
             check_argv(bad, s)
-    # after "--" everything is text, even something that looks like an option
-    argv, _ = check_argv(["say", "--run", str(world), "--to", "3", "--", "--run", "../../etc"], s)
-    assert argv[-2:] == ["--run", "../../etc"]
+    # negative numbers and the real short options are fine
+    check_argv(["post", "--run", str(world), "--stance", "-0.5", "-y", "--", "prices are rising"], s)
+    # "--" can be swallowed as an option's value, after which the CLI would honour a second --run: so the
+    # tokens after "--" are checked too
+    for bad in (
+        ["inject", "--run", str(world), "--prompt", "--", "--run", str(tmp_path / "elsewhere"), "--yes"],
+        ["say", "--run", str(world), "--to", "3", "--", "--run", "../../etc"],
+        ["say", "--run", str(world), "--to", "3", "--", "-rX"],
+    ):
+        with pytest.raises(ArgvError):
+            check_argv(bad, s)
+    argv, _ = check_argv(["say", "--run", str(world), "--to", "3", "--", "see you at 10"], s)
+    assert argv[-1] == "see you at 10"
     assert cmdline(["say", "--run", "runs/w", "--", "hello there"]) == 'jahan say --run runs/w -- "hello there"'
+
+
+def test_browser_is_opened_through_a_private_redirect_file():
+    from jahan.ui.server import redirect_file
+
+    page = redirect_file("http://127.0.0.1:8765/#t=abc&x")
+    try:
+        text = page.read_text(encoding="utf-8")
+        assert 'url=http://127.0.0.1:8765/#t=abc&amp;x"' in text
+        if hasattr(page.stat(), "st_mode") and __import__("os").name == "posix":
+            assert page.stat().st_mode & 0o077 == 0  # nobody else can read the token
+    finally:
+        page.unlink()
+
+
+def test_every_path_option_of_an_allowed_command_is_confined():
+    """A new path-like option on any command the page may run must be added to PATH_OPTIONS (or this fails)."""
+    import typer.main  # class names, not imports: recent Typer bundles its own copy of click
+
+    from jahan.cli import app
+    from jahan.ui.server import GLOBAL_COMMANDS, PATH_OPTIONS, SESSION_SUBCOMMANDS, WORLD_COMMANDS
+
+    def walk(cmd, name):
+        if hasattr(cmd, "commands"):
+            for sub, c in cmd.commands.items():
+                yield from walk(c, f"{name} {sub}".strip())
+        else:
+            yield name, cmd
+
+    allowed = (WORLD_COMMANDS | GLOBAL_COMMANDS) - {"session"} | {f"session {s}" for s in SESSION_SUBCOMMANDS}
+    seen = set()
+    for name, cmd in walk(typer.main.get_command(app), ""):
+        if name not in allowed:
+            continue
+        seen.add(name)
+        for p in cmd.params:
+            if type(p.type).__name__.endswith("Path"):
+                assert "Option" in type(p).__name__, f"{name}: positional path {p.name}"
+                assert set(p.opts) <= set(PATH_OPTIONS), f"{name}: {p.opts} is not confined"
+    assert seen == allowed  # every allowed command exists
 
 
 @pytest.fixture()
@@ -90,6 +143,13 @@ def _wait(s, job_id, timeout=120):
             return view
         time.sleep(0.2)
     raise AssertionError("job did not finish")
+
+
+def test_port_is_not_shared(server, tmp_path):
+    """A second server (another `jahan ui` or any program) cannot listen on the same port."""
+    s, _ = server
+    with pytest.raises(OSError, match="no free port"):
+        make_server(_settings(tmp_path), range(s.port, s.port + 1))
 
 
 def test_requests_need_token_host_and_origin(server):

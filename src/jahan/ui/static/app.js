@@ -31,6 +31,8 @@
     set(k, v) { try { localStorage.setItem("jahan:" + k, JSON.stringify(v)); } catch { /* private mode */ } },
   };
   const quote = (s) => "'" + String(s).replace(/'/g, "") + "'";
+  // Free text passed as an option value must not start with a dash (the server refuses option-like values).
+  const clean = (s) => String(s).replace(/^[\s-]+/, "").trim();
 
   // ------------------------------------------------------------------ state
   const S = {
@@ -278,8 +280,13 @@
     try {
       S.status = await runJSON(["status", "--run", S.world, "--json"]);
     } catch (e) {
+      // A world this version cannot read (older format, changed data files): leave it, say why, go to Start.
+      S.flash = { kind: "error", text: `Could not open ${S.world}: ${e.message}` };
       S.status = null;
-      S.flash = { kind: "error", text: `Could not read ${S.world}: ${e.message}` };
+      S.world = null;
+      store.set("world", null);
+      $("#world-select").value = "";
+      S.view = "start";
     }
     renderChrome();
   }
@@ -640,7 +647,7 @@
 
   async function previewText(box, kind) {
     const W = S.whatif;
-    let text = (kind === "feed" ? W.future : W.text).trim();
+    let text = clean(kind === "feed" ? W.future : W.text);
     if (!text) { box.replaceChildren(h("div", { class: "notice error" }, "Write something first.")); return; }
     const answered = Object.entries(W.answers).filter(([, a]) => a.trim());
     if (answered.length) text += "\nDetails: " + answered.map(([q, a]) => `${q} ${a}`).join(" ");
@@ -797,7 +804,7 @@
     const detail = h("div", {});
     const search = async (keep) => {
       if (!keep) P.limit = 25;
-      const expr = (P.advanced !== null ? P.advanced : filterExpr(P.form)).trim();
+      const expr = clean(P.advanced !== null ? P.advanced : filterExpr(P.form));
       results.replaceChildren(loading("Searching…"));
       try {
         const argv = ["agents", "--run", S.world, "--limit", String(P.limit), "--json"];
@@ -861,9 +868,9 @@
     let day = Math.max(0, st.day - 1);
     let prose = false;
     const ask = async () => {
-      if (!question.trim()) return;
+      if (!clean(question)) return;
       askBox.replaceChildren(loading("Asking…"));
-      const rec = await run(["ask", "--run", S.world, "--scope", `agent:${id}`, ...(st.llm.ready ? [] : ["--no-llm"]), "--", question]);
+      const rec = await run(["ask", "--run", S.world, "--scope", `agent:${id}`, ...(st.llm.ready ? [] : ["--no-llm"]), "--", clean(question)]);
       askBox.replaceChildren(rec.status === "ok" ? answersBlock(rec, "agent") : errorNotice(jobError(rec)));
     };
     const qta = h("textarea", { placeholder: "What have you heard lately?", oninput: (e) => (question = e.target.value) });
@@ -915,7 +922,7 @@
     const A = S.ask;
     const box = h("div", {});
     const send = async () => {
-      if (!A.question.trim()) { box.replaceChildren(h("div", { class: "notice error" }, "Write a question first.")); return; }
+      if (!clean(A.question)) { box.replaceChildren(h("div", { class: "notice error" }, "Write a question first.")); return; }
       let scope = "world";
       if (A.mode === "agent") {
         if (!/^\d+$/.test(String(A.agent).trim())) { box.replaceChildren(h("div", { class: "notice error" }, "Enter a person's number (find it under People).")); return; }
@@ -926,7 +933,7 @@
       }
       const argv = ["ask", "--run", S.world, "--scope", scope, "--sample", String(A.sample)];
       if (A.noLlm || !st.llm.ready) argv.push("--no-llm");
-      argv.push("--", A.question);
+      argv.push("--", clean(A.question));
       box.replaceChildren(loading("Interviewing…"));
       const rec = await run(argv);
       A.result = rec;
@@ -995,11 +1002,11 @@
     const set = (k) => (e) => (f[k] = e.target ? (e.target.type === "checkbox" ? e.target.checked : e.target.value) : e);
     const submit = async () => {
       const argv = ["create-agent", "--run", S.world, "--country", f.country];
-      const opt = (flag, v) => { if (String(v).trim() !== "") argv.push(flag, String(v).trim()); };
+      const opt = (flag, v) => { if (clean(v) !== "") argv.push(flag, clean(v)); };
       opt("--sex", f.sex); opt("--age", f.age); opt("--first-name", f.first); opt("--last-name", f.last); opt("--region", f.region);
       opt("--education", f.education); opt("--income", f.income); opt("--languages", f.languages); opt("--visibility", f.visibility);
       opt("--friends", f.friends); opt("--acquaintances", f.acquaintances);
-      if (f.describe.trim()) argv.push("--describe", f.describe.trim());
+      if (clean(f.describe)) argv.push("--describe", clean(f.describe));
       if (f.role) { argv.push("--notable-role", f.role); opt("--office", f.office); }
       if (f.possess) argv.push("--possess");
       Object.assign(S.play, { brief: null, briefing: null, circle: null, circling: null });
@@ -1135,8 +1142,8 @@
       let text = "";
       const targets = (P.circle ? P.circle.listeners : []).slice(0, 60);
       const send = async () => {
-        if (!P.target || !text.trim()) { box.replaceChildren(h("div", { class: "notice error" }, "Choose who and write a message.")); return; }
-        const rec = await act(box, ["say", "--run", S.world, ...asArgs, "--to", P.target, "--hour", hour, ...claimOpts(), "--", text]);
+        if (!P.target || !clean(text)) { box.replaceChildren(h("div", { class: "notice error" }, "Choose who and write a message.")); return; }
+        const rec = await act(box, ["say", "--run", S.world, ...asArgs, "--to", P.target, "--hour", hour, ...claimOpts(), "--", clean(text)]);
         if (rec) queued(rec);
       };
       body = h("div", {},
@@ -1149,8 +1156,8 @@
       let text = "";
       let audience = actor.audiences.includes("national") ? "national" : actor.audiences[actor.audiences.length - 1];
       const send = async () => {
-        if (!text.trim()) { box.replaceChildren(h("div", { class: "notice error" }, "Write something to post.")); return; }
-        const rec = await act(box, ["post", "--run", S.world, ...asArgs, "--audience", audience, "--hour", hour, ...claimOpts(), "--", text]);
+        if (!clean(text)) { box.replaceChildren(h("div", { class: "notice error" }, "Write something to post.")); return; }
+        const rec = await act(box, ["post", "--run", S.world, ...asArgs, "--audience", audience, "--hour", hour, ...claimOpts(), "--", clean(text)]);
         if (rec) queued(rec);
       };
       const labels = { circle: "Your circle", community: "Your local community", national: "The whole country (media)", global: "The world (foreign media)" };
@@ -1222,8 +1229,8 @@
       const params = [];
       const opts = ["--hour", hour];
       if (p.effect === "news") {
-        if (!f.text.trim()) { box.replaceChildren(h("div", { class: "notice error" }, "Write the statement.")); return; }
-        opts.push("--text", f.text);
+        if (!clean(f.text)) { box.replaceChildren(h("div", { class: "notice error" }, "Write the statement.")); return; }
+        opts.push("--text", clean(f.text));
         params.push(`audience=${f.audience}`);
       }
       if (p.param && p.effect !== "product") params.push(`${p.param.name}=${f.value}`);
@@ -1443,8 +1450,8 @@
     const f = { country: "USA", name: "", role: "", office: "" };
     const roles = S.status ? S.status.vocab.roles : [];
     const submit = async () => {
-      if (!f.name.trim() || !f.role.trim() || !f.office.trim()) { box.replaceChildren(h("div", { class: "notice error" }, "Fill in the name, role and office.")); return; }
-      const rec = await run(["notables-draft", "--country", f.country, "--name", f.name.trim(), "--role", f.role.trim(), "--office", f.office.trim()]);
+      if (!clean(f.name) || !clean(f.role) || !clean(f.office)) { box.replaceChildren(h("div", { class: "notice error" }, "Fill in the name, role and office.")); return; }
+      const rec = await run(["notables-draft", "--country", f.country, "--name", clean(f.name), "--role", clean(f.role), "--office", clean(f.office)]);
       box.replaceChildren(rec.status === "ok" ? outputBlock(rec, "Draft written") : errorNotice(jobError(rec)));
     };
     return h("div", {},
@@ -1495,6 +1502,12 @@
       $("#menu-toggle").setAttribute("aria-expanded", String(sb.classList.contains("open")));
     });
     $("#world-select").addEventListener("change", (e) => openWorld(e.target.value));
+    // Pasting a new link (after restarting `jahan ui`) into this tab only changes the #fragment, which does not
+    // reload the page: pick up the new token and reload.
+    window.addEventListener("hashchange", () => {
+      const t = readToken();
+      if (t && t !== S.token) location.reload();
+    });
     if (!S.token) {
       $("#main").replaceChildren(page("Open Jahan from its link", "This page needs the private link that `jahan ui` printed in its terminal (it ends with #t=…). Start it with: uv run jahan ui"));
       return;

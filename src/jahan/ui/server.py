@@ -17,13 +17,17 @@ Safety (the commands can spend the user's API key):
 
 from __future__ import annotations
 
+import html
 import http.server
 import json
 import os
+import re
 import secrets
 import signal
+import socket
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 import webbrowser
@@ -43,6 +47,8 @@ WORLD_COMMANDS = {
 GLOBAL_COMMANDS = {"doctor", "validate-data", "bench", "notables-draft"}
 SESSION_SUBCOMMANDS = {"list", "show", "replay"}
 PATH_OPTIONS = {"--run": "runs", "-r": "runs", "--scenario": "scenarios", "--config": "configs", "--out": "drafts"}
+SHORT_OPTIONS = {"-r", "-y", "-f"}  # the only single-dash options the CLI has; clusters like "-yr" are refused
+NUMBER = re.compile(r"-\d+(\.\d+)?")  # negative values such as --stance -0.5
 MAX_ARGS = 80
 MAX_ARG_CHARS = 20_000
 MAX_BODY = 1_000_000
@@ -106,14 +112,25 @@ def check_argv(argv: Any, s: Settings) -> tuple[list[str], str | None]:
         raise ArgvError("session needs list, show or replay")
     out = list(argv)
     world: str | None = None
+    seen: set[str] = set()
     i = 1
     while i < len(out):
         a = out[i]
-        if a == "--":  # everything after is text (a message may start with a dash)
-            break
+        if a == "--":
+            # The CLI's end-of-options marker, but it can also be consumed as an option's value ("--prompt --"),
+            # so the tokens after it are checked like any others; the page strips leading dashes from text.
+            i += 1
+            continue
+        if a.startswith("-") and not a.startswith("--") and a not in SHORT_OPTIONS and not NUMBER.fullmatch(a):
+            # The CLI would read "-rPATH" or "-yr PATH" as a path option this scanner cannot see.
+            raise ArgvError(f"write {a!r} as separate long options")
         if a.startswith("-") and "=" in a and a.split("=", 1)[0] in PATH_OPTIONS:
             raise ArgvError("give path options as two arguments")
         if a in PATH_OPTIONS:
+            kind = PATH_OPTIONS[a]
+            if kind in seen:
+                raise ArgvError(f"{a} given twice")
+            seen.add(kind)
             if i + 1 >= len(out):
                 raise ArgvError(f"{a} needs a value")
             p = _inside(out[i + 1], s.roots(PATH_OPTIONS[a]), s.project)
@@ -157,6 +174,7 @@ class Job:
     proc: subprocess.Popen[str] | None = None
 
     def view(self, since: int = 0) -> dict[str, Any]:
+        new = self.lines[since:]  # one slice, so "next" never skips a line appended meanwhile
         return {
             "id": self.id,
             "argv": self.argv,
@@ -166,8 +184,8 @@ class Job:
             "exit_code": self.exit_code,
             "started": self.started,
             "ended": self.ended,
-            "lines": self.lines[since:],
-            "next": len(self.lines),
+            "lines": new,
+            "next": since + len(new),
         }
 
 
@@ -181,15 +199,22 @@ def child_env(s: Settings) -> dict[str, str]:
 
 
 def kill_tree(proc: subprocess.Popen[str]) -> None:
-    if proc.poll() is not None:
-        return
+    """Stop a command and everything it started (experiments run worker processes)."""
     if sys.platform == "win32":
-        subprocess.run(["taskkill", "/T", "/F", "/PID", str(proc.pid)], capture_output=True, check=False)
-    else:
+        if proc.poll() is None:
+            subprocess.run(["taskkill", "/T", "/F", "/PID", str(proc.pid)], capture_output=True, check=False)
+        return
+
+    # The command leads its own process group (start_new_session), whose id is its pid; signalling the group
+    # also reaches workers that outlive it.
+    def signal_group(sig: int) -> None:
         try:
-            os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-        except ProcessLookupError:
+            os.killpg(proc.pid, sig)
+        except (ProcessLookupError, PermissionError):
             pass
+
+    signal_group(signal.SIGTERM)
+    threading.Timer(3.0, signal_group, args=(signal.SIGKILL,)).start()
 
 
 class Jobs:
@@ -202,6 +227,8 @@ class Jobs:
 
     def start(self, argv: Any) -> Job:
         args, world = check_argv(argv, self.s)
+        if world is not None:
+            world = os.path.normcase(world)  # one lock per folder, whatever the letter case on Windows
         with self.lock:
             if world is not None and world in self.busy:
                 raise Busy(self.busy[world])
@@ -213,11 +240,11 @@ class Jobs:
             for old in sorted(self.jobs)[:-KEEP_JOBS]:
                 if self.jobs[old].status != "running":
                     del self.jobs[old]
-        kwargs: dict[str, Any] = (
-            {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
-            if sys.platform == "win32"
-            else {"start_new_session": True}
-        )
+        kwargs: dict[str, Any] = {}
+        if sys.platform == "win32":  # its own group, so Cancel can stop it and its workers together
+            kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
+        else:
+            kwargs["start_new_session"] = True
         try:
             job.proc = subprocess.Popen(
                 [sys.executable, "-m", "jahan.cli", *args],
@@ -235,6 +262,10 @@ class Jobs:
             job.lines.append(f"could not start the command: {e}")
             self._finish(job, 1)
             return job
+        with self.lock:
+            cancelled_meanwhile = job.status == "cancelled"
+        if cancelled_meanwhile:  # Cancel arrived while the process was being created
+            kill_tree(job.proc)
         threading.Thread(target=self._pump, args=(job,), daemon=True).start()
         return job
 
@@ -254,15 +285,23 @@ class Jobs:
                 del self.busy[job.world]
 
     def cancel(self, job_id: int) -> Job:
-        job = self.jobs[job_id]
-        if job.status == "running" and job.proc is not None:
+        with self.lock:
+            job = self.jobs[job_id]
+            if job.status != "running":
+                return job
             job.status = "cancelled"
             job.lines.append("(cancelled from the page)")
-            kill_tree(job.proc)
+            proc = job.proc
+        if proc is not None:  # otherwise start() kills it as soon as it exists
+            kill_tree(proc)
         return job
 
+    def snapshot(self) -> list[Job]:
+        with self.lock:
+            return sorted(self.jobs.values(), key=lambda j: -j.id)
+
     def shutdown(self) -> None:
-        for job in list(self.jobs.values()):
+        for job in self.snapshot():
             if job.status == "running":
                 self.cancel(job.id)
 
@@ -418,9 +457,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             if parts == ["api", "info"]:
                 return self._json(200, info(self.settings))
             if parts == ["api", "jobs"]:
-                return self._json(
-                    200, [j.view(len(j.lines)) for j in sorted(self.jobs.jobs.values(), key=lambda j: -j.id)]
-                )
+                return self._json(200, [j.view(len(j.lines)) for j in self.jobs.snapshot()])
             if len(parts) == 3 and parts[:2] == ["api", "jobs"]:
                 job = self.jobs.jobs.get(int(parts[2]))
                 if job is None:
@@ -434,16 +471,23 @@ class Handler(http.server.BaseHTTPRequestHandler):
         return self._error(404, "not found")
 
     def do_POST(self) -> None:  # noqa: N802
+        try:
+            length = int(self.headers.get("Content-Length", "0") or 0)
+        except ValueError:
+            length = -1
+        if not 0 <= length <= MAX_BODY:
+            self.close_connection = True
+            return self._error(413, "request too large")
+        raw = self.rfile.read(length)  # read before answering, even a refusal, so the connection ends cleanly
         if not self._host_ok():
             return self._error(403, "wrong host")
         if not (self._token_ok() and self._origin_ok(required=True)):
             return self._error(403, "open the page from the link `jahan ui` printed")
-        length = int(self.headers.get("Content-Length", "0") or 0)
-        if length > MAX_BODY:
-            return self._error(413, "request too large")
         try:
-            body = json.loads(self.rfile.read(length) or b"{}")
+            body = json.loads(raw or b"{}")
         except ValueError:
+            return self._error(400, "bad JSON")
+        if not isinstance(body, dict):
             return self._error(400, "bad JSON")
         parts = urlparse(self.path).path.strip("/").split("/")
         try:
@@ -459,20 +503,46 @@ class Handler(http.server.BaseHTTPRequestHandler):
         return self._error(404, "not found")
 
 
+class _Server(http.server.ThreadingHTTPServer):
+    """Binds its port exclusively.  The standard server sets SO_REUSEADDR, which on Windows lets a second
+    process listen on the same port (a second `jahan ui`, or another program receiving the page's requests
+    and token)."""
+
+    daemon_threads = True
+    allow_reuse_address = sys.platform != "win32"
+
+    def server_bind(self) -> None:
+        if sys.platform == "win32":
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        super().server_bind()
+
+
 def make_server(s: Settings, ports: range) -> tuple[http.server.ThreadingHTTPServer, Jobs]:
     jobs = Jobs(s)
     handler = type("BoundHandler", (Handler,), {"settings": s, "jobs": jobs})
     last: OSError | None = None
     for port in ports:
         try:
-            httpd = http.server.ThreadingHTTPServer(("127.0.0.1", port), handler)
+            httpd = _Server(("127.0.0.1", port), handler)
         except OSError as e:  # port in use: try the next one
             last = e
             continue
-        httpd.daemon_threads = True
         s.port = httpd.server_address[1]
         return httpd, jobs
     raise OSError(f"no free port in {ports.start}-{ports.stop - 1}: {last}")
+
+
+def redirect_file(url: str) -> Path:
+    """A private page that forwards to ``url``.  Opening it keeps the token off the browser's command line,
+    where other users of the computer could read it (the approach Jupyter takes)."""
+    fd, name = tempfile.mkstemp(prefix="jahan-open-", suffix=".html")  # readable by this user only
+    link = html.escape(url, quote=True)
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        f.write(
+            f'<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url={link}">'
+            f'<title>Jahan</title><p><a href="{link}">Open Jahan</a></p>'
+        )
+    return Path(name)
 
 
 def serve(project: Path, runs: Path, port: int, open_browser: bool, key_file: Path | None) -> None:
@@ -489,7 +559,9 @@ def serve(project: Path, runs: Path, port: int, open_browser: bool, key_file: Pa
     print(f"Jahan is open at {url}", flush=True)
     print("This link carries a private key for this session; keep it to yourself. Press Ctrl+C to stop.", flush=True)
     if open_browser:
-        webbrowser.open(url)
+        page = redirect_file(url)
+        webbrowser.open(page.as_uri())
+        threading.Timer(120.0, lambda: page.unlink(missing_ok=True)).start()
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
