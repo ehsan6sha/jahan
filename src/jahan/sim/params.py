@@ -39,6 +39,15 @@ class SimParams(BaseModel):
     # exposure to a public figure's posts x clip(base + trust, 0.5, 1.5): with camp-based trust about 1.4 for
     # supporters and 0.6 for opponents, near the 70:30 aligned:cross-cutting exposure in Bakshy et al. 2015
     social_affinity_base: float = 0.5
+    # reposting by ordinary people (sim/social.py; all HEURISTIC, unsourced)
+    social_reposts: bool = True
+    repost_b0: float = -3.5  # a fully convinced average person about 15%, a typical believer about 5%
+    repost_visibility: float = 0.3  # per unit of log10 audience above 1
+    repost_min_conviction: float = 0.3
+    repost_window_days: int = 7  # the one day a person may repost an item falls in this window after hearing it
+    repost_tail_days: int = 3  # a repost keeps the item on the social channel this long
+    repost_bump_cap: float = 0.5  # most a push's intensity can rise in one day
+    repost_max_life_days: int = 30  # reposts never keep an item tracked longer than this after its creation
 
     # sharing / acceptance (logistic coefficients)
     share_min_age: float = 8.0  # no product/news advice below this age

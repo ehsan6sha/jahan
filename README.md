@@ -125,6 +125,15 @@ uv run jahan transcript --run runs/live --agent 42 --day 35 --llm
   `--no-social` fetch one kind only. `jahan social-feed --run runs/live` lists the real posts and the posts
   made in the world, with how far they got. Public figures' real posts are shown to them when they decide
   what to do and in interviews.
+- **Reposting.** Ordinary people who are online, convinced by a story and on its side may repost it, once
+  per story, on a day within a week of hearing it; extroverts and people interested in the topic do it more.
+  A repost does not create a new story. It adds a short, weak push on the social channels of the reposter's
+  country, in their languages, sized by their audience (10^visibility people) as a share of everyone online
+  there. Pushes never exceed full strength, rise by at most 0.5 a day, and reposts never keep a story
+  tracked for more than 30 days. Products are not reposted. A handful of reposts barely moves national
+  awareness: in a test, reposts by 14 of 5,000 people raised awareness of a top story from 9.5% to 9.7%.
+  Posts you make in your community can reach social media only this way. All repost coefficients are
+  heuristics (`repost_*` in `SimParams`).
 - When `run` crosses today's real date, it offers to take hypothetical events for the days with no real
   news (only in an interactive terminal; scripts get a one-line note). `feed` does the same at any time.
 - Every web fetch and model answer is stored under `runs/<name>/recordings/`. `--provider replay` and
@@ -264,7 +273,9 @@ Several numbers for player actions and public-figure autonomy are heuristics, no
 - every policy elasticity in `roles.yaml`;
 - the camp band (a lean beyond ±1/3 counts as a camp), the weight of value similarity in trust (1.5 on
   the log-odds scale) and the discount for foreign figures (0.8);
-- the US gap between camps borrowed for figures without a breakdown, and halving it outside the US.
+- the US gap between camps borrowed for figures without a breakdown, and halving it outside the US;
+- the social feed weights (interest, trust in the author), each platform's default share where no
+  figure is published, post reach from followers and engagement, and every repost coefficient.
 
 Worlds created before political camps existed (snapshot schema 5) cannot be opened; create a new world.
 

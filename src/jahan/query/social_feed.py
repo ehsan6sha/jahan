@@ -45,6 +45,7 @@ def feed_rows(world: World, country: str | None = None, kind: str = "all", limit
     """Newest first.  ``kind``: real | virtual | all."""
     rows: list[dict[str, Any]] = []
     codes = [c.iso3 for c in world.countries]
+    world_reposts = world.macro.get("social", {}).get("reposts", {})
     if kind in (REAL, "all"):
         items = _item_of_post(world)
         for iso, feed in world.macro.get("social", {}).get("feed", {}).items():
@@ -74,6 +75,7 @@ def feed_rows(world: World, country: str | None = None, kind: str = "all", limit
                         "is_repost": bool(r.get("is_repost")),
                         "tracked": item >= 0,
                         "item": item,
+                        "world_reposts": int(world_reposts.get(str(item), {}).get("n", 0)) if item >= 0 else 0,
                         **reach,
                         "_order": (int(r.get("world_day", 0)), str(r.get("created_utc", ""))),
                     }
@@ -152,7 +154,7 @@ def feed_text(rows: list[dict[str, Any]]) -> str:
         if r["kind"] == REAL:
             who = f"@{r['handle']}" if r.get("handle") else str(r.get("name") or "?")
             reach = (
-                f"reached {r['reached']:,} people in the world"
+                f"reached {r['reached']:,} people in the world, reposted {r.get('world_reposts', 0):,} times there"
                 if r.get("reached") is not None
                 else "not tracked (shown for context only)"
             )

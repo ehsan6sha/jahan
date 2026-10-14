@@ -8,6 +8,7 @@
 2 media exposure
 3 contact sampling
 4 word-of-mouth diffusion; claims about products move views of those products
+4b reposts                    convinced, online people repost stories on social media (from tomorrow)
 5 mood                        economic sentiment drifts toward the news each agent knows
 6 decisions and realised outcomes -> trust updates
 7 life events                 deaths, births, marriages, divorces, labour moves, birthday transitions
@@ -28,6 +29,7 @@ from jahan.sim.decisions import decide_and_realise
 from jahan.sim.diffusion import diffuse
 from jahan.sim.lifeevents import run_life_events
 from jahan.sim.media import media_exposure
+from jahan.sim.social import reposts
 from jahan.sim.travel import travel
 from jahan.sim.world_events import apply_due, propagate_entity_claims, update_sentiment
 from jahan.store.eventlog import EventLog, MetricsLog
@@ -64,6 +66,7 @@ def run_day(
             )
     stats.update(diffuse(world, contacted, params, log, trace, trace_rows))
     stats["claims_applied"] = propagate_entity_claims(world, params)
+    stats.update(reposts(world, params, log))
     update_sentiment(world, params)
     stats.update(decide_and_realise(world, params, log))
     if params.life_events:
