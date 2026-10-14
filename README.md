@@ -28,7 +28,7 @@ a solely educational and testing project, meant for learning, research and exper
 - **Not advice.** Nothing it produces is financial, investment, trading, legal, medical or any other
   professional advice.
 - **Not a forecast.** Simulated people, opinions, news reach and market moves are not predictions of real
-  ones. No accuracy is promised.
+  ones. No accuracy is promised, including for the [benchmark](#benchmark-backtests-against-real-2026-events).
 - **Your own risk.** You use it at your own risk. The developers and contributors accept no liability for
   any loss or damage arising from its use. See sections 7 and 8 of the [LICENSE](LICENSE).
 
@@ -75,11 +75,13 @@ uv run jahan report     --run runs/demo --prompt 1          # runs/demo/reports/
 uv run jahan agents     --run runs/demo --filter "country == 'IRN' and age > 30 and info_tier >= 2" --limit 5
 uv run jahan agent      --run runs/demo 42                 # one person's profile, circle, schedule and views
 uv run jahan reset      --run runs/demo --before-prompt 1  # time travel
+uv run jahan backtest                                      # the benchmark below (offline, about 30 s)
 ```
 
 Example scenarios in `examples/scenarios/`: a product launch, a 20% dollar rise during a worldwide launch,
-a gold spike (+1%/day for a week, then −10%), Iran–US tension with a falling rial, and a false product
-rumour.
+a gold spike (+1%/day for a week, then −10%), Iran–US tension with a falling rial, a false product
+rumour, and the Fed's 16 September 2026 rate hike (for a world dated the day before: `gen --start-date
+2026-09-15 --allow-later-roster`).
 
 ### With an LLM
 
@@ -259,6 +261,190 @@ launch as prompt 1, run some days, inject the dollar rise as prompt 2, and run t
   sourced estimate. Every other market move must be scripted in a prompt.
 - **Time travel.** Every prompt writes a snapshot first. `reset` restores it and truncates the logs;
   re-running produces the identical timeline.
+
+## Benchmark: backtests against real 2026 events
+
+> **Read this first.** The simulated people do not trade and do not set prices. In this benchmark, market
+> moves come from published event-study estimates multiplied by the surprise (see "Mood and markets"
+> above). Those estimates are imposed from the studies, not learned by the simulation, so the market rows
+> test the estimates as Jahan applies them, not the simulation's own dynamics. What the simulation itself
+> adds is how far the news spreads and how public figures react. Educational and testing use only; not
+> financial advice; not a forecast; no accuracy is promised.
+
+This is a descriptive replay of published estimates on real events, not a blind test of forecasting skill.
+
+**What the backtests found**
+
+- **Fed days: no better than "no change".** Every 2026 Fed decision was at least about 90% expected. So
+  Jahan forecasts almost no market move on those days and cannot beat a "no change" forecast; those rows
+  only show that it does not invent moves. The large Fed-day moves came from forward guidance (the rate
+  projections, dissents) and from other news, which nobody knows the day before.
+- **Average misses.** Over the eight events with a forecast, Jahan's average miss, measured in typical
+  daily moves (one standard deviation of daily changes), was:
+
+  | Market | Jahan | "No change" |
+  |---|---|---|
+  | US stocks | 1.03 | 1.07 |
+  | Gold | 1.75 | 1.79 |
+  | Dollar | 0.97 | 1.18 |
+
+  Jahan does not beat "no change" for stocks or gold, and the dollar's smaller miss rests on a few
+  events; eight events are far too few to tell these apart. Only 3 of the 8 forecasts were large enough (a
+  quarter of a typical move or more) to count a direction: stocks were right 2 times of 3 and the dollar 3
+  of 3. For the other five, Jahan made no directional call.
+- **Five major misses out of 24 market forecasts.** These are misses beyond the limits fixed before the
+  run: gold on 28 Jan and 18 Mar, US stocks on 29 Jul, and US stocks and gold after the 5 Jun jobs report.
+  The reasons are below.
+- **News reach: plausible.** Two days after the 16 Sep hike, 14.8% of simulated US adults
+  had heard of it (14.0-15.9% across 5 seeds). That is inside the range implied by surveys of US consumers
+  around Fed press conferences (Lamla and Vinogradov 2019). It is a plausibility check on one announcement,
+  not a validation of the social layer: the survey's 40% includes people who had already heard Fed news,
+  while Jahan starts from zero and tracks only this headline.
+- **Public figures: right after one sourced fix.** In the first run, simulated Trump stayed silent, unlike
+  the real one. After one sourced stance was added, his reaction matched the real one in direction. The
+  figures' answers depend heavily on the documented stances they are given; the fix changed that data, not
+  the engine. Details below.
+
+**Method.** Run `uv run jahan backtest` (offline and deterministic, about 30 seconds); `--out FILE.md`
+writes these tables.
+
+- **The world.** For each event, Jahan builds a world dated the day before the release, using the m1
+  config (10,000 people, eight countries). It injects only what was known before the release: the
+  decision or the jobs number, and what markets expected. Then it runs three days.
+- **What the world lacks.** It holds people, political camps and public figures, but no news from before
+  the event. The figures' roster is dated 13 Oct 2026, after the events, so their approval ratings and
+  some of their stances include later information.
+- **The data.** Real moves and every source URL are in `data/backtests/events_2026.yaml`.
+  - The S&P 500 changes and 2-year yield changes come from FRED. `scripts/check_market_actuals.py`
+    re-checks all 25 of them, and all match.
+  - Gold (spot, priced after the New York close) and the dollar index (DXY) come from data vendors'
+    pages. Only a handful of daily percent changes is quoted, with the page they came from. Check the
+    vendors' terms before reusing them.
+  - For five of the six Fed meetings, the market expectation is assumed or comes from secondary reports
+    (marked in the file); only July's comes from the Fed's own minutes.
+- **The estimates** (`data/global/markets.yaml`, each with the paper's own number and a registry entry):
+
+  | Announcement | Market | Published estimate | Window | Source |
+  |---|---|---|---|---|
+  | Fed decision surprise | US stocks | -3.961% per percentage point | daily | Gurkaynak, Sack and Swanson 2005 |
+  | Fed decision surprise | dollar index | +0.19% per 6 bp | daily | Roache and Rossi 2009 |
+  | Fed decision surprise | gold | -0.31% per 6 bp (not applied) | daily | Roache and Rossi 2009 |
+  | Fed forward guidance | US stocks; dollar | -0.14%; +0.21% per 4.61 bp of the 2-year yield | 30 minutes | Swanson 2021 |
+  | Jobs report surprise | US stocks | -0.220% per 77.5k jobs | 5 minutes | Andersen, Bollerslev, Diebold and Vega 2007 |
+  | Jobs report surprise | gold; dollar index | -0.18%; +0.13% per 77.5k jobs | daily | Roache and Rossi 2009 |
+
+  The samples run from 1990 to 2019, so every 2026 event is outside them; nothing was fitted to 2026.
+- **Scoring.** The limits were fixed before the run:
+  - A major miss is one larger than 2 typical daily moves, or a wrong direction on a real move larger than
+    one.
+  - A typical daily move (2023 to October 2026) is 0.92% for the S&P 500 (from FRED), and about 1.28% for
+    gold and 0.41% for DXY (vendor data, approximate). The gold figure comes from front-month futures,
+    whose contract rolls may overstate it, while the real gold moves are spot prices. The gold verdicts
+    stay the same for any typical move above 1.07%.
+  - A direction only counts when the forecast is at least a quarter of a typical move.
+
+The market data were seen before these limits were written, but the limits are generic and no estimate
+was fitted to 2026 data.
+
+<!-- generated by `jahan backtest` (m1 config, 10,000 people, 5 seeds for news reach); edit data/backtests, not this table -->
+
+**Market moves on the day** (percent, close to close; Jahan / real). Misses are in typical daily moves
+(one daily s.d.: US stocks 0.92%, gold 1.28%, dollar 0.41%). A major miss is more than 2 s.d., or the wrong direction on a move over 1 s.d.
+
+| Date | Event | Surprise | US stocks | Gold | Dollar | Miss (s.d.): stocks, gold, dollar | Major miss |
+|---|---|---|---|---|---|---|---|
+| 2026-01-28 | Fed holds at 3.50-3.75% | +0.7 bp | -0.03% / -0.01% | 0.00% / +4.44% | +0.02% / +0.24% | 0.0, 3.5, 0.5 | gold |
+| 2026-03-18 | Fed holds at 3.50-3.75% | +0.0 bp | 0.00% / -1.36% | 0.00% / -3.63% | 0.00% / +0.51% | 1.5, 2.8, 1.2 | gold |
+| 2026-04-29 | Fed holds at 3.50-3.75% | +0.0 bp | 0.00% / -0.04% | 0.00% / -1.02% | 0.00% / +0.30% | 0.0, 0.8, 0.7 | none |
+| 2026-06-17 | Fed holds at 3.50-3.75% (Warsh's first meeting; median 2026 dot 3.4 to 3.8) | +0.0 bp | 0.00% / -1.21% | 0.00% / -1.50% | 0.00% / +0.55% | 1.3, 1.2, 1.3 | none |
+| 2026-07-29 | Fed holds at 3.50-3.75% (three officials wanted a hike) | -8.3 bp | +0.33% / -1.52% | 0.00% / +1.32% | -0.26% / -0.57% | 2.0, 1.0, 0.7 | us stocks |
+| 2026-09-16 | Fed raises 0.25 pt to 3.75-4.00% (first hike since 2023) | +2.0 bp | -0.08% / -0.45% | 0.00% / -0.71% | +0.06% / +0.66% | 0.4, 0.6, 1.5 | none |
+| 2026-06-05 | May jobs +172k vs about 85k expected | +87k jobs | -0.25% / -2.64% | -0.20% / -3.36% | +0.15% / +0.66% | 2.6, 2.5, 1.3 | us stocks, gold |
+| 2026-08-07 | July jobs -23k vs about +80k expected | -103k jobs | +0.29% / +0.62% | +0.24% / +2.37% | -0.17% / -0.37% | 0.4, 1.7, 0.5 | none |
+
+Summary over these events. US stocks: Jahan misses by 1.03 s.d. on average, "no change" by 1.07; direction called 3 times, right 2. Gold: Jahan misses by 1.75 s.d. on average, "no change" by 1.79; direction called 0 times, right 0. Dollar: Jahan misses by 0.97 s.d. on average, "no change" by 1.18; direction called 3 times, right 3.
+
+**After the fact, not a forecast.** The day's 2-year Treasury yield move, minus the part the decision itself explains, used as the forward-guidance surprise; and the gold estimate Jahan does not apply (its sign is disputed).
+
+| Date | Event | 2-year yield | US stocks with hindsight / real | Dollar with hindsight / real | Gold, unused estimate / real |
+|---|---|---|---|---|---|
+| 2026-01-28 | Fed holds at 3.50-3.75% | +3 bp | -0.11% / -0.01% | +0.14% / +0.24% | -0.04% / +4.44% |
+| 2026-03-18 | Fed holds at 3.50-3.75% | +8 bp | -0.24% / -1.36% | +0.36% / +0.51% | 0.00% / -3.63% |
+| 2026-04-29 | Fed holds at 3.50-3.75% | +8 bp | -0.24% / -0.04% | +0.36% / +0.30% | 0.00% / -1.02% |
+| 2026-06-17 | Fed holds at 3.50-3.75% (Warsh's first meeting; median 2026 dot 3.4 to 3.8) | +15 bp | -0.46% / -1.21% | +0.68% / +0.55% | 0.00% / -1.50% |
+| 2026-07-29 | Fed holds at 3.50-3.75% (three officials wanted a hike) | -4 bp | +0.33% / -1.52% | -0.27% / -0.57% | +0.43% / +1.32% |
+| 2026-09-16 | Fed raises 0.25 pt to 3.75-4.00% (first hike since 2023) | +7 bp | -0.26% / -0.45% | +0.34% / +0.66% | -0.10% / -0.71% |
+| 2026-08-28 | Warsh's hawkish Jackson Hole speech (guidance only) | +14 bp | -0.43% / -0.25% | +0.64% / +0.54% | 0.00% / -3.32% |
+
+**Not modelled.** No published estimate exists, so Jahan moves nothing unless a prompt scripts the move.
+
+| Date | Event | US stocks | Gold | Dollar |
+|---|---|---|---|---|
+| 2026-01-20 | Trump threatens tariffs on 8 European countries over Greenland | -2.06% | +3.55% | -0.75% |
+| 2026-02-20 | Supreme Court strikes down the IEEPA tariffs | +0.69% | +2.16% | -0.13% |
+| 2026-03-02 | First trading day after US and Israeli strikes on Iran | +0.04% | +1.07% | +0.79% |
+| 2026-04-08 | Two-week US-Iran ceasefire; oil falls 13% | +2.51% | -0.43% | -0.51% |
+| 2026-07-07 | US strikes on Iran; Trump says the truce is over | -0.45% | -1.53% | +0.29% |
+| 2026-09-01 | Renewed US-Iran strikes; tankers hit | -0.71% | -2.69% | +0.24% |
+| 2026-09-28 | Trump rejects Iran's Hormuz plan; Brent near $108 | -0.77% | -4.01% | +0.23% |
+
+**News reach.** Share of US adults who know the headline "The Federal Reserve raises interest rates by a quarter point to 3.75-4.00%, its first hike since 2023": 4.9% by the end of day 0, 9.9% by the end of day 1, 14.8% by the end of day 2 (day 0 is the release day; mean of 5 seeds, day 2 range 14.0-15.9%). Survey band 10-41%: inside.
+
+In surveys around 12 Fed press conferences (2015-2018), about 30% of US consumers had heard some news about the Fed in the week before and about 40% in the first two days after; the announcement itself added about 10 points. The share who heard this decision should lie between the added 10 points and the 41% total. Jahan tracks only this headline, with no earlier Fed news.
+
+**Why the major misses happened**
+
+- **28 Jan, gold +4.4%.** Gold was in the middle of a rally that had nothing to do with the decision.
+  Jahan applies no effect of Fed decisions on gold, because published estimates disagree on its sign.
+- **18 Mar.** The Iran war and oil prices moved gold (-3.6%) and stocks (-1.4%).
+- **29 Jul, US stocks.** The Fed held when markets gave about a one-in-three chance of a hike, so the
+  decision alone looked like good news and Jahan forecast +0.33%. In fact three officials dissented in
+  favour of a hike, long-term yields jumped (the 30-year yield to its highest since 2007) and the S&P 500
+  fell 1.52% ([CNN](https://www.cnn.com/2026/07/29/business/live-news/federal-reserve-interest-rate-07-29-26),
+  [Yahoo Finance](https://finance.yahoo.com/markets/live/stock-market-today-wednesday-july-29-dow-sp-500-nasdaq-082009165.html)).
+  The surprise was in the vote and the guidance, which a forecast made the day before cannot know.
+- **5 Jun jobs report.** Jahan got the direction right but only about a tenth of the size. The stock
+  estimate comes from 5-minute windows in 1994-2001. In 2026, strong hiring meant higher rates for longer
+  (the 2-year yield rose 12 bp), and it was the year's worst day for US stocks. No published whole-day
+  estimate was found to replace it.
+
+**What was changed, and what was not**
+
+- **Market estimates: unchanged.** Changing them to fit these days would be fitting the test.
+- **Public figures: one sourced fix.** In the first live run, the four US figures (Trump, Bessent, Warsh,
+  Musk) each got a turn on 17 Sep and all chose to do nothing. The real Trump criticised the hike on Truth
+  Social on 16 Sep, said rates should be 1% or lower, and did not attack Warsh by name.
+  - **Cause.** Trump's roster entry had no documented position on interest rates, and figures act only on
+    documented positions.
+  - **Fix.** Two stances were added, each sourced from before the decision: Trump's 4 Sep threat to halt
+    trade unless the Fed cut rates, and Warsh's 28 Aug Jackson Hole remarks that inflation was still too
+    high.
+  - **Second run.** "[simulated] The Federal Reserve should be cutting interest rates, not raising them,
+    and I expect it to bring rates down," said simulated Trump. It reached 71 simulated people, who
+    stand for about 21 million Americans. Simulated Warsh said inflation "is still too high" and called the
+    increase "a measured step". The real Warsh said inflation "is too high and has been for too long".
+    Bessent and Musk stayed silent.
+  - **Caveats.** This is not a blind test: the stances were added after the first run showed the gap. It
+    is one run of a language model (Claude Haiku 5.5 with its default sampling settings), whose answers
+    vary. Figures decide at the start of the
+    next day, so the reaction comes a day late. Both runs together cost about $0.0013.
+- **A bug found by the backtest.** Daily metrics crashed in small worlds when the only people who knew a
+  story were public figures, who carry no population weight. Fixed.
+
+**What the after-the-fact table shows.** It takes the day's 2-year yield move as the forward-guidance
+surprise, over seven Fed days (the six decisions and the Jackson Hole speech). That move is known only after
+the release, so this is an analysis of what the forecast missed, not a forecast:
+
+- **The dollar** goes the right way on all seven, within about a third of a point each time.
+- **US stocks** go the right way on six of seven, but the moves are too small.
+- **Gold** moved opposite to the 2-year yield on six of the seven (the exception is January's rally). That
+  favours the sign Jahan does not apply (Roache and Rossi 2009), but seven days are too few to switch it on.
+- **Gold on Iran escalations.** From July on, gold fell on every escalation, as oil fed fears of higher
+  rates, though it rose on the first trading day of the war in March. A fixed "gold is a safe haven" rule
+  would have had the wrong sign most of the time.
+
+More events, for example the 2023-2025 Fed meetings and jobs reports, would make the averages meaningful;
+add them to `data/backtests/` with their sources.
 
 ## Data honesty
 

@@ -25,6 +25,7 @@ entries:
     stances:
       - {topic: world, position: -0.6, summary: "Prosecuting a war with Iran since February 2026, now near its eighth month", source: "https://thehill.com/homenews/administration/6143968-bessent-unsure-iran-war-end/"}
       - {topic: economy, position: -0.3, summary: "Economic pressure campaign on Iran; administration also faces rising Treasury yields (~5.3%)", source: "https://townhall.com/news/dmitri-bolt/2026/10/12/scott-bessent-wrote-another-letter-for-elizabeth-warren-n2684501"}
+      - {topic: economy, position: -0.8, summary: "Presses the Federal Reserve to cut interest rates; on 2026-09-04 threatened on Truth Social to halt trade with countries that run surpluses with the US unless the Fed cut", source: "https://qna.org.qa/en/News-Area/News/2026-9/5/trump-threatens-trade-action-as-he-presses-fed-for-rate-cuts"}
     confidence: low
   - key: USA.finance_minister
     role: finance_minister
@@ -66,6 +67,7 @@ entries:
     values: {self: 0.12, money: 0.30, culture: 0.08, freedom: 0.20, family: 0.10, security: 0.20}
     stances:
       - {topic: economy, position: 0.0, summary: "New Fed chair since May 2026; confirmation was the narrowest since 1977", source: "https://www.aljazeera.com/economy/2026/5/13/kevin-warsh-confirmed-as-new-us-federal-reserve-chair-amid-controversy"}
+      - {topic: economy, position: -0.5, summary: "At Jackson Hole on 2026-08-28 said inflation is still too high and kept the door open to raising rates", source: "https://www.investmentnews.com/equities/no-fed-relief-at-jackson-hole-warsh-keeps-rate-hike-door-open/267991"}
     confidence: low
   - key: USA.business.musk
     role: business_leader
