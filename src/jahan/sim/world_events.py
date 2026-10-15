@@ -13,6 +13,7 @@ import zlib
 from collections.abc import Callable
 
 import numpy as np
+from numpy.typing import NDArray
 
 from jahan.actors import engine
 from jahan.model.enums import CHANNEL_KIND_NAMES, EventKind, OriginKind, Topic
@@ -255,22 +256,26 @@ def expire_items(world: World) -> int:
     return int(done.size)
 
 
-def update_sentiment(world: World, params: SimParams) -> None:
-    """Mood drifts toward how good the agent's known news is (weighted, squashed to [-1, 1])."""
+def news_mood(world: World) -> NDArray[np.float64]:
+    """How good the news each person knows makes things look (weighted, squashed to [-1, 1]): the level their
+    mood drifts toward, and what people's trading responds to (sim/market.py)."""
     bs = world.beliefs
     live = np.flatnonzero(bs.slot_item >= 0)
-    pop = world.pop
-    n = pop.n
+    n = world.pop.n
     if live.size == 0:
-        news = np.zeros(n)
-    else:
-        w = world.items["sentiment_weight"][bs.slot_item[live]].astype(np.float64)
-        if not np.any(w):
-            news = np.zeros(n)
-        else:
-            aware = bs.m["aware"][:n][:, live].astype(np.float64)
-            belief = bs.m["belief"][:n][:, live].astype(np.float64)
-            news = np.tanh(((belief - 0.5) * 2.0 * aware) @ w)
+        return np.zeros(n)
+    w = world.items["sentiment_weight"][bs.slot_item[live]].astype(np.float64)
+    if not np.any(w):
+        return np.zeros(n)
+    aware = bs.m["aware"][:n][:, live].astype(np.float64)
+    belief = bs.m["belief"][:n][:, live].astype(np.float64)
+    return np.asarray(np.tanh(((belief - 0.5) * 2.0 * aware) @ w), dtype=np.float64)
+
+
+def update_sentiment(world: World, params: SimParams) -> None:
+    """Mood drifts toward how good the agent's known news is (weighted, squashed to [-1, 1])."""
+    pop = world.pop
+    news = news_mood(world)
     s = pop["sentiment"].astype(np.float64)
     pop["sentiment"] = ((1 - params.sentiment_rate) * s + params.sentiment_rate * news).astype(np.float32)
 

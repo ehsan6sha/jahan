@@ -220,6 +220,7 @@ class World:
                 "cfg": market_cfg,
                 "people_index": 100.0,  # the part of the US stock index moved by people's trading
                 "scripted_index": 100.0,  # the part moved by announcements and scripted paths
+                "pending_pct": 0.0,  # weekend flow, traded on the next weekday
                 "last": {
                     "day": -1,
                     "scripted_pct": 0.0,

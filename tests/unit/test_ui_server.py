@@ -28,6 +28,7 @@ def test_allow_list_and_paths(tmp_path):
     )
     assert w == str(world.resolve())
     assert check_argv(["doctor"], s)[1] is None  # no world needed
+    assert check_argv(["watch", "add", "--run", str(world), "market:us_stocks"], s)[1] == str(world.resolve())
     for bad in (
         ["rm", "-rf", "/"],  # not a jahan command
         ["python", "-c", "print(1)"],
@@ -38,6 +39,8 @@ def test_allow_list_and_paths(tmp_path):
         ["run", f"--run={world}"],  # path options must be separate arguments
         ["inject", "--run", str(world), "--scenario", str(tmp_path / "evil.yaml")],
         ["session", "delete", "--run", str(world)],
+        ["watch", "evil", "--run", str(world)],
+        ["watch", "--run", str(world)],
         ["run", "--run", str(world), f"-r{tmp_path / 'elsewhere'}"],  # a glued short option the CLI would honour
         ["inject", "--run", str(world), "-yr", str(tmp_path / "elsewhere")],  # a cluster hiding -r
         ["run", "--run", str(world), "--run", str(tmp_path / "runs" / "other")],  # the CLI keeps the last one
@@ -80,7 +83,7 @@ def test_every_path_option_of_an_allowed_command_is_confined():
     import typer.main  # class names, not imports: recent Typer bundles its own copy of click
 
     from jahan.cli import app
-    from jahan.ui.server import GLOBAL_COMMANDS, PATH_OPTIONS, SESSION_SUBCOMMANDS, WORLD_COMMANDS
+    from jahan.ui.server import GLOBAL_COMMANDS, PATH_OPTIONS, SESSION_SUBCOMMANDS, WATCH_SUBCOMMANDS, WORLD_COMMANDS
 
     def walk(cmd, name):
         if hasattr(cmd, "commands"):
@@ -89,7 +92,11 @@ def test_every_path_option_of_an_allowed_command_is_confined():
         else:
             yield name, cmd
 
-    allowed = (WORLD_COMMANDS | GLOBAL_COMMANDS) - {"session"} | {f"session {s}" for s in SESSION_SUBCOMMANDS}
+    allowed = (
+        (WORLD_COMMANDS | GLOBAL_COMMANDS) - {"session", "watch"}
+        | {f"session {s}" for s in SESSION_SUBCOMMANDS}
+        | {f"watch {s}" for s in WATCH_SUBCOMMANDS}
+    )
     seen = set()
     for name, cmd in walk(typer.main.get_command(app), ""):
         if name not in allowed:

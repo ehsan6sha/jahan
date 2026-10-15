@@ -300,3 +300,12 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
   .timeline li { grid-template-columns: 1fr; }
   .timeline .acts { justify-content: flex-start; }
 }
+
+/* watch list */
+.spark { width: 140px; height: 32px; display: block; }
+.spark polyline { fill: none; stroke: var(--accent); stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+.spark.down polyline { stroke: var(--danger); }
+.spark line { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; vector-effect: non-scaling-stroke; }
+.up { color: var(--ok); }
+.down { color: var(--danger); }
+.watch-cat { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 6px 14px; }

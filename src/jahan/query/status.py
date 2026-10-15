@@ -21,6 +21,7 @@ from jahan.llm.provider import LLMConfig
 from jahan.model.enums import TOPIC_NAMES, EmpStatus, Marital, Sex
 from jahan.model.world import World
 from jahan.query.views import ISCO_LABELS, age_of
+from jahan.query.watch import load_list, market_levels
 from jahan.store.rundir import RunDir
 
 INGEST_WINDOW_DAYS = 3  # `ingest` refuses when the world date is further than this from the real date
@@ -264,6 +265,9 @@ def world_status(rd: RunDir, world: World) -> dict[str, Any]:
             for e in world.notables
         ],
         "social": social_status(world),
+        "markets": market_levels(world),
+        "questions": sorted(world.macro.get("odds", {}).get("questions", {})),
+        "watch": sorted(load_list(rd)),
         "experiments": experiments,
         "reports": reports,
         "llm": {
@@ -292,6 +296,17 @@ def status_text(st: dict[str, Any]) -> str:
     if sess["current"] is not None and sess["agents"]:
         who = ", ".join(f"{a['name']} ({a['id']})" for a in sess["agents"])
         lines.append(f"Session {sess['current']}: you play {who}")
+    mk = st["markets"]
+    us = mk["us_stocks"]
+    market = f"Markets: US stocks {us['index']:.2f}"
+    if mk["people_trading"]:
+        market += f" (people's part {us['people_index']:.2f}, announcements and scripted {us['scripted_index']:.2f})"
+    market += f"; gold {mk['gold']['index']:.2f}" + (
+        f"; euros per dollar {mk['dollar']['eur_per_usd']:.4f}" if mk["dollar"] else ""
+    )
+    lines.append(market + " (100 = the world's start)")
+    if st["watch"]:
+        lines.append("Watching: " + ", ".join(st["watch"]) + " (see `jahan watch show`)")
     if st["products"]:
         lines.append("Products: " + ", ".join(st["products"]))
     if st["reports"]:

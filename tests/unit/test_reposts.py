@@ -6,7 +6,7 @@ from jahan.actors import engine
 from jahan.actors.actions import Claim, Control, CreateAgent, Post
 from jahan.config import RunConfig
 from jahan.gen.world_gen import generate_world
-from jahan.model.enums import CHANNEL_KIND_NAMES, Big5, EventKind
+from jahan.model.enums import CHANNEL_KIND_NAMES, Big5, EventKind, OriginKind
 from jahan.scenario.inject import apply_scenario
 from jahan.scenario.spec import NewsEvent, ProductLaunch, Scenario
 from jahan.sim.runner import run_in_memory
@@ -67,7 +67,11 @@ def test_caps_hold_when_everyone_wants_to_repost():
     assert (w.pushes["intensity"][: w.pushes.n] <= 1.0 + 1e-6).all()
     for item in range(2):
         assert int(w.items["active_until"][item]) <= int(w.items["created_day"][item]) + 30
-    tails = np.flatnonzero(w.pushes["start_day"][: w.pushes.n] > 0)
+    # later pushes are repost tails on social channels (market headlines, e.g. "US stocks fall 1.2%" after
+    # people sell on the inflation story, have their own pushes and are left out)
+    later = w.pushes["start_day"][: w.pushes.n] > 0
+    from_reposts = w.items["origin_kind"][w.pushes["item_id"][: w.pushes.n]] != OriginKind.MACRO
+    tails = np.flatnonzero(later & from_reposts)
     assert tails.size and (w.channels["kind"][w.pushes["channel_id"][tails]] == SOCIAL).all()
 
 

@@ -4,8 +4,10 @@
 # never breaks an existing world: each world keeps the values it was made with. It is not hashed into snapshots.
 #
 # The simulated holders stand in for all US household equity (held directly or through funds and retirement
-# accounts); institutions are not modelled. A holder's daily trade is kappa x holdings x the day's change in
-# their economic mood (sentiment, -1..1); the index moves by multiplier x net flow / holdings of all holders.
+# accounts); institutions are not modelled. A holder trades when they learn news: their trade is kappa x
+# holdings x the day's change in their news mood (how good the news they know makes things look, -1..1; the
+# level their economic mood drifts toward); the index moves by multiplier x net flow / holdings of all
+# holders. Weekend news is traded on Monday.
 
 ownership:
   source: investors.scf2022
@@ -32,8 +34,8 @@ trading:
   requires_internet: true  # HEURISTIC: holders without internet keep their holdings but do not trade daily
   max_daily_pct: 10.0  # HEURISTIC safety cap on the people-driven daily move
   kappa:
-    value: 0.0  # 0 until fitted: people hold stock but their trading moves nothing
-    unit: share of holdings moved per unit change of mood
+    value: 0.058  # fitted 2026-10-15 under the rule below (second fit; see superseded)
+    unit: share of holdings moved per unit change of news mood
     source: investors.kappa_fit
     rule: >-
       Pre-registered 2026-10-15, before any run. kappa minimises the mean absolute miss, in daily standard
@@ -44,15 +46,130 @@ trading:
       reported as a boundary solution and still adopted. 2026 events never enter the choice; they are reported
       as hold-out at the chosen kappa. Both the estimates-only and the hybrid columns are published whatever
       the result. Stability: at the chosen kappa a scripted -3% day in a 10,000-person m1 world must stay
-      bounded and revert within 40 days; if it does not, the largest grid kappa that passes is used and the
-      substitution is reported. The fit sees release-day moves only; multi-day behaviour is checked by the
+      bounded (the people's part never halves or doubles the index) and revert within 40 days (by day 40 it
+      has recovered at least half of its largest deviation, or it never moved by more than 0.1%); if it does
+      not, the largest grid kappa that passes is used and the substitution is reported. The fit sees release-day moves only; multi-day behaviour is checked by the
       stability test, not fitted.
-    fitted: null
+    fitted:
+      date: '2026-10-15'
+      command: jahan backtest --fit-people
+      config: m1, 10000 people, seed offset 0
+      rule: data/global/investors.yaml trading.kappa.rule (pre-registered 2026-10-15)
+      fit_events: 58 forecast events 2023-2025 with a real US stock move
+      grid: 0 to 2, step 0.001
+      kappa_optimum: 0.058
+      boundary_solution: false
+      kappa: 0.058
+      linearity_check_max_abs_diff_pct: 1.11e-16
+      fit_mean_miss_sd:
+        events: 58.0
+        estimates_only: 1.0745
+        people_only: 1.0274
+        hybrid: 1.0178
+        no_change: 1.063
+      holdout_mean_miss_sd:
+        events: 8.0
+        estimates_only: 1.0282
+        people_only: 1.1485
+        hybrid: 1.1103
+        no_change: 1.0666
+      loss_at:
+        '0': 1.0745
+        '0.01': 1.0587
+        '0.1': 1.0496
+        '0.5': 2.8062
+        '1': 5.6223
+        '2': 11.2546
+      opposite_sign_days:
+      - jobs-2023-01-06
+      - jobs-2023-03-10
+      - jobs-2023-05-05
+      - jobs-2023-06-02
+      - jobs-2023-07-07
+      - jobs-2023-08-04
+      - jobs-2023-09-01
+      - jobs-2023-11-03
+      - jobs-2023-12-08
+      - jobs-2024-01-05
+      - jobs-2024-03-08
+      - jobs-2024-04-05
+      - jobs-2024-05-03
+      - jobs-2024-06-07
+      - jobs-2024-07-05
+      - jobs-2024-08-02
+      - jobs-2024-09-06
+      - jobs-2024-10-04
+      - jobs-2024-11-01
+      - fomc-2024-11-07
+      - jobs-2024-12-06
+      - jobs-2025-01-10
+      - jobs-2025-02-07
+      - jobs-2025-03-07
+      - jobs-2025-04-04
+      - jobs-2025-05-02
+      - jobs-2025-06-06
+      - jobs-2025-07-03
+      - jobs-2025-08-01
+      - jobs-2025-09-05
+      - fomc-2025-09-17
+      - jobs-2025-11-20
+      - jobs-2025-12-16
+      - jobs-2026-06-05
+      - jobs-2026-08-07
+      stability:
+        kappa: 0.058
+        shock_pct: -3.0
+        days: 40
+        people_index_min: 99.826
+        people_index_max: 100.045
+        people_index_day_40: 100.045
+        bounded: true
+        reverted: true
+        passed: true
+      scenario_people_index:
+        iran_us_tension example:
+          min: 93.21
+          min_day: 28
+          max: 101.06
+          day_60: 101.06
+        recession headline (valence -0.8, salience 0.9, 7 days):
+          min: 94.99
+          min_day: 17
+          max: 100.52
+          day_60: 99.86
+      ownership_check:
+        adults: 0.563
+        college_graduates: 0.606
+        high_school_or_less: 0.552
+        trading_share_of_holders: 0.994
+        gallup_2024_2025:
+          adults: 0.62
+          college: 0.84
+          hs_or_less: 0.42
+    superseded:
+      - mechanism: people traded on the day's change in their economic mood (a slow moving average of the news)
+        date: '2026-10-15'
+        kappa: 0.581
+        fit_mean_miss_sd: {estimates_only: 1.0745, people_only: 1.0275, hybrid: 1.0178, no_change: 1.063}
+        holdout_mean_miss_sd: {estimates_only: 1.0282, people_only: 1.1487, hybrid: 1.1104, no_change: 1.0666}
+        stability: passed (a scripted -3% day; people's index min 98.74, 99.47 on day 40)
+        scenario_people_index:
+          iran_us_tension example: {min: 52.80, min_day: 28, day_60: 102.45}
+          recession headline (valence -0.8, salience 0.9, 7 days): {min: 66.88, min_day: 17, day_60: 121.64}
+        reason: >-
+          Replaced the same day. The fit sees release days, when mood has moved only a tenth of the way to where
+          the news points (mood moves 10% of the gap a day), so it chose a kappa that made multi-day moves far
+          too large: the Iran example fell 47% over four weeks, while real 2026 US-Iran escalation days moved the
+          S&P 500 by less than 1%. People now trade on the news they learn that day instead. The 2026 hold-out
+          result above had been seen before this change; the change was prompted by the scenario sizes.
 
 derived:
   us_tech_stocks:
     of: us_stocks
-    beta: null  # from `python scripts/check_market_actuals.py --beta`; only the coefficient is stored
+    beta: 1.299  # from `python scripts/check_market_actuals.py --beta`, run 2026-10-15; only the coefficient is stored
+    r2: 0.89
+    n: 949
+    range: 2023-01-03..2026-10-14
     method: OLS slope (with intercept) of NASDAQ100 daily % changes on SP500 daily % changes, FRED
     source: markets.nasdaq100_beta
     label: US tech stocks (Nasdaq-100, derived)

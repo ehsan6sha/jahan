@@ -42,10 +42,11 @@ import yaml
 WORLD_COMMANDS = {
     "gen", "run", "inject", "feed", "ingest", "ask", "transcript", "experiment", "report", "reset", "agents",
     "agent", "status", "create-agent", "possess", "release", "say", "post", "decide", "act", "brief", "circle",
-    "events-hash", "session", "social-feed",
+    "events-hash", "session", "social-feed", "watch",
 }  # fmt: skip
 GLOBAL_COMMANDS = {"doctor", "validate-data", "bench", "notables-draft"}
 SESSION_SUBCOMMANDS = {"list", "show", "replay"}
+WATCH_SUBCOMMANDS = {"catalog", "add", "remove", "list", "show"}
 PATH_OPTIONS = {"--run": "runs", "-r": "runs", "--scenario": "scenarios", "--config": "configs", "--out": "drafts"}
 SHORT_OPTIONS = {"-r", "-y", "-f"}  # the only single-dash options the CLI has; clusters like "-yr" are refused
 NUMBER = re.compile(r"-\d+(\.\d+)?")  # negative values such as --stance -0.5
@@ -110,6 +111,8 @@ def check_argv(argv: Any, s: Settings) -> tuple[list[str], str | None]:
         raise ArgvError(f"unknown command {cmd!r}")
     if cmd == "session" and (len(argv) < 2 or argv[1] not in SESSION_SUBCOMMANDS):
         raise ArgvError("session needs list, show or replay")
+    if cmd == "watch" and (len(argv) < 2 or argv[1] not in WATCH_SUBCOMMANDS):
+        raise ArgvError("watch needs " + ", ".join(sorted(WATCH_SUBCOMMANDS)))
     out = list(argv)
     world: str | None = None
     seen: set[str] = set()

@@ -105,6 +105,18 @@ def test_bad_news_makes_holders_sell_on_weekdays_only():
     assert "us_stocks_people" in t["detail"]
 
 
+def test_weekend_news_is_traded_on_monday():
+    w = _world(market_kappa=0.2)
+    run_in_memory(w, 4)  # Tuesday to Friday
+    assert w.dow() == 5  # Saturday
+    _bad_news(w)
+    rec = run_in_memory(w, 3)  # Saturday, Sunday, Monday
+    people = _series(rec, "us_stocks_people_pct")
+    assert people[4] == 0.0 and people[5] == 0.0  # the market is closed
+    assert people[6] < 0.0  # Monday trades the weekend's news
+    assert w.macro["market"]["pending_pct"] == 0.0
+
+
 def test_one_shock_stays_bounded_and_reverts():
     w = _world(market_kappa=0.2)
     shock = MacroPath(variable="us_stocks", steps=[MacroStep(days=1, pct_per_day=-3.0)])

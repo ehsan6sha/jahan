@@ -54,6 +54,7 @@
     play: { as: null, brief: null, circle: null, tab: "message", replies: true, target: "", autopilotDays: 7 },
     results: { what: "", seeds: 4, horizon: "", report: null, reportPath: null },
     run: { autonomy: null, keepIdle: false, custom: 14 },
+    watch: { data: null, key: null, loading: null, days: 60 },
   };
 
   const GLOSSARY = {
@@ -73,6 +74,8 @@
     recordings: "Every web fetch and Claude answer is saved inside the world, so undo and replay give identical results without paying again.",
     session: "Your time playing one or more people. Each action is saved, so it can be replayed after an undo.",
     baseline: "The same world without your prompt, with the same random draws, so differences come from the prompt alone.",
+    watch: "A series you follow while time moves: a market, a currency, a country's mood or the odds of an event. The change is counted from the day you started watching.",
+    "people's trading": "Simulated US adults who hold stock (shares from the Federal Reserve's Survey of Consumer Finances) buy or sell when they hear news that makes the economy look better or worse (weekend news is traded on Monday). Their part of the US stock index is shown separately from the part moved by announcements and scripted what-ifs. It fades as the news fades: they buy back what they sold.",
   };
   const term = (key, label) => h("span", { class: "term", title: GLOSSARY[key] || "", tabindex: 0 }, label || key);
 
@@ -342,6 +345,7 @@
     { id: "ask", title: "Ask", hint: "Interview a person or a group", world: true },
     { id: "play", title: "Play", hint: "Become someone and act", world: true },
     { id: "results", title: "Results", hint: "Measure what a prompt changed", world: true },
+    { id: "watch", title: "Watch", hint: "Follow markets and odds as time moves", world: true },
     null,
     { id: "activity", title: "Activity", hint: "Every command that ran" },
     { id: "guide", title: "Guide & tools", hint: "How it works; checks" },
@@ -1622,7 +1626,90 @@
     store.set("theme", v);
   }
 
-  const RENDER = { start: viewStart, world: viewWorld, whatif: viewWhatif, social: viewSocial, people: viewPeople, ask: viewAsk, play: viewPlay, results: viewResults, activity: viewActivity, guide: viewGuide };
+  // ------------------------------------------------------------------ Watch
+  const SVG_NS = "http://www.w3.org/2000/svg";
+  function svg(tag, attrs, ...kids) {
+    const el = document.createElementNS(SVG_NS, tag); // h() makes HTML elements, which cannot draw
+    for (const [k, v] of Object.entries(attrs || {})) if (v !== null && v !== undefined) el.setAttribute(k, String(v));
+    kids.forEach((c) => c && el.append(c));
+    return el;
+  }
+
+  function sparkline(values, base, down) {
+    const W = 140, H = 32, P = 3;
+    if (values.length < 2) return h("span", { class: "muted small" }, "after the next day");
+    const all = base === null || base === undefined ? values : [...values, base];
+    let lo = Math.min(...all), hi = Math.max(...all);
+    if (hi - lo < 1e-9) { lo -= 1; hi += 1; }
+    const x = (i) => P + (i * (W - 2 * P)) / (values.length - 1);
+    const y = (v) => H - P - ((v - lo) * (H - 2 * P)) / (hi - lo);
+    const pts = values.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+    return svg("svg", { class: down ? "spark down" : "spark", viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": `${values.length} days` },
+      base === null || base === undefined ? null : svg("line", { x1: P, x2: W - P, y1: y(base).toFixed(1), y2: y(base).toFixed(1) }),
+      svg("polyline", { points: pts }));
+  }
+
+  function watchValue(v, unit) {
+    if (v === null || v === undefined || Number.isNaN(v)) return "n/a";
+    if (unit === "probability") return `${(100 * v).toFixed(1)}%`;
+    if (unit === "mood") return (v >= 0 ? "+" : "") + v.toFixed(3);
+    if (unit === "rate") return Number(v.toPrecision(5)).toLocaleString();
+    return v.toFixed(2);
+  }
+
+  function watchChange(s) {
+    let text, sign;
+    if (s.unit === "probability") { sign = s.since_watched_abs; text = `${sign >= 0 ? "+" : ""}${(100 * sign).toFixed(1)} points`; }
+    else if (s.unit === "mood") { sign = s.since_watched_abs; text = (sign >= 0 ? "+" : "") + sign.toFixed(3); }
+    else { sign = s.since_watched_pct || 0; text = `${sign >= 0 ? "+" : ""}${sign.toFixed(2)}%`; }
+    return h("span", { class: Math.abs(sign) < 1e-9 ? "" : sign > 0 ? "up" : "down" }, text);
+  }
+
+  const pctCell = (p) => (p === null || p === undefined ? h("span", { class: "muted" }, "n/a") : h("span", { class: Math.abs(p) < 1e-9 ? "" : p > 0 ? "up" : "down" }, `${p >= 0 ? "+" : ""}${p.toFixed(2)}%`));
+
+  function viewWatch() {
+    const st = S.status;
+    if (!st) return page("Watch", null, loading());
+    const W = S.watch;
+    const box = h("div", {});
+    const key = `${S.world}|${st.day}|${st.prompts.length}|${(st.watch || []).join(",")}|${W.days}`;
+    if (W.key !== key && !W.loading) {
+      W.loading = runJSON(["watch", "show", "--run", S.world, "--json", "--days", String(W.days)])
+        .then((d) => { W.data = d; W.key = key; W.loading = null; if (S.view === "watch") render(); })
+        .catch((e) => { W.loading = null; W.key = key; box.replaceChildren(errorNotice(e)); });
+    }
+    const d = W.data && W.data.day !== undefined && W.key && W.key.startsWith(S.world + "|") ? W.data : null;
+    const toggle = (id, on) => act(box, ["watch", on ? "add" : "remove", "--run", S.world, id], { ok: on ? "Watching it from today." : "Stopped watching it.", rerender: true });
+    const out = page("Watch", h("span", {}, "Pick what to follow, move time forward, and see how it moved. US stocks have two parts: announcements and scripted what-ifs, and ", term("people's trading"), ". Everything here is simulated, not a forecast."));
+    out.append(timeCard());
+    const rows = d ? d.series : [];
+    out.append(card("Watching", d ? `Day ${d.day} (${d.date}). The line shows the last ${W.days} days; the dashed line is the level when you started watching.` : null,
+      !d ? loading(W.loading ? "Reading the history…" : "") : rows.length
+        ? h("div", { class: "table-wrap" }, h("table", {},
+          h("thead", {}, h("tr", {}, h("th", {}, "Series"), h("th", { class: "num" }, "Now"), h("th", { class: "num" }, "Since watched"),
+            h("th", { class: "num" }, "People's trading"), h("th", { class: "num" }, "Announcements & scripted"), h("th", {}, `Last ${W.days} days`), h("th", {}, ""))),
+          h("tbody", {}, ...rows.map((s) => h("tr", {},
+            h("td", {}, h("strong", {}, s.label), h("div", { class: "muted small" }, `since day ${s.since_day} (${s.since_date})${s.rebased ? ", restarted after an undo" : ""}`), s.note ? h("div", { class: "muted small" }, s.note) : null),
+            h("td", { class: "num" }, watchValue(s.now, s.unit)),
+            h("td", { class: "num" }, watchChange(s)),
+            h("td", { class: "num" }, s.components ? pctCell(s.components.people_pct) : h("span", { class: "muted" }, "—")),
+            h("td", { class: "num" }, s.components ? pctCell(s.components.scripted_pct) : h("span", { class: "muted" }, "—")),
+            h("td", {}, sparkline(s.history.map((r) => r.value), s.since_value, (s.since_watched_abs || 0) < 0)),
+            h("td", {}, h("button", { class: "btn small act", onclick: () => toggle(s.id, false) }, "Stop")))))))
+        : h("p", { class: "muted" }, "Nothing watched yet: tick something below, then move time forward."),
+      box));
+    const cat = d ? d.catalog : [];
+    const groups = [["market", "Markets"], ["mood", "Moods"], ["odds", "Event odds"]];
+    out.append(card("Add to the watch list", "Markets move on announcements, scripted what-ifs and, for US stocks, people's trading. Use What-if to add news or a market move and watch the effect.",
+      !d ? loading() : h("div", {}, ...groups.filter(([k]) => cat.some((c) => c.kind === k)).map(([k, label]) => h("div", {},
+        h("h4", {}, label),
+        h("div", { class: "watch-cat" }, ...cat.filter((c) => c.kind === k).map((c) => h("label", { class: "check", title: c.note || "" },
+          h("input", { type: "checkbox", checked: c.watched, onchange: (e) => toggle(c.id, e.target.checked) }), c.label))))))));
+    if (d) out.append(h("p", { class: "muted small" }, d.disclaimer));
+    return out;
+  }
+
+  const RENDER = { start: viewStart, world: viewWorld, whatif: viewWhatif, social: viewSocial, people: viewPeople, ask: viewAsk, play: viewPlay, results: viewResults, watch: viewWatch, activity: viewActivity, guide: viewGuide };
 
   // ------------------------------------------------------------------ boot
   async function boot() {

@@ -10,6 +10,9 @@ from jahan.gen.registry import load_registry
 from jahan.model.markets import load_markets
 from jahan.scenario.backtest import (
     BacktestFile,
+    EventResult,
+    _combine,
+    choose_kappa,
     default_events_file,
     default_events_files,
     hindsight,
@@ -88,6 +91,32 @@ def test_simulate_one_event(events):
     assert res.jahan["gold"] == 0.0
     shares = res.aware[0]
     assert len(shares) == 3 and shares[0] <= shares[1] <= shares[2] and shares[2] > 0
+    assert set(res.people) == {"us_stocks"} and set(res.hybrid) == set(res.jahan)
+
+
+def test_people_column_is_linear_in_kappa_on_the_release_day(events):
+    base = RunConfig(n_agents=2000, countries=["USA", "DEU"], seed=11)
+    ev = _event(events, "jobs-2026-06-05")  # a big upside surprise: holders buy on good news
+    one = simulate(ev, base, kappa=1.0)
+    half = simulate(ev, base, kappa=0.5)
+    assert one.jahan == half.jahan  # the estimates part never depends on people
+    assert one.people["us_stocks"] > 0
+    assert half.people["us_stocks"] == pytest.approx(0.5 * one.people["us_stocks"], rel=1e-9)
+    assert one.hybrid["us_stocks"] == pytest.approx(_combine(one.jahan["us_stocks"], one.people["us_stocks"]))
+
+
+def test_choose_kappa_minimises_the_hybrid_miss(events):
+    ev = _event(events, "jobs-2026-06-05")
+
+    def row(scripted, people, real):
+        r = EventResult(ev.model_copy(update={"actual": ev.actual.model_copy(update={"us_stocks": real})}), 1.0)
+        r.jahan, r.people = {"us_stocks": scripted}, {"us_stocks": people}
+        return r
+
+    k, losses = choose_kappa([row(0.0, 1.0, 0.3), row(0.0, -1.0, -0.3)], 0.92)
+    assert k == pytest.approx(0.3) and len(losses) == 2001
+    k0, _ = choose_kappa([row(0.0, 1.0, -0.5)], 0.92)  # people point the wrong way: kappa 0
+    assert k0 == 0.0
 
 
 def test_cli_backtest_json_and_markdown(tmp_path, events):
@@ -108,8 +137,11 @@ def test_cli_backtest_json_and_markdown(tmp_path, events):
     assert rows["fomc-2026-09-16"]["scores"]["us_stocks"]["major"] is False
     assert len(rows["fomc-2026-09-16"]["aware"]) == 2  # two seeds for the news-reach check
     assert rows["hormuz-2026-09-28"]["jahan"] == {}
+    assert set(rows["fomc-2026-09-16"]["hybrid"]) == {"us_stocks", "gold", "dollar"}
+    assert "summary_hybrid" in data and "kappa" in data
     md = (tmp_path / "b.md").read_text(encoding="utf-8")
     assert "| 2026-09-16 |" in md and "Not modelled" in md and "News reach" in md
+    assert "US stocks with people's trading" in md
 
 
 def test_gen_before_the_roster_date_needs_the_flag(tmp_path):

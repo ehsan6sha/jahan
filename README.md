@@ -49,6 +49,8 @@ computer and shows its output and the exact command, so you can learn and script
 simulated in the browser. You can:
 
 - create and open worlds, and move time forward;
+- watch US stocks, US tech stocks, gold, currencies and each country's mood move as time passes (the
+  Watch page), with the part moved by people's trading shown separately;
 - add what-ifs in plain words, future events, ready-made examples, or today's real news, after checking a
   preview of the exact events;
 - browse and filter people, open anyone's view of the world, ask them questions, and replay one of their
@@ -75,6 +77,9 @@ uv run jahan report     --run runs/demo --prompt 1          # runs/demo/reports/
 uv run jahan agents     --run runs/demo --filter "country == 'IRN' and age > 30 and info_tier >= 2" --limit 5
 uv run jahan agent      --run runs/demo 42                 # one person's profile, circle, schedule and views
 uv run jahan reset      --run runs/demo --before-prompt 1  # time travel
+uv run jahan watch add  --run runs/demo market:us_stocks market:us_tech_stocks mood:USA
+uv run jahan run        --run runs/demo --days 7
+uv run jahan watch show --run runs/demo                   # how each watched series moved, and why
 uv run jahan backtest                                      # the benchmark below (offline, about 4 min)
 ```
 
@@ -252,23 +257,46 @@ launch as prompt 1, run some days, inject the dollar rise as prompt 2, and run t
   the truth; acceptance depends on trust and a bounded-confidence window. Buzz fades with novelty.
 - **Mood and markets.** Exchange-rate and gold paths move local prices of dollar-priced goods and create
   headlines; each agent's economic mood follows the news they know and shifts purchase decisions.
-  Jahan has no market model: the simulated people do not trade or set prices. An *announcement* (a Federal
-  Reserve rate decision or a US jobs report) moves a US stock index, the dollar against the euro and, for
-  jobs reports, gold by published event-study estimates times the surprise, which is the announced value
-  minus what markets expected the day before (`data/global/markets.yaml`, each estimate cited in the
-  registry). A fully expected decision moves nothing. The estimate for gold after rate decisions is shown
-  but not applied, because studies disagree on its sign. Other currencies do not move, for lack of a
-  sourced estimate. Every other market move must be scripted in a prompt.
+  An *announcement* (a Federal Reserve rate decision or a US jobs report) moves a US stock index, the
+  dollar against the euro and, for jobs reports, gold by published event-study estimates times the
+  surprise, which is the announced value minus what markets expected the day before
+  (`data/global/markets.yaml`, each estimate cited in the registry). A fully expected decision moves
+  nothing. The estimate for gold after rate decisions is shown but not applied, because studies disagree
+  on its sign. Other currencies and gold move only when a prompt scripts them.
+- **People's trading in US stocks.** The US stock index has a second part, moved by the simulated people.
+  - **Who holds stock.** US adults hold stock with the shares the Federal Reserve's Survey of Consumer
+    Finances 2022 reports by household income: 34% of the bottom half, 78% of the next 40% and 95% of the
+    top tenth. Each holder's stake is that group's median holding: $12,600, $53,200 or $608,000. Jahan ranks
+    adults by household income where the survey ranks families. The draw reproduces the overall share
+    (56% of simulated adults, against Gallup's 62%), but not the gap by education: 61% of simulated
+    college graduates hold stock against Gallup's 84%, and 55% of those with high school or less against
+    42%. Residents of other countries hold nothing, for lack of a sourced share.
+  - **How they trade.** On weekdays, holders with internet trade on the news they learned that day: how
+    much better or worse it makes the economy look (weekend news is traded on Monday). Net buying moves
+    the index by five times the money, the multiplier Gabaix and Koijen (2021) estimate for flows into the
+    whole market; here it is applied to the simulated households' flow, a simplification. How much of
+    their holdings people move per unit of news, kappa, is the one fitted number (0.058; see the
+    benchmark). The simulated holders stand in for all US household equity; institutions are not
+    modelled, and there is no random daily noise, so quiet days do not move at all.
+  - **What it can and cannot do.** When a story stops being tracked, people buy back what they sold on
+    it, so this part fades with the news and cannot make lasting trends. In a test, the example Iran–US
+    tension story took the people's part down 6.8% over four weeks, and it was back above its start
+    two months later. A recession headline took it down 5.0%. Real US–Iran escalation days in 2026 moved the
+    S&P 500 by less than 1% each.
+  - **US tech stocks (Nasdaq-100)** are derived, not modelled on their own: each day they move by 1.299
+    times the US stock index's move, the slope of the Nasdaq-100's daily changes on the S&P 500's from
+    January 2023 to October 2026 (FRED; R² 0.89; only the coefficient is stored).
 - **Time travel.** Every prompt writes a snapshot first. `reset` restores it and truncates the logs;
   re-running produces the identical timeline.
 
 ## Benchmark: backtests against real events, 2023-2026
 
-> **Read this first.** The simulated people do not trade and do not set prices. In this benchmark, market
-> moves come from published event-study estimates multiplied by the surprise (see "Mood and markets"
-> above). Those estimates are imposed from the studies, not learned by the simulation, so the market rows
-> test the estimates as Jahan applies them, not the simulation's own dynamics. What the simulation itself
-> adds is how far the news spreads and how public figures react. Educational and testing use only; not
+> **Read this first.** Most market moves in this benchmark come from published event-study estimates
+> multiplied by the surprise (see "Mood and markets" above). Those estimates are imposed from the studies,
+> not learned by the simulation, so those rows test the estimates as Jahan applies them. For US stocks the
+> simulated holders' trading adds a second part ("People's trading" above); its one number was fitted on
+> the 2023-2025 events and is tested on 2026, and on 2026 it made the forecasts worse. The simulation also
+> adds how far the news spreads and how public figures react. Educational and testing use only; not
 > financial advice; not a forecast; no accuracy is promised.
 
 This is a descriptive replay of published estimates on real events, not a blind test of forecasting skill.
@@ -286,6 +314,18 @@ and 37 jobs reports, 67 announcements in all.
   | Gold | 0.84 | 0.85 |
   | Dollar | 1.15 | 1.23 |
 
+- **People's trading: slightly better in the years it was fitted on, worse on the year held out.**
+  Average miss for US stocks, in typical daily moves:
+
+  | Events | Estimates only | With people's trading | "No change" |
+  |---|---|---|---|
+  | 2023-2025, used to fit kappa (58) | 1.07 | 1.02 | 1.06 |
+  | 2026, held out (8) | 1.03 | 1.11 | 1.07 |
+
+  On the 2026 events the people's part made the forecast worse, mostly on the two jobs reports. Eight
+  events are far too few to judge it either way. On 35 of the 66 days, mostly jobs reports, the people's
+  part pointed the other way from the published estimate: holders buy on good economic news, while the
+  estimate says good job news is bad for stocks because it means higher rates.
 - **Direction: 25 right out of 41 (61%), not clearly better than a coin toss.** Only forecasts of at least
   a quarter of a typical move count. By market: stocks 8 of 15, gold 3 of 4, dollar 14 of 22. A fair coin
   does at least this well about one time in nine (one-sided p = 0.11). The real chance is higher still,
@@ -349,6 +389,23 @@ and 37 jobs reports, 67 announcements in all.
 
   The samples run from 1990 to 2019, so every event here (2023-2026) is outside them; nothing was fitted to
   these events.
+- **Fitting people's trading.** `uv run jahan backtest --fit-people` chooses kappa under a rule written
+  in `data/global/investors.yaml` before the first fit:
+  - **The loss.** It minimises the mean absolute miss of the US stock forecast (estimates plus people), in
+    typical daily moves, over the 58 forecast events of 2023-2025 with a real stock move.
+  - **The grid.** It searches kappa from 0 to 2 in steps of 0.001, at 10,000 people. The 2026 events never
+    enter the choice.
+  - **Stability.** A scripted 3% fall must not spiral and must be at least half undone within 40 days.
+  - **The record.** The full record, with how big two what-if stories get, is in the data file.
+  - **The first version failed.** In the first version people traded as their mood drifted toward the
+    news. Mood moves a tenth of the way each day, so on a release day the fit saw a tenth of the reaction
+    and chose a kappa ten times larger (0.581). The example Iran–US tension story then took the index down
+    47% over four weeks.
+  - **The change.** People now trade on the news they learn that day. The same rule chose kappa = 0.058,
+    with the same release-day results and much smaller multi-day moves. The 2026 results had been seen
+    before this change; it was prompted by the size of the what-if moves. Both fits are in the file.
+  - **The fit sees only release days.** Most of the people's reaction comes on later days, as the news
+    spreads, so the stability test, not the fit, governs those.
 - **Scoring.** The limits were fixed before the run:
   - A major miss is one larger than 2 typical daily moves, or a wrong direction on a real move larger than
     one.
@@ -365,7 +422,7 @@ to any of these events.
 
 <!-- generated by `jahan backtest` (m1 config, 10,000 people, 5 seeds for news reach); edit data/backtests, not this table -->
 
-**Summary.** Average miss in typical daily moves, Jahan / "no change"; major misses out of forecasts; direction right out of the forecasts large enough to have one (a quarter of a typical move or more).
+**Summary.** Average miss in typical daily moves, Jahan's published estimates / "no change"; major misses out of forecasts; direction right out of the forecasts large enough to have one (a quarter of a typical move or more).
 
 | Events | Count | US stocks | Gold | Dollar | Major misses | Direction right |
 |---|---|---|---|---|---|---|
@@ -381,19 +438,35 @@ to any of these events.
 | **Jobs reports 2023-2026** | 37 | 1.24 / 1.24 | 0.78 / 0.80 | 1.16 / 1.27 | 16 of 108 | 23 of 35 |
 | **All** | 67 | 1.07 / 1.06 | 0.84 / 0.85 | 1.15 / 1.23 | 26 of 196 | 25 of 41 |
 
+**US stocks with people's trading.** kappa = 0.058, fitted on 2023-2025; 2026 is held out and was never used to choose it. Average miss in typical daily moves; "people" is the simulated holders' trading alone, "hybrid" adds it to the published estimates; major misses and directions are for the hybrid.
+
+| Events | Count | Estimates only | People only | Hybrid | No change | Major misses | Direction right |
+|---|---|---|---|---|---|---|---|
+| Fed decisions 2023 | 8 | 0.88 | 0.93 | 0.88 | 0.93 | 1 of 8 | 3 of 4 |
+| Fed decisions 2024 | 8 | 1.31 | 1.29 | 1.34 | 1.26 | 1 of 8 | 1 of 3 |
+| Fed decisions 2025 | 8 | 0.38 | 0.43 | 0.41 | 0.39 | 0 of 8 | 1 of 2 |
+| Fed decisions 2026 | 6 | 0.88 | 0.78 | 0.83 | 0.83 | 1 of 6 | 1 of 2 |
+| **Fed decisions 2023-2026** | 30 | 0.86 | 0.86 | 0.87 | 0.86 | 3 of 30 | 6 of 11 |
+| Jobs reports 2023 | 11 | 1.16 | 1.02 | 1.00 | 1.15 | 2 of 11 | 6 of 7 |
+| Jobs reports 2024 | 12 | 0.99 | 0.83 | 0.86 | 0.91 | 1 of 12 | 5 of 6 |
+| Jobs reports 2025 | 11 | 1.56 | 1.57 | 1.52 | 1.59 | 2 of 11 | 6 of 9 |
+| Jobs reports 2026 | 2 | 1.48 | 2.24 | 1.95 | 1.77 | 1 of 2 | 0 of 0 |
+| **Jobs reports 2023-2026** | 36 | 1.24 | 1.19 | 1.16 | 1.24 | 6 of 36 | 17 of 22 |
+| **All** | 66 | 1.07 | 1.04 | 1.03 | 1.06 | 9 of 66 | 23 of 33 |
+
 **Market moves on the day, 2026** (percent, close to close; Jahan / real). Misses are in typical daily moves
 (one daily s.d.: US stocks 0.92%, gold 1.28%, dollar 0.41%). A major miss is more than 2 s.d., or the wrong direction on a move over 1 s.d.
 
-| Date | Event | Surprise | US stocks | Gold | Dollar | Miss (s.d.): stocks, gold, dollar | Major miss |
-|---|---|---|---|---|---|---|---|
-| 2026-01-28 | Fed holds at 3.50-3.75% | +0.7 bp | -0.03% / -0.01% | 0.00% / +4.44% | +0.02% / +0.24% | 0.0, 3.5, 0.5 | Gold |
-| 2026-03-18 | Fed holds at 3.50-3.75% | +0.0 bp | 0.00% / -1.36% | 0.00% / -3.63% | 0.00% / +0.51% | 1.5, 2.8, 1.2 | Gold |
-| 2026-04-29 | Fed holds at 3.50-3.75% | +0.0 bp | 0.00% / -0.04% | 0.00% / -1.02% | 0.00% / +0.30% | 0.0, 0.8, 0.7 | none |
-| 2026-06-05 | May jobs +172k vs about 85k expected | +87k jobs | -0.25% / -2.64% | -0.20% / -3.36% | +0.15% / +0.66% | 2.6, 2.5, 1.3 | US stocks, Gold |
-| 2026-06-17 | Fed holds at 3.50-3.75% (Warsh's first meeting; median 2026 dot 3.4 to 3.8) | +0.0 bp | 0.00% / -1.21% | 0.00% / -1.50% | 0.00% / +0.55% | 1.3, 1.2, 1.3 | none |
-| 2026-07-29 | Fed holds at 3.50-3.75% (three officials wanted a hike) | -8.3 bp | +0.33% / -1.52% | 0.00% / +1.32% | -0.26% / -0.57% | 2.0, 1.0, 0.7 | US stocks |
-| 2026-08-07 | July jobs -23k vs about +80k expected | -103k jobs | +0.29% / +0.62% | +0.24% / +2.37% | -0.17% / -0.37% | 0.4, 1.7, 0.5 | none |
-| 2026-09-16 | Fed raises 0.25 pt to 3.75-4.00% (first hike since 2023) | +2.0 bp | -0.08% / -0.45% | 0.00% / -0.71% | +0.06% / +0.66% | 0.4, 0.6, 1.5 | none |
+| Date | Event | Surprise | US stocks | Gold | Dollar | Miss (s.d.): stocks, gold, dollar | Major miss | US stocks with people / real |
+|---|---|---|---|---|---|---|---|---|
+| 2026-01-28 | Fed holds at 3.50-3.75% | +0.7 bp | -0.03% / -0.01% | 0.00% / +4.44% | +0.02% / +0.24% | 0.0, 3.5, 0.5 | Gold | -0.03% / -0.01% |
+| 2026-03-18 | Fed holds at 3.50-3.75% | +0.0 bp | 0.00% / -1.36% | 0.00% / -3.63% | 0.00% / +0.51% | 1.5, 2.8, 1.2 | Gold | 0.00% / -1.36% |
+| 2026-04-29 | Fed holds at 3.50-3.75% | +0.0 bp | 0.00% / -0.04% | 0.00% / -1.02% | 0.00% / +0.30% | 0.0, 0.8, 0.7 | none | 0.00% / -0.04% |
+| 2026-06-05 | May jobs +172k vs about 85k expected | +87k jobs | -0.25% / -2.64% | -0.20% / -3.36% | +0.15% / +0.66% | 2.6, 2.5, 1.3 | US stocks, Gold | +0.19% / -2.64% |
+| 2026-06-17 | Fed holds at 3.50-3.75% (Warsh's first meeting; median 2026 dot 3.4 to 3.8) | +0.0 bp | 0.00% / -1.21% | 0.00% / -1.50% | 0.00% / +0.55% | 1.3, 1.2, 1.3 | none | 0.00% / -1.21% |
+| 2026-07-29 | Fed holds at 3.50-3.75% (three officials wanted a hike) | -8.3 bp | +0.33% / -1.52% | 0.00% / +1.32% | -0.26% / -0.57% | 2.0, 1.0, 0.7 | US stocks | +0.33% / -1.52% |
+| 2026-08-07 | July jobs -23k vs about +80k expected | -103k jobs | +0.29% / +0.62% | +0.24% / +2.37% | -0.17% / -0.37% | 0.4, 1.7, 0.5 | none | -0.14% / +0.62% |
+| 2026-09-16 | Fed raises 0.25 pt to 3.75-4.00% (first hike since 2023) | +2.0 bp | -0.08% / -0.45% | 0.00% / -0.71% | +0.06% / +0.66% | 0.4, 0.6, 1.5 | none | -0.35% / -0.45% |
 
 Summary over these events. US stocks: Jahan misses by 1.03 s.d. on average, "no change" by 1.07; direction called 3 times, right 2. Gold: Jahan misses by 1.75 s.d. on average, "no change" by 1.79; direction called 0 times, right 0. Dollar: Jahan misses by 0.97 s.d. on average, "no change" by 1.18; direction called 3 times, right 3.
 
@@ -533,13 +606,18 @@ Several numbers for player actions and public-figure autonomy are heuristics, no
 - the social feed weights (interest, trust in the author), each platform's default share where no
   figure is published, post reach from followers and engagement, and every repost coefficient;
 - the salience of an announcement's headline (0.9), the 1% move that makes US stocks news, and the tone
-  and weight of stock headlines in people's mood.
+  and weight of stock headlines in people's mood;
+- in people's trading: that only holders with internet trade, the 10% cap on a day's move, trading on
+  weekdays only (no market holidays), and trading on the day news is learned.
 
 Market reactions use estimates from 1990-2019 samples, some measured over 5 or 30 minutes rather than a
 whole day; they apply the same sign every time, although about a third of Fed announcements move rates and
 stocks in the same direction (Jarociński and Karadi 2020). A Fed chair's own decisions in the simulation
-(`set_interest_rate`, by a player or by autonomy) still use the placeholder mood effect in `roles.yaml` and
-do not move markets.
+(`set_interest_rate`, by a player or by autonomy) still use the placeholder mood effect in `roles.yaml`;
+they move US stocks only through people's trading on that mood shock and on the news of it, not through
+the published estimates. People's trading covers US stocks only; its one
+fitted number rests on release days, and how far it moves the index over weeks is a consequence of the
+model, not a measurement.
 
 Worlds created before political camps existed (snapshot schema 5) cannot be opened; create a new world.
 
