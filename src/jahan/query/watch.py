@@ -382,6 +382,7 @@ def market_levels(world: World) -> dict[str, Any]:
         "gold": {"index": float(m.get("gold_index", 100.0))},
         "dollar": {"eur_per_usd": float(m["fx"][codes.index("DEU")])} if "DEU" in codes and "fx" in m else None,
         "people_trading": market is not None,
+        "people_on": market is not None and bool(world.config.params.market_people),
         "kappa": None if market is None else float(market["cfg"]["kappa"]),
     }
     if market is not None:

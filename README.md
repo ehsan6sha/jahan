@@ -436,8 +436,8 @@ and 37 jobs reports, 67 announcements in all.
   - **The change.** People now trade on the news they learn that day. The same rule chose kappa = 0.058,
     with the same release-day results and much smaller multi-day moves. The 2026 results had been seen
     before this change, so they are no longer a clean out-of-sample test; treat them as exploratory until
-    events after October 2026 are scored. The change was prompted by the size of the what-if moves. Both
-    fits are in the file.
+    events after October 2026 are scored. The change was prompted by the size of the what-if moves, not
+    by the 2026 numbers, which are the same under both versions. Both fits are in the file.
   - **The fit sees only release days.** Most of the people's reaction comes on later days, as the news
     spreads, so the stability test, not the fit, governs those.
 - **Scoring.** The limits were fixed before the run:

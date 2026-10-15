@@ -299,7 +299,7 @@ def status_text(st: dict[str, Any]) -> str:
     mk = st["markets"]
     us = mk["us_stocks"]
     market = f"Markets: US stocks {us['index']:.2f}"
-    if mk["people_trading"]:
+    if mk["people_trading"] and mk.get("people_on", True):
         market += f" (people's part {us['people_index']:.2f}, announcements and scripted {us['scripted_index']:.2f})"
     market += f"; gold {mk['gold']['index']:.2f}" + (
         f"; euros per dollar {mk['dollar']['eur_per_usd']:.4f}" if mk["dollar"] else ""
