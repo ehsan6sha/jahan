@@ -292,7 +292,7 @@ class QuestionEvent(BaseModel):
     @classmethod
     def _id(cls, v: str) -> str:
         if not QUESTION_ID.fullmatch(v):
-            raise ValueError("a question id is 3-120 lower-case letters, digits or dashes")
+            raise ValueError("a question id is 3-200 lower-case letters, digits or dashes")
         return v
 
     @field_validator("topic")

@@ -29,6 +29,9 @@ Rules:
   what markets expected the day before; the engine computes how stocks, gold and the dollar react from
   published estimates.  If the text does not say what markets expected, ask a clarifying question; never
   guess it.  Do not add macro paths for the same announcement, and never invent market percentages.
+- A news or statement event that plainly bears on one of the open watched questions listed in the world
+  facts gets "bears_on": [{"question": <its id>, "direction": -1..1}] (positive makes "Yes" more likely).
+  Omit it otherwise; never invent question ids and never estimate a probability.
 - Keep "prompt" equal to the user's text.
 """
 
@@ -68,6 +71,17 @@ def world_facts(world: World) -> str:
         "Channel kinds: tv, newspaper, online, social, radio, specialist.",
         "Value dimensions for product attributes: self, money, culture, freedom, family, security.",
     ]
+    asked = [(qid, q) for qid, q in world.macro.get("odds", {}).get("questions", {}).items() if q["status"] == "open"]
+    if asked:
+        lines.append(
+            "Open watched questions (use their ids in bears_on): "
+            + "; ".join(
+                f'{qid} = "{q["question"]}"' + (f" (resolves {q['resolves_by']})" if q.get("resolves_by") else "")
+                for qid, q in asked
+            )
+        )
+    else:
+        lines.append("Open watched questions: none (do not use bears_on).")
     return "\n".join(lines)
 
 

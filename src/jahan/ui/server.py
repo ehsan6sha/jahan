@@ -46,7 +46,7 @@ WORLD_COMMANDS = {
 }  # fmt: skip
 GLOBAL_COMMANDS = {"doctor", "validate-data", "bench", "notables-draft"}
 SESSION_SUBCOMMANDS = {"list", "show", "replay"}
-WATCH_SUBCOMMANDS = {"catalog", "add", "remove", "list", "show"}
+WATCH_SUBCOMMANDS = {"catalog", "add", "remove", "list", "show", "fetch"}
 PATH_OPTIONS = {"--run": "runs", "-r": "runs", "--scenario": "scenarios", "--config": "configs", "--out": "drafts"}
 SHORT_OPTIONS = {"-r", "-y", "-f"}  # the only single-dash options the CLI has; clusters like "-yr" are refused
 NUMBER = re.compile(r"-\d+(\.\d+)?")  # negative values such as --stance -0.5

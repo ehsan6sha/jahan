@@ -173,6 +173,10 @@ def run_cmd(
     keep_control: Annotated[
         bool, typer.Option(help="Agents you play stay idle instead of going on autopilot during this run")
     ] = False,
+    odds: Annotated[
+        bool,
+        typer.Option(help="Claude rates new stories against watched questions (LLM; recorded for replay)"),
+    ] = True,
 ) -> None:
     """Advance the world.  Agents you play are on autopilot meanwhile (your next action takes them back)."""
     rd = RunDir(run_dir)
@@ -184,7 +188,7 @@ def run_cmd(
 
     autopilot_for_run(rd, world, keep_control)
     t0 = time.perf_counter()
-    hook = _autonomy_hook(rd, world, provider) if autonomy else None
+    hook = _autonomy_hook(rd, world, provider, autonomy=autonomy, odds=odds) if autonomy or odds else None
     from jahan.actors import session
 
     sid = session.current(rd)
@@ -200,29 +204,56 @@ def run_cmd(
 
 
 class _AutonomyHook:
-    def __init__(self, client) -> None:  # noqa: ANN001
+    """Runs before each simulated day: public figures' own turns, then Claude rates new stories against
+    watched questions (the figures' statements of the day are rated too)."""
+
+    def __init__(self, client, autonomy: bool = True, odds: bool = True) -> None:  # noqa: ANN001
         self.client = client
+        self.autonomy = autonomy
+        self.odds = odds
         self.turns = 0
+        self.rated = 0
 
     def __call__(self, world, log: EventLog) -> None:  # noqa: ANN001
-        from jahan.actors.autonomy import run_turns
+        if self.autonomy and world.notables:
+            from jahan.actors.autonomy import run_turns
 
-        self.turns += run_turns(self.client, world, log)
+            self.turns += run_turns(self.client, world, log)
+        if self.odds:
+            from jahan.scenario.odds_rater import rate_new_items
+
+            self.rated += rate_new_items(self.client, world, log)
 
     def summary(self) -> str:
-        return f"Public figures took {self.turns} decision turns. {self.client.budget.summary()}"
+        parts = []
+        if self.autonomy:
+            parts.append(f"Public figures took {self.turns} decision turns.")
+        if self.odds and self.rated:
+            parts.append(f"Claude rated {self.rated} stories against watched questions.")
+        return " ".join(parts + [self.client.budget.summary()])
 
 
-def _autonomy_hook(rd: RunDir, world, provider: str) -> _AutonomyHook | None:  # noqa: ANN001
-    if not world.notables:
+def _autonomy_hook(rd: RunDir, world, provider: str, autonomy: bool = True, odds: bool = True) -> _AutonomyHook | None:  # noqa: ANN001,E501
+    autonomy = autonomy and bool(world.notables)
+    asked = bool(world.macro.get("odds", {}).get("questions"))
+    if not autonomy and not (odds and asked):
         return None
     try:
         client = _client(rd, provider)
     except typer.BadParameter as e:
-        typer.echo(f"Public figures will not act on their own this run ({e.message}).")
+        what = [
+            w
+            for w, on in (
+                ("public figures will not act on their own", autonomy),
+                ("watched questions move only on scripted stories", odds and asked),
+            )
+            if on
+        ]
+        typer.echo(f"This run, {' and '.join(what)} ({e.message}).")
         return None
     client.budget.role_share.setdefault("notable_autonomy", 0.3)
-    return _AutonomyHook(client)
+    client.budget.role_share.setdefault("classifier", 0.3)
+    return _AutonomyHook(client, autonomy=autonomy, odds=odds)
 
 
 def _advance(rd: RunDir, world, days: int, before_day=None) -> dict[str, int]:  # noqa: ANN001

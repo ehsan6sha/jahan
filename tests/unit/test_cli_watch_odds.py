@@ -72,7 +72,7 @@ def test_refusals(world, tmp_path):
     run = str(world)
     with pytest.raises(AssertionError, match="needs --question"):
         cli("watch", "add", "--run", run, "odds:custom:my-question")
-    with pytest.raises(AssertionError, match="unknown series 'odds:something-else'"):
+    with pytest.raises(AssertionError, match="needs the network"):  # an unknown id is read as a Polymarket market
         cli("watch", "add", "--run", run, "odds:something-else")
     bad = tmp_path / "bad.yaml"
     bad.write_text(

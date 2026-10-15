@@ -55,7 +55,7 @@
     results: { what: "", seeds: 4, horizon: "", report: null, reportPath: null },
     run: { autonomy: null, keepIdle: false, custom: 14 },
     watch: { data: null, key: null, loading: null, days: 60, seeds: null, seedsFor: null, force: false,
-      custom: { question: "", prior: "0.5", resolves: "", countries: "" } },
+      custom: { question: "", prior: "0.5", resolves: "", countries: "" }, live: null, liveQuery: "Iran", liveTag: "" },
   };
 
   const GLOSSARY = {
@@ -1781,8 +1781,38 @@
       if (C.countries.trim()) argv.push("--countries", C.countries.replace(/\s+/g, ""));
       add(argv, "Watching your question.");
     };
-    return card(h("span", {}, "Event ", term("question", "questions")), "Pick a real prediction-market question, or ask your own. Stories in What-if can bear on it (the preview says how).",
-      seedList, h("h4", {}, "Your own question"), custom, h("button", { class: "btn act", onclick: addCustom }, "Watch my question"));
+    const liveBox = h("div", {});
+    const findLive = async () => {
+      const argv = ["watch", "catalog", "--run", S.world, "--polymarket", "--json"];
+      if (W.liveQuery.trim()) argv.push("--query", clean(W.liveQuery));
+      else if (W.liveTag) argv.push("--tag", W.liveTag);
+      liveBox.replaceChildren(loading("Reading Polymarket…"));
+      try {
+        W.live = (await runJSON(argv)).polymarket || [];
+        render();
+      } catch (e) {
+        liveBox.replaceChildren(errorNotice(e));
+      }
+    };
+    const liveList = W.live === null ? null : W.live.length ? h("ul", { class: "events-list" }, ...W.live.map((q) => h("li", {},
+      h("span", { class: "num" }, prob(q.yes_price)), " ", q.question,
+      h("span", { class: "muted small" }, ` (${q.event_title ? q.event_title + "; " : ""}${q.resolves_by ? "resolves " + q.resolves_by : "no date"})`), " ",
+      h("a", { href: q.url, target: "_blank", rel: "noopener noreferrer", class: "small" }, "page"), " ",
+      watched.has(q.slug) ? h("span", { class: "tag" }, "watching")
+        : h("button", { class: "btn small act", onclick: () => add([q.series, ...(W.force ? ["--force"] : [])], "Watching it: simulated traders start at today's market price.") }, "Watch"))))
+      : h("p", { class: "muted" }, "Nothing open matched.");
+    const live = h("div", {},
+      h("div", { class: "row" },
+        h("input", { value: W.liveQuery, placeholder: "Search, e.g. Iran", oninput: (e) => (W.liveQuery = e.target.value), "aria-label": "Search Polymarket" }),
+        h("span", { class: "muted small" }, "or the busiest in"),
+        select([["", "all topics"], ["geopolitics", "geopolitics"], ["politics", "politics"], ["economy", "economy"]], W.liveTag, (v) => { W.liveTag = v; W.liveQuery = ""; }),
+        h("button", { class: "btn act", onclick: findLive }, "Find on Polymarket"),
+        st.questions && st.questions.length ? h("button", { class: "btn act", title: "Read today's prices of the watched Polymarket questions (for comparison only)", onclick: () => act(box, ["watch", "fetch", "--run", S.world], { ok: "Real prices updated.", rerender: true }) }, "Refresh real prices") : null),
+      h("p", { class: "muted small" }, "Reads Polymarket's public data (no account; responses are recorded in the world). Prices are for comparison and as a starting point; check Polymarket's terms of use before reusing them."),
+      liveList, liveBox);
+    return card(h("span", {}, "Event ", term("question", "questions")), "Pick a real prediction-market question, or ask your own. Stories in What-if can bear on it (the preview says how); with Claude set up, new headlines are rated against it as time moves.",
+      h("h4", {}, "Live from Polymarket"), live,
+      h("h4", {}, "Saved questions (work offline)"), seedList, h("h4", {}, "Your own question"), custom, h("button", { class: "btn act", onclick: addCustom }, "Watch my question"));
   }
 
   const RENDER = { start: viewStart, world: viewWorld, whatif: viewWhatif, social: viewSocial, people: viewPeople, ask: viewAsk, play: viewPlay, results: viewResults, watch: viewWatch, activity: viewActivity, guide: viewGuide };

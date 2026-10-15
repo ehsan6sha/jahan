@@ -15,7 +15,7 @@ from typing import Any
 import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
-QUESTION_ID = re.compile(r"^[a-z0-9][a-z0-9-]{2,119}$")
+QUESTION_ID = re.compile(r"^[a-z0-9][a-z0-9-]{2,199}$")
 
 
 class TraderShare(BaseModel):
