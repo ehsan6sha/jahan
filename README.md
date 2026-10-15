@@ -17,7 +17,9 @@ prompt.
 > prompts, fed future events, persona interviews, readable transcripts and live news ingest. People can
 > create agents or take control of any agent (including a head of state), talk, post, decide and use the
 > powers of an office, turn by turn; public figures nobody controls decide on salient days. Everything is
-> recorded for exact replay. A browser interface (`jahan ui`) covers every command. Not yet built:
+> recorded for exact replay. A watch list follows US stocks (moved partly by simulated holders' trading),
+> currencies, moods and the odds of real prediction-market questions as time moves. A browser interface
+> (`jahan ui`) covers every command. Not yet built:
 > multiplayer (Milestone 2). See `docs/plan.md`.
 
 ## Disclaimer
@@ -51,6 +53,8 @@ simulated in the browser. You can:
 - create and open worlds, and move time forward;
 - watch US stocks, US tech stocks, gold, currencies and each country's mood move as time passes (the
   Watch page), with the part moved by people's trading shown separately;
+- watch the odds of real prediction-market questions (searched on Polymarket, or saved ones that work
+  offline) or your own, held by simulated traders, next to the real price;
 - add what-ifs in plain words, future events, ready-made examples, or today's real news, after checking a
   preview of the exact events;
 - browse and filter people, open anyone's view of the world, ask them questions, and replay one of their
@@ -80,6 +84,9 @@ uv run jahan reset      --run runs/demo --before-prompt 1  # time travel
 uv run jahan watch add  --run runs/demo market:us_stocks market:us_tech_stocks mood:USA
 uv run jahan run        --run runs/demo --days 7
 uv run jahan watch show --run runs/demo                   # how each watched series moved, and why
+uv run jahan watch catalog --run runs/demo               # what can be watched, with saved questions
+uv run jahan watch add  --run runs/demo odds:seed:us-x-iran-ceasefire-continues-through-october-31-20260917
+uv run jahan inject     --run runs/demo --scenario examples/scenarios/iran_hormuz_odds.yaml --yes
 uv run jahan backtest                                      # the benchmark below (offline, about 4 min)
 ```
 
@@ -286,6 +293,26 @@ launch as prompt 1, run some days, inject the dollar rise as prompt 2, and run t
   - **US tech stocks (Nasdaq-100)** are derived, not modelled on their own: each day they move by 1.299
     times the US stock index's move, the slope of the Nasdaq-100's daily changes on the S&P 500's from
     January 2023 to October 2026 (FRED; R² 0.89; only the coefficient is stored).
+- **Event odds.** A watched yes/no question ("US x Iran ceasefire continues through October 31?") is held
+  as a belief by simulated traders: about one in ten internet-using adults, more of them young men (a
+  low-confidence US survey figure, borrowed for every country, and a heuristic skew). They start with
+  beliefs spread around the real market price, so their average equals it, and the simulated odds are
+  that average: with log utility a prediction market's price equals its traders' mean belief (Wolfers and
+  Zitzewitz 2006). Others can hear of the question by word of mouth, but only traders count.
+  - **What moves the odds.** News moves them when traders hear it. A story can bear on a question, either
+    written into a what-if (`bears_on`, shown in the preview) or rated by Claude. Claude rates each new
+    story against each watched question as time moves: a direction from -1 to +1, and 0 for most stories.
+    It never sets a probability, and its ratings are recorded for exact replay. A trader who hears a story
+    rated +1 multiplies their odds of Yes by about 2.7 (a heuristic). So a story moves the odds as far as
+    the simulation spreads it.
+  - **Questions to watch.** `jahan watch catalog --polymarket` searches Polymarket's public data, and
+    `watch add odds:<market>` starts from today's price. Ten saved questions (prices read on 15 October
+    2026) work offline, or you can ask your own. `watch fetch` reads today's real prices for comparison;
+    they never move the simulation. Check Polymarket's terms of use before reusing its prices; Jahan stores
+    only the question, its page, the dates and the prices it read.
+  - **What it is not.** The odds are a belief average, not a market. There is no order book, no liquidity
+    and no drift toward the answer as the deadline nears. Nothing pulls them back toward the real price,
+    and Jahan does not know how a question resolves; it closes the question on its date.
 - **Time travel.** Every prompt writes a snapshot first. `reset` restores it and truncates the logs;
   re-running produces the identical timeline.
 
@@ -608,7 +635,10 @@ Several numbers for player actions and public-figure autonomy are heuristics, no
 - the salience of an announcement's headline (0.9), the 1% move that makes US stocks news, and the tone
   and weight of stock headlines in people's mood;
 - in people's trading: that only holders with internet trade, the 10% cap on a day's move, trading on
-  weekdays only (no market holidays), and trading on the day news is learned.
+  weekdays only (no market holidays), and trading on the day news is learned;
+- in event odds: how far a story moves a trader (a story rated +1 multiplies their odds of Yes by about
+  2.7), the spread of traders' starting beliefs (0.5 on the log-odds scale), the age and sex skew of who
+  trades, the optional partisan lean, and the limit of 8 open questions (each holds a tracked-item slot).
 
 Market reactions use estimates from 1990-2019 samples, some measured over 5 or 30 minutes rather than a
 whole day; they apply the same sign every time, although about a third of Fed announcements move rates and
@@ -618,6 +648,13 @@ they move US stocks only through people's trading on that mood shock and on the 
 the published estimates. People's trading covers US stocks only; its one
 fitted number rests on release days, and how far it moves the index over weeks is a consequence of the
 model, not a measurement.
+
+Event odds ignore how much a trader believed the story that moved them, and how stories are rated is
+Claude's judgement (each rating, with a short reason, is logged and shown on the Watch page). Word of
+mouth lets odds drift slowly in a quiet world: about 1.5 points over two months in a test.
+
+Event logs written before 15 October 2026 used one number (28) for both reposts and headline updates;
+reports still read them, and new logs use 30 for updates.
 
 Worlds created before political camps existed (snapshot schema 5) cannot be opened; create a new world.
 
