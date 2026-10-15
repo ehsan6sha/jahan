@@ -10,6 +10,7 @@
 4 word-of-mouth diffusion; claims about products move views of those products
 4b reposts                    convinced, online people repost stories on social media (from tomorrow)
 5 mood                        economic sentiment drifts toward the news each agent knows
+5b markets                    US holders of stock trade on their change in mood and move the index (weekdays)
 6 decisions and realised outcomes -> trust updates
 7 life events                 deaths, births, marriages, divorces, labour moves, birthday transitions
 8 metrics
@@ -22,7 +23,7 @@ import numpy as np
 
 from jahan.actors.engine import deliver_actions
 from jahan.model.world import World
-from jahan.sim import metrics
+from jahan.sim import market, metrics
 from jahan.sim.availability import compute_masks
 from jahan.sim.contacts import sample_contacts
 from jahan.sim.decisions import decide_and_realise
@@ -44,6 +45,7 @@ def run_day(
 ) -> dict[str, int]:
     params = world.config.params
     stats: dict[str, int] = {}
+    opened = market.open_day(world)
     stats.update(apply_due(world, log))
     if params.travel:
         stats.update(travel(world, params, log))
@@ -68,6 +70,7 @@ def run_day(
     stats["claims_applied"] = propagate_entity_claims(world, params)
     stats.update(reposts(world, params, log))
     update_sentiment(world, params)
+    stats.update(market.close_day(world, params, log, opened))
     stats.update(decide_and_realise(world, params, log))
     if params.life_events:
         stats.update(run_life_events(world, params, log))

@@ -58,6 +58,8 @@ class Stream(IntEnum):
     AUTONOMY = 18  # tie-breaks among notable autonomy triggers
     ALIGNMENT = 19  # political alignment at generation (DOMAIN_GEN) and at birth
     SOCIAL = 20  # social media: reposts by ordinary people
+    INVEST = 21  # who holds US stock: a lifetime draw per person (day fixed at 0)
+    ODDS = 22  # event-market traders (k=0) and their initial beliefs about a question (k>=1)
 
 
 def mix_int(x: int) -> int:

@@ -73,6 +73,13 @@ class SimParams(BaseModel):
     k_claim: float = 0.5  # how far a claim about a product moves the view of that product
     adopt_sentiment: float = 1.5  # bad mood delays purchases
 
+    # people's trading in US stocks (sim/market.py); the values come from data/global/investors.yaml, copied
+    # into each world when it is generated; these override them when set
+    market_people: bool = True  # False: only announcements and scripted paths move the index
+    market_kappa: float | None = None  # share of holdings moved per unit change of mood (fitted)
+    market_multiplier: float | None = None  # price impact of net flows (Gabaix and Koijen 2021: about 5)
+    market_requires_internet: bool | None = None  # HEURISTIC: only holders with internet trade daily
+
     # decisions
     adopt_b0: float = -8.6
     adopt_belief: float = 3.0

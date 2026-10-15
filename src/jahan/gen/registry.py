@@ -10,6 +10,7 @@ import yaml
 from pydantic import BaseModel
 
 from jahan.model.country import CountrySpec, DataError, load_country
+from jahan.model.investors import band_problems, load_investors
 from jahan.model.markets import load_markets
 from jahan.model.notables import (
     camp_priors,
@@ -124,6 +125,24 @@ def _markets_problems(data_dir: Path, reg: dict[str, RegistryEntry], strict: boo
     return out
 
 
+def _investors_problems(data_dir: Path, reg: dict[str, RegistryEntry], strict: bool) -> list[str]:
+    """data/global/investors.yaml: bands cover 0-100; every source cites the registry; strict lists weak ones."""
+    try:
+        cfg = load_investors(data_dir)
+    except Exception as e:  # noqa: BLE001 - reported as a data problem
+        return [f"global/investors.yaml: {e}"]
+    if cfg is None:
+        return []
+    out = [f"global/investors.yaml: {p}" for p in band_problems(cfg)]
+    for sid in cfg.source_ids():
+        entry = reg.get(sid)
+        if entry is None:
+            out.append(f"global/investors.yaml: source id '{sid}' not in registry")
+        elif strict and entry.confidence in WEAK:
+            out.append(f"global/investors.yaml: source '{sid}' is {entry.confidence} (strict mode)")
+    return out
+
+
 def validate_data(
     data_dir: Path, countries: list[str], strict: bool = False, start_date: dt.date | None = None
 ) -> list[str]:
@@ -152,6 +171,7 @@ def validate_data(
             problems += _politics_placeholders(data_dir, iso, spec)
     problems += _social_problems(data_dir, countries, reg, strict)
     problems += _markets_problems(data_dir, reg, strict)
+    problems += _investors_problems(data_dir, reg, strict)
     if strict:
         try:
             roles = load_roles(data_dir)

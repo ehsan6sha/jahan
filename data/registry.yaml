@@ -1446,3 +1446,53 @@ entries:
   license: citation (journal article)
   confidence: medium
   notes: "Online surveys of over 15,000 US consumers around 12 FOMC press conferences (Dec 2015-Jun 2018): about 30% had heard news about the Fed before an announcement and about 40% in the first two days after (31% to 41% for press-conference meetings); announcements raise the probability by 0.098 (probit marginal effect with controls) and had little measurable direct effect on average beliefs."
+- id: investors.scf2022
+  country: USA
+  variable: share of US families holding stock (directly or indirectly) and conditional median holdings, by usual income group
+  source: "Board of Governors of the Federal Reserve System (2023), Changes in U.S. Family Finances from 2019 to 2022: Evidence from the Survey of Consumer Finances, p.16 and Box 2 (p.19)"
+  url: https://www.federalreserve.gov/publications/files/scf23.pdf
+  year: 2023
+  retrieved: '2026-10-15'
+  license: public domain (US government work)
+  confidence: high
+  notes: "2022 survey. Direct or indirect stock holding: 58% of families; by usual income 34% (bottom half), 78% (percentiles 50-89.9), 95% (top decile); conditional median stock holdings $12,600 / $53,200 / $608,000. Direct holding 21% of families; retirement accounts 54.3%. Jahan ranks US adults by household income instead of families (a bridge, stated in data/global/investors.yaml)."
+- id: investors.gallup2025
+  country: USA
+  variable: share of US adults who own stock (individually, through mutual funds or retirement accounts)
+  source: "Gallup, Economy and Personal Finance survey, April 2024 and April 2025 (n=2,007 combined)"
+  url: https://news.gallup.com/poll/266807/percentage-americans-owns-stock.aspx
+  year: 2025
+  retrieved: '2026-10-15'
+  license: citation (news article)
+  confidence: high
+  notes: "62% in 2024 and 2025, 61% in 2023; household income $100k+ 87%, under $50k 28%; college graduates 84%, high school or less 42%. Secondary reports cite 58% for April 2026; that release was not found on Gallup's site. Used only as a cross-check of the SCF-based draw."
+- id: markets.gabaix_koijen2021
+  country: USA
+  variable: price impact of net flows into the US stock market (multiplier)
+  source: "Gabaix and Koijen (2021), In Search of the Origins of Financial Fluctuations: The Inelastic Markets Hypothesis, NBER Working Paper 28967"
+  url: https://www.nber.org/papers/w28967
+  year: 2021
+  retrieved: '2026-10-15'
+  license: citation (working paper)
+  confidence: medium
+  notes: "Abstract: investing $1 in the stock market increases the market's aggregate value by about $5 (granular instrumental variables, flows by investor category 1993-2018; secondary summaries give a robust range of 3 to 8). Estimated for flows into the whole market; Jahan applies it to the simulated households' flow, a simplification."
+- id: markets.nasdaq100_beta
+  country: USA
+  variable: slope of Nasdaq-100 daily % changes on S&P 500 daily % changes (derived US tech stock index)
+  source: "Computed by scripts/check_market_actuals.py --beta from FRED series SP500 (S&P Dow Jones Indices) and NASDAQ100 (Nasdaq, Inc.)"
+  url: https://fred.stlouisfed.org/series/NASDAQ100
+  year: 2026
+  retrieved: '2026-10-15'
+  license: "coefficient only; FRED marks NASDAQ100 'Copyrighted: Pre-Approval Required', so the series is not stored"
+  confidence: medium
+  notes: "OLS slope with intercept over the stated date range; R2, N and the range are in data/global/investors.yaml."
+- id: investors.kappa_fit
+  country: USA
+  variable: share of holdings a simulated investor moves per unit change of economic mood (kappa)
+  source: "Fitted by `jahan backtest --fit-people` on the 2023-2025 Fed decisions and jobs reports, under the rule pre-registered in data/global/investors.yaml"
+  url: https://github.com/ehsan6sha/jahan/blob/main/data/global/investors.yaml
+  year: 2026
+  retrieved: '2026-10-15'
+  license: n/a (fitted in this repository)
+  confidence: provisional
+  notes: "No published value links a change in mood to a change in equity holdings; this is the one fitted number of the people-driven market. The fit record and its hold-out results are in data/global/investors.yaml."

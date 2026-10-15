@@ -26,6 +26,13 @@ def record(world: World, params: SimParams, stats: dict[str, int], out: MetricsL
     for key in ("gold_index", "us_stocks_index"):
         if key in world.macro:
             out.add(day, -1, -1, key, float(world.macro[key]))
+    market = world.macro.get("market")
+    if market is not None:  # the two parts of the US stock index (worlds made since people trade)
+        last = market["last"]
+        out.add(day, -1, -1, "us_stocks_scripted_pct", float(last["scripted_pct"]))
+        out.add(day, -1, -1, "us_stocks_people_pct", float(last["people_pct"]))
+        out.add(day, -1, -1, "us_stocks_scripted_index", float(market["scripted_index"]))
+        out.add(day, -1, -1, "us_stocks_people_index", float(market["people_index"]))
     bel = world.beliefs.m
     for c in range(world.n_countries):
         mc = loc == c

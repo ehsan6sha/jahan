@@ -22,6 +22,7 @@ from jahan.gen.politics_gen import sample_alignment
 from jahan.gen.population_gen import generate_people
 from jahan.gen.workplace_gen import assign_workplaces
 from jahan.model.country import load_country
+from jahan.model.investors import load_investors
 from jahan.model.markets import load_markets
 from jahan.model.notables import load_roles
 from jahan.model.world import BeliefStore, World
@@ -154,6 +155,7 @@ def generate_world(config: RunConfig, data_dir: Path | None = None) -> World:
 
     world.beliefs = BeliefStore(world.pop.capacity, config.max_slots)
     world.ensure_product_arrays()
-    world.init_macro()
+    investors = load_investors(dd)
+    world.init_macro(None if investors is None else investors.to_world())
     world.day = 0
     return world

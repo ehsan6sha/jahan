@@ -12,6 +12,7 @@ from jahan.model.enums import EventKind
 from jahan.model.markets import combined, load_markets, market_moves
 from jahan.scenario.inject import apply_scenario, preview_moves
 from jahan.scenario.spec import Announcement, MacroPath, MacroStep, PromptScenario, Scenario
+from jahan.sim.params import SimParams
 from jahan.sim.runner import run_in_memory
 from jahan.store.eventlog import EventLog
 from jahan.store.snapshot import data_hashes
@@ -26,7 +27,11 @@ def cfg():
 
 
 def _world(countries=("USA", "DEU"), n=1500):
-    return generate_world(RunConfig(n_agents=n, countries=list(countries), seed=5, start_date="2026-09-15"))
+    # people's trading off: these tests pin the published estimates alone (tests/unit/test_market_people.py)
+    params = SimParams(market_people=False)
+    return generate_world(
+        RunConfig(n_agents=n, countries=list(countries), seed=5, start_date="2026-09-15", params=params)
+    )
 
 
 def _by_target(moves):
@@ -95,6 +100,7 @@ def test_fully_expected_decision_moves_nothing_and_world_without_euro():
 def test_old_world_gets_the_stock_index_only_when_stocks_move():
     w = _world(("USA",), n=800)
     del w.macro["us_stocks_index"]  # a world made before the index existed
+    del w.macro["market"]
     gold = MacroPath(variable="gold", steps=[MacroStep(days=1, pct_per_day=1.0)])
     apply_scenario(w, Scenario(prompt="gold", events=[gold]), EventLog(), 1)
     run_in_memory(w, 1)

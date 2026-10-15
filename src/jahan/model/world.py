@@ -132,7 +132,8 @@ class World:
     product_price_usd: NDArray[np.float64] = field(default_factory=lambda: np.zeros((0, 0), np.float64))
     # macro state (JSON-able): fx[c] local per USD, fx0[c] at world start, gold_index and us_stocks_index
     # (100 = world start; worlds made before the stock index have no key until a stock move happens),
-    # last_auto_news {key: day}
+    # last_auto_news {key: day}; "market" (worlds made since people trade: config copy and the two parts of
+    # the stock index); "odds" (once a question is watched)
     macro: dict[str, Any] = field(default_factory=dict)
     # notable public figures: roster entries (JSON-able) + agent_id + country index; column j of ptrust
     notables: list[dict[str, Any]] = field(default_factory=list)
@@ -202,7 +203,9 @@ class World:
                 usd[:r, :c] = self.product_price_usd[:r, :c]
             self.product_price_usd = usd
 
-    def init_macro(self) -> None:
+    def init_macro(self, market_cfg: dict[str, Any] | None = None) -> None:
+        """Macro state of a new world.  ``market_cfg`` (from data/global/investors.yaml) turns on people's
+        trading in US stocks; worlds made before it existed have no "market" key and never trade."""
         fx = [float(c.fx_local_per_usd) for c in self.countries]
         self.macro = {
             "fx": fx,
@@ -212,6 +215,21 @@ class World:
             "sentiment_shift": [0.0] * len(fx),
             "last_auto_news": {},
         }
+        if market_cfg is not None:
+            self.macro["market"] = {
+                "cfg": market_cfg,
+                "people_index": 100.0,  # the part of the US stock index moved by people's trading
+                "scripted_index": 100.0,  # the part moved by announcements and scripted paths
+                "last": {
+                    "day": -1,
+                    "scripted_pct": 0.0,
+                    "people_pct": 0.0,
+                    "total_pct": 0.0,
+                    "flow_usd": 0.0,
+                    "holders": 0,
+                    "traders": 0,
+                },
+            }
 
     def refresh_usd_prices(self) -> None:
         """Local prices of USD-priced products follow the current exchange rates."""

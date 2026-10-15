@@ -1,0 +1,61 @@
+# Who holds US stock, how much, and how their trading moves the US stock index (sim/market.py).
+#
+# Read once when a world is generated and copied into the world (macro["market"]["cfg"]), so editing this file
+# never breaks an existing world: each world keeps the values it was made with. It is not hashed into snapshots.
+#
+# The simulated holders stand in for all US household equity (held directly or through funds and retirement
+# accounts); institutions are not modelled. A holder's daily trade is kappa x holdings x the day's change in
+# their economic mood (sentiment, -1..1); the index moves by multiplier x net flow / holdings of all holders.
+
+ownership:
+  source: investors.scf2022
+  # BRIDGE (not in the source): the SCF ranks families by usual income; Jahan ranks US adults by their
+  # household's pooled income (population-weighted percentile among US adults).
+  basis: household income percentile among US adults
+  countries: [USA]  # no sourced ownership share elsewhere: residents of other countries hold nothing
+  bands:  # own_share: percent holding stock directly or indirectly; holdings: conditional median, US dollars
+    - {name: bottom half, pct_from: 0, pct_to: 50, own_share: 34, median_holdings_usd: 12600}
+    - {name: upper middle, pct_from: 50, pct_to: 90, own_share: 78, median_holdings_usd: 53200}
+    - {name: top decile, pct_from: 90, pct_to: 100, own_share: 95, median_holdings_usd: 608000}
+  cross_checks:  # printed by `jahan backtest --fit-people`; never used to draw who holds stock
+    - {source: investors.gallup2025, what: US adults owning stock, value: 62}
+    - {source: investors.gallup2025, what: college graduates owning stock, value: 84}
+    - {source: investors.gallup2025, what: adults with high school or less owning stock, value: 42}
+
+trading:
+  multiplier:
+    value: 5.0
+    source: markets.gabaix_koijen2021
+    note: >-
+      $1 of net buying raises the market's value by about $5. Estimated for flows into the whole market and
+      applied here to the simulated households' flow, a simplification.
+  requires_internet: true  # HEURISTIC: holders without internet keep their holdings but do not trade daily
+  max_daily_pct: 10.0  # HEURISTIC safety cap on the people-driven daily move
+  kappa:
+    value: 0.0  # 0 until fitted: people hold stock but their trading moves nothing
+    unit: share of holdings moved per unit change of mood
+    source: investors.kappa_fit
+    rule: >-
+      Pre-registered 2026-10-15, before any run. kappa minimises the mean absolute miss, in daily standard
+      deviations (noise_sd.us_stocks = 0.92), of the HYBRID release-day US stock forecast (published estimates
+      plus people's trading) over every forecast event in data/backtests/events_2023_2025.yaml with a real
+      us_stocks move, m1 config at 10,000 people, seed offset 0, multiplier 5, requires_internet true. Grid 0
+      to 2, step 0.001; ties and grid edges resolve to the smallest kappa; an optimum of 0 or at an edge is
+      reported as a boundary solution and still adopted. 2026 events never enter the choice; they are reported
+      as hold-out at the chosen kappa. Both the estimates-only and the hybrid columns are published whatever
+      the result. Stability: at the chosen kappa a scripted -3% day in a 10,000-person m1 world must stay
+      bounded and revert within 40 days; if it does not, the largest grid kappa that passes is used and the
+      substitution is reported. The fit sees release-day moves only; multi-day behaviour is checked by the
+      stability test, not fitted.
+    fitted: null
+
+derived:
+  us_tech_stocks:
+    of: us_stocks
+    beta: null  # from `python scripts/check_market_actuals.py --beta`; only the coefficient is stored
+    method: OLS slope (with intercept) of NASDAQ100 daily % changes on SP500 daily % changes, FRED
+    source: markets.nasdaq100_beta
+    label: US tech stocks (Nasdaq-100, derived)
+    note: >-
+      derived from the US stock index, not modelled on its own; FRED marks NASDAQ100 "Copyrighted:
+      Pre-Approval Required", so the series is never stored

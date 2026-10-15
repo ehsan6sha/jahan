@@ -133,19 +133,7 @@ def apply_macro(world: World, e: dict, log: EventLog) -> None:
         world.macro["us_stocks_index"] = before * (1.0 + pct / 100.0)
         after = world.macro["us_stocks_index"]
         log.add(world.day, EventKind.MACRO_UPDATE, -1, -1, -1, after, -1, "us_stocks_index")
-        cum = _newsworthy(world, "us_stocks", before, after, STOCKS_NEWS_MIN_PCT) if e.get("auto_news", True) else None
-        if cum is not None and targets:
-            # a rising market reads as good news, a falling one as bad (HEURISTIC sign and weight)
-            _auto_news(
-                world,
-                ("us_stocks", -1),
-                targets,
-                valence=float(np.sign(cum)) * min(1.0, 0.3 + abs(cum) / 10),
-                pct=cum,
-                weight=0.5,
-                headline=lambda p: f"US stocks {'rise' if p > 0 else 'fall'} {abs(p):.1f}%",
-                log=log,
-            )
+        stocks_headline(world, before, after, log, targets, e.get("auto_news", True))
     elif var == "sentiment":
         pop = world.pop
         for c in targets:
@@ -153,6 +141,35 @@ def apply_macro(world: World, e: dict, log: EventLog) -> None:
             pop["sentiment"][m] = np.clip(pop["sentiment"][m] + pct / 100.0, -1.0, 1.0)
             world.macro["sentiment_shift"][c] += pct / 100.0
             log.add(world.day, EventKind.MACRO_UPDATE, -1, c, -1, pct / 100.0, c, "sentiment")
+
+
+def stocks_headline(
+    world: World,
+    before: float,
+    after: float,
+    log: EventLog,
+    targets: list[int] | None = None,
+    auto_news: bool = True,
+) -> None:
+    """A "US stocks rise/fall X%" story once the cumulative move since the last one reaches 1%.
+
+    Shared by scripted moves and people's trading (sim/market.py), so the story covers both."""
+    if not auto_news:
+        return
+    where = _targets(world, "us_stocks", None) if targets is None else targets
+    cum = _newsworthy(world, "us_stocks", before, after, STOCKS_NEWS_MIN_PCT)
+    if cum is not None and where:
+        # a rising market reads as good news, a falling one as bad (HEURISTIC sign and weight)
+        _auto_news(
+            world,
+            ("us_stocks", -1),
+            where,
+            valence=float(np.sign(cum)) * min(1.0, 0.3 + abs(cum) / 10),
+            pct=cum,
+            weight=0.5,
+            headline=lambda p: f"US stocks {'rise' if p > 0 else 'fall'} {abs(p):.1f}%",
+            log=log,
+        )
 
 
 def _auto_news(
