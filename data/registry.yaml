@@ -1496,3 +1496,43 @@ entries:
   license: n/a (fitted in this repository)
   confidence: provisional
   notes: "No published value links a change in mood to a change in equity holdings; this is the one fitted number of the people-driven market. The fit record and its hold-out results are in data/global/investors.yaml."
+- id: odds.kagan2026
+  country: USA
+  variable: share of US internet-using adults who placed a prediction-market trade in the past year
+  source: "S&P Global Market Intelligence / Kagan, US prediction market trades are predominantly sports-based (research note, October 2026); read only in search summaries, the page itself was not reachable"
+  url: https://www.spglobal.com/market-intelligence/en/news-insights/research/2026/10/us-prediction-market-trades-are-predominantly-sports-based
+  year: 2026
+  retrieved: '2026-10-15'
+  license: citation (research note)
+  confidence: low
+  notes: "10% of surveyed US internet adults; users skew to men under 35; 70% of trades were on sports. Other polls differ: Politico (June 2026) 6% of adults; Scripps News / Talker Research 19% (looser wording). Jahan uses 10% of internet-using adults in every country, a US figure borrowed for the rest; the age and sex skew in data/global/odds.yaml is a heuristic."
+- id: odds.wolfers_zitzewitz2006
+  country: null
+  variable: how a prediction market's price relates to its traders' beliefs
+  source: "Wolfers and Zitzewitz (2006), Interpreting Prediction Market Prices as Probabilities, NBER Working Paper 12200 (also FRBSF WP 2006-11, CEPR DP 5676)"
+  url: https://www.frbsf.org/research-and-insights/publications/working-papers/interpreting-prediction-market-prices-as-probabilities/
+  year: 2006
+  retrieved: '2026-10-15'
+  license: citation (working paper)
+  confidence: medium
+  notes: "With log utility and beliefs unrelated to wealth, the equilibrium price equals the traders' mean belief (eq. 4); with correlation, the wealth-weighted mean (eq. 5); for other utilities prices stay close to the mean when beliefs are not too dispersed. Jahan uses the population-weighted mean belief (wealth is a placeholder)."
+- id: polymarket.seed_2026_10
+  country: null
+  variable: prediction-market questions and their Yes prices on one day (offline seeds)
+  source: "Polymarket public data API (gamma-api.polymarket.com), read on 2026-10-15; data/global/questions.yaml"
+  url: https://docs.polymarket.com/market-data/overview
+  year: 2026
+  retrieved: '2026-10-15'
+  license: "unknown: Polymarket's terms of use could not be read; check them before reusing the prices"
+  confidence: low
+  notes: "Only the question, its page, resolve date and the Yes price on the fetch date are kept. Prices change by the minute; `jahan watch fetch` refreshes them for watched questions."
+- id: polymarket.gamma
+  country: null
+  variable: prediction-market questions and prices fetched live (jahan watch catalog --polymarket, watch add, watch fetch)
+  source: "Polymarket public data API, https://gamma-api.polymarket.com (no key; read only)"
+  url: https://docs.polymarket.com/market-data/overview
+  year: 2026
+  retrieved: '2026-10-15'
+  license: "unknown: Polymarket's terms of use could not be read; check them before relying on this"
+  confidence: low
+  notes: "Each response is recorded in the world's recordings folder once per real day; replays never fetch."

@@ -27,7 +27,15 @@ from jahan.gen.world_gen import generate_world
 from jahan.model.enums import EventKind
 from jahan.model.notables import is_later_roster
 from jahan.scenario.experiment import run_experiment
-from jahan.scenario.inject import apply_scenario, describe_moves, preview_moves
+from jahan.scenario.inject import (
+    InjectError,
+    apply_scenario,
+    check_scenario,
+    describe_bearings,
+    describe_moves,
+    preview_bearings,
+    preview_moves,
+)
 from jahan.scenario.report import build_report
 from jahan.scenario.spec import Scenario
 from jahan.sim.runner import Recorder, run
@@ -262,9 +270,13 @@ def _inject_spec(  # noqa: ANN001
     rd: RunDir, world, spec: Scenario, yes: bool, source: str, quiet: bool = False, extra: dict | None = None
 ) -> int:
     """Snapshot, apply, park day-D events, save head and ledger.  Returns the prompt id."""
+    try:
+        check_scenario(world, spec)
+    except InjectError as e:
+        raise typer.BadParameter(str(e)) from e
     if not quiet:
         typer.echo(spec.dump_yaml())
-        for line in describe_moves(preview_moves(world, spec)):
+        for line in describe_moves(preview_moves(world, spec)) + describe_bearings(preview_bearings(world, spec)):
             typer.echo(line)
     if not yes and not typer.confirm(f"Inject this scenario at day {world.day}?"):
         raise typer.Abort()
@@ -362,17 +374,20 @@ JsonOpt = Annotated[bool, typer.Option("--json", help="Machine-readable output (
 
 def _show_preview(world, spec: Scenario, as_json: bool = False) -> None:  # noqa: ANN001
     moves = preview_moves(world, spec)
+    odds = preview_bearings(world, spec)
     if as_json:
         import json
 
-        typer.echo(
-            json.dumps(
-                {"day": world.day, "scenario": spec.model_dump(mode="json"), "market_moves": moves}, ensure_ascii=False
-            )
-        )
+        payload = {
+            "day": world.day,
+            "scenario": spec.model_dump(mode="json"),
+            "market_moves": moves,
+            "odds_effects": odds,
+        }
+        typer.echo(json.dumps(payload, ensure_ascii=False))
         return
     typer.echo(spec.dump_yaml())
-    for line in describe_moves(moves):
+    for line in describe_moves(moves) + describe_bearings(odds):
         typer.echo(line)
     typer.echo(f"Preview only: nothing was injected. The world is on day {world.day} ({world.date().isoformat()}).")
 

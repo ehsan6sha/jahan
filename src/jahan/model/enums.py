@@ -145,6 +145,9 @@ class EventKind(IntEnum):
     # A running story (e.g. a currency slide) got a new headline.  Logs written before 2026-10-15 used 28 for
     # this too, which collided with SOCIAL_SHARED; use `is_item_update` to read both.
     ITEM_UPDATED = 30
+    QUESTION_OPENED = 31  # a watched question: item = its belief slot's item, value = starting price
+    QUESTION_CLOSED = 32  # value = the simulated odds when it closed, detail = why
+    ODDS_RATED = 33  # a story's bearing on a question: item = the story, value = direction, detail = question id
 
 
 def is_item_update(kind: int, detail: str | None) -> bool:

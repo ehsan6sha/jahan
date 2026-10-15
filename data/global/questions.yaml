@@ -1,0 +1,79 @@
+# Offline seed questions for `jahan watch add odds:seed:<id>`: prediction-market questions read from
+# Polymarket's public data API (gamma-api.polymarket.com) on the fetch date below. Only the question, its page,
+# the resolve date and the "Yes" price on that day are kept. Check Polymarket's terms of use before reusing them.
+# Prices change by the minute: `jahan watch fetch` refreshes them for questions a world watches (with network).
+# Not hashed into snapshots; a world copies the seed it uses when the question is added.
+
+source: polymarket.seed_2026_10
+fetch_date: '2026-10-15'
+questions:
+  - id: us-x-iran-ceasefire-continues-through-october-31-20260917
+    question: US x Iran ceasefire continues through October 31?
+    event_slug: us-iran-ceasefire-continues-throughptptpt
+    resolves_by: '2026-10-31'
+    price: 0.795
+    topic: world
+    countries: [USA, IRN]
+    note: resolves No if the US takes qualifying military action against Iran before the deadline
+  - id: us-x-iran-ceasefire-continues-through-november-30-20260918
+    question: US x Iran ceasefire continues through November 30?
+    event_slug: us-iran-ceasefire-continues-throughptptpt
+    resolves_by: '2026-11-30'
+    price: 0.415
+    topic: world
+    countries: [USA, IRN]
+    note: resolves No if the US takes qualifying military action against Iran before the deadline
+  - id: us-x-iran-ceasefire-continues-through-december-31-20260918
+    question: US x Iran ceasefire continues through December 31?
+    event_slug: us-iran-ceasefire-continues-throughptptpt
+    resolves_by: '2026-12-31'
+    price: 0.325
+    topic: world
+    countries: [USA, IRN]
+    note: resolves No if the US takes qualifying military action against Iran before the deadline
+  - id: will-the-iranian-regime-fall-by-the-end-of-2026
+    question: Will the Iranian regime fall before 2027?
+    event_slug: will-the-iranian-regime-fall-by-the-end-of-2026
+    resolves_by: '2026-12-31'
+    price: 0.055
+    topic: politics
+    countries: [USA, IRN]
+  - id: us-recession-by-end-of-2026
+    question: US recession by end of 2026?
+    event_slug: us-recession-by-end-of-2026
+    resolves_by: '2026-12-31'
+    price: 0.085
+    topic: economy
+    countries: [USA]
+  - id: will-there-be-no-change-in-fed-interest-rates-after-the-october-2026-meeting-20260617190324031
+    question: Will there be no change in Fed interest rates after the October 2026 meeting?
+    event_slug: fed-decision-in-october-20260617190323537
+    resolves_by: '2026-10-28'
+    price: 0.725
+    topic: economy
+    countries: [USA]
+  - id: russia-x-ukraine-ceasefire-agreement-by-december-31-2026
+    question: Russia x Ukraine ceasefire agreement by December 31, 2026?
+    event_slug: russia-x-ukraine-ceasefire-agreement-by
+    resolves_by: '2026-12-31'
+    price: 0.155
+    topic: world
+  - id: will-china-invade-taiwan-before-2027
+    question: Will China invade Taiwan by end of 2026?
+    event_slug: will-china-invade-taiwan-before-2027
+    resolves_by: '2026-12-31'
+    price: 0.0205
+    topic: world
+  - id: will-nvidia-be-the-largest-company-in-the-world-by-market-cap-on-december-31-244
+    question: Will NVIDIA be the largest company in the world by market cap on December 31?
+    event_slug: largest-company-end-of-december-2026
+    resolves_by: '2026-12-31'
+    price: 0.67
+    topic: economy
+    countries: [USA]
+  - id: will-benjamin-netanyahu-be-the-next-prime-minister-of-israel
+    question: Will Benjamin Netanyahu be the next Prime Minister of Israel?
+    event_slug: who-will-be-the-next-prime-minister-of-israel-after-the-next-election
+    resolves_by: '2026-10-27'
+    price: 0.275
+    topic: politics

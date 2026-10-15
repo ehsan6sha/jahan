@@ -240,11 +240,16 @@ def _history(world: World, spec: SeriesSpec, data: dict[tuple[str, int, int], di
     return rows
 
 
-def _value_before(world: World, spec: SeriesSpec, hist: list[dict], since_day: int, now: float) -> float:
-    """The series' value when it was watched: the end of the day before ``since_day``."""
+def _value_before(
+    world: World, spec: SeriesSpec, hist: list[dict], since_day: int, now: float, stored: float | None = None
+) -> float:
+    """The series' value when it was watched: the end of the day before ``since_day`` (or the value stored
+    when it was added, e.g. a question's starting odds)."""
     before = [r for r in hist if r["day"] < since_day]
     if before:
         return float(before[-1]["value"])
+    if stored is not None:
+        return float(stored)
     if since_day == 0:  # watched from the world's start
         if spec.unit == "index":
             return 100.0
@@ -268,12 +273,22 @@ def show(rd: RunDir, world: World, days: int = 60, only: list[str] | None = None
     cat = catalog(world)
     by_id = {s.id: s for s in cat}
     ids = [i for i in (only or list(watched)) if i in by_id]
+    if only is None:  # questions are watched from the day they were opened, by `watch add` or a what-if
+        for s in cat:
+            if s.kind == "odds" and s.id not in watched:
+                ids.append(s.id)
+                watched[s.id] = {"since_day": int(s.extra.get("added_day", 0))}
     specs = [by_id[i] for i in ids]
     keys: set[tuple[str, int, int]] = set()
     for s in specs:
         keys |= _keys(s)
     data = read_metric_series(rd, keys, 0)
     first_shown = max(0, world.day - days)
+    qrows: dict[str, Any] = {}
+    if any(s.kind == "odds" for s in specs):
+        from jahan.query.odds import question_rows
+
+        qrows = {r["series"]: r for r in question_rows(rd, world)}
     series = []
     for s in specs:
         hist = _history(world, s, data)
@@ -283,7 +298,8 @@ def show(rd: RunDir, world: World, days: int = 60, only: list[str] | None = None
         if rebased:
             since_day = world.day
         now = hist[-1]["value"] if hist else (100.0 if s.derived_beta is not None else current_value(world, s))
-        since_value = _value_before(world, s, hist, since_day, now)
+        stored = entry.get("since_value") if not rebased else None
+        since_value = _value_before(world, s, hist, since_day, now, None if stored is None else float(stored))
         after = [r for r in hist if r["day"] >= since_day]
         comp = None
         if s.components:
@@ -307,7 +323,7 @@ def show(rd: RunDir, world: World, days: int = 60, only: list[str] | None = None
                 "since_watched_pct": pct,
                 "since_watched_abs": now - since_value,
                 "components": comp,
-                "question": s.extra.get("row"),
+                "question": qrows.get(s.id),
                 "history": [r for r in hist if r["day"] >= first_shown],
             }
         )
@@ -332,14 +348,17 @@ def show(rd: RunDir, world: World, days: int = 60, only: list[str] | None = None
     }
 
 
-def add(rd: RunDir, world: World, ids: list[str]) -> list[str]:
-    """Watch these series from today (non-question series only; questions are opened as prompts)."""
+def add(rd: RunDir, world: World, ids: list[str], since_values: dict[str, float] | None = None) -> list[str]:
+    """Watch these series from today (a question must be opened first, as a prompt: `jahan watch add odds:...`)."""
     watched = load_list(rd)
     added = []
     for i in ids:
         resolve(world, i)
-        if i not in watched:
-            watched[i] = {"since_day": world.day, "added": dt.date.today().isoformat()}
+        if i not in watched or watched[i].get("since_day", -1) > world.day:
+            entry: dict[str, Any] = {"since_day": world.day, "added": dt.date.today().isoformat()}
+            if since_values and i in since_values:
+                entry["since_value"] = since_values[i]
+            watched[i] = entry
             added.append(i)
     save_list(rd, watched)
     return added

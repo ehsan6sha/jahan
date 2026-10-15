@@ -95,7 +95,11 @@ def media_exposure(world: World, masks: Masks, params: SimParams, log: EventLog)
         val = np.broadcast_to(val, (pop.n,))
         truth = float(world.items["truth"][item])
         disc = pop["discernment"].astype(np.float64)
-        target = val * (1 - params.discernment_pull * disc) + params.discernment_pull * disc * truth
+        target = (
+            val
+            if np.isnan(truth)
+            else val * (1 - params.discernment_pull * disc) + params.discernment_pull * disc * truth
+        )
         cred_v = np.broadcast_to(np.asarray(cred, dtype=np.float64), (pop.n,))
         first = hit & (bel["aware"][: pop.n, slot] == 0)
         again = hit & ~first

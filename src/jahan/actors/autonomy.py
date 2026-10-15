@@ -37,6 +37,7 @@ from jahan.model.world import World
 from jahan.query.social_feed import recent_posts_lines, trending_lines
 from jahan.scenario.inject import apply_scenario
 from jahan.scenario.spec import Scenario
+from jahan.sim.questions import question_items
 from jahan.store.eventlog import EventLog
 
 TURNS_PER_NOTABLE_PER_WEEK = 2
@@ -95,6 +96,7 @@ def triggers(world: World) -> list[dict[str, Any]]:
     shares = (wc_all @ aware) / tot[:, None]
     pushed_to = {item: _countries_pushed(world, item) for item in live}
     product_items = {int(x) for x in world.products["item_id"]}
+    asked = question_items(world)  # a watched question is not news to react to
     cands: list[dict[str, Any]] = []
     for col, entry in enumerate(world.notables):
         aid = int(entry["agent_id"])
@@ -106,6 +108,8 @@ def triggers(world: World) -> list[dict[str, Any]]:
         topics = {int(TOPIC_NAMES[t]) for t in ROLE_TOPICS.get(role, set())}
         reasons: list[tuple[float, str, str]] = []  # (salience, key, text)
         for j, item in enumerate(live):
+            if item in asked:
+                continue
             if int(items["origin_id"][item]) == aid and int(items["origin_kind"][item]) == OriginKind.NOTABLE:
                 continue
             key = f"{col}:{item}"

@@ -309,3 +309,5 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
 .up { color: var(--ok); }
 .down { color: var(--danger); }
 .watch-cat { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 6px 14px; }
+.qrow { padding: 10px 0; border-top: 1px solid var(--line); }
+.qrow:first-of-type { border-top: 0; }

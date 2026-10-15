@@ -1,0 +1,22 @@
+# Event odds from the simulated people's beliefs (sim/questions.py).
+#
+# A watched question ("Will X happen by date Y?") is held as a belief by simulated traders. The simulated odds
+# are the population-weighted mean belief of the traders who know the question (Wolfers and Zitzewitz 2006:
+# with log utility and beliefs unrelated to wealth, a prediction market's price equals the traders' mean belief).
+# This is a belief average, not a market: no order book, no liquidity, no time decay toward the deadline.
+#
+# Read when a question is first watched and copied into the world with it (macro["odds"]), so editing this file
+# never changes or breaks an existing world. Not hashed into snapshots.
+
+trader_share:
+  value: 0.10  # of internet-using adults, in every country (borrowed from a US survey)
+  source: odds.kagan2026
+  adult_age: 18
+skew:  # HEURISTIC relative trading propensity; the survey says users skew to men under 35 (no numbers read)
+  male_under_35: 2.0
+  male_35_plus: 1.0
+  female_under_35: 1.0
+  female_35_plus: 0.5
+aggregation:
+  rule: population-weighted mean belief of traders who know the question
+  source: odds.wolfers_zitzewitz2006

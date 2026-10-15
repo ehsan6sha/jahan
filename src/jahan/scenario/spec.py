@@ -7,6 +7,7 @@ come from the engine.
 
 from __future__ import annotations
 
+import datetime as dt
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
@@ -15,6 +16,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from jahan.actors.actions import ACTOR_TYPES, Control, CreateAgent, Decision, Message, Post, PriceChange
 from jahan.model.enums import CHANNEL_KIND_NAMES, TOPIC_NAMES, VALUE_NAMES
+from jahan.model.questions import QUESTION_ID
 
 
 class MediaPush(BaseModel):
@@ -70,6 +72,15 @@ class ProductLaunch(BaseModel):
 DEFAULT_SENTIMENT_WEIGHT = {"economy": 1.0, "world": 0.8, "politics": 0.6}
 
 
+class Bearing(BaseModel):
+    """How a story bears on a watched yes/no question: +1 makes "Yes" much more likely, -1 "No".  People who
+    know the question and learn the story shift their belief; the engine sets the size, never the text."""
+
+    model_config = ConfigDict(extra="forbid")
+    question: str  # a watched question's id (see `jahan watch list`)
+    direction: float = Field(ge=-1, le=1)
+
+
 class NewsEvent(BaseModel):
     """A story pushed through media channels (and then word of mouth).
 
@@ -98,6 +109,7 @@ class NewsEvent(BaseModel):
     # where the story comes from: a scenario prompt, a user-fed future event, or a real fetched headline.
     # Set by the code path that creates the event (the parser always overrides it), never by a model.
     origin: Literal["scenario", "user_feed", "web"] = "scenario"
+    bears_on: list[Bearing] = Field(default_factory=list)  # watched questions this story makes more or less likely
 
     @field_validator("topic")
     @classmethod
@@ -222,6 +234,7 @@ class Statement(BaseModel):
     start_day_offset: int = Field(0, ge=0)
     duration_days: int = Field(3, ge=1)
     release_utc_hour: int = Field(14, ge=0, le=23)
+    bears_on: list[Bearing] = Field(default_factory=list)  # watched questions this statement bears on
 
     @field_validator("topic")
     @classmethod
@@ -229,6 +242,70 @@ class Statement(BaseModel):
         if v not in TOPIC_NAMES:
             raise ValueError(f"unknown topic {v}; known: {sorted(TOPIC_NAMES)}")
         return v
+
+
+class QuestionSource(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    name: Literal["polymarket", "manual"]
+    url: str = ""
+    slug: str = ""
+    event_slug: str = ""
+    clob_token_id: str | None = None
+
+
+class QuestionEvent(BaseModel):
+    """Start (or stop) watching a yes/no question: simulated traders hold beliefs about it, and the simulated
+    odds are their average.  Created by `jahan watch add/remove odds:...`, never by a free-text prompt.
+
+    ``price`` is the market's "Yes" price on ``fetch_date`` (the traders' starting point); ``prior`` is used
+    when there is no market price.  ``trader_share`` and ``skew`` come from data/global/odds.yaml when the
+    command builds the event, so the event alone replays the same world.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+    type: Literal["question"] = "question"
+    action: Literal["open", "close"] = "open"
+    id: str
+    question: str = ""
+    description: str = Field("", max_length=400)
+    resolves_by: dt.date | None = None
+    source: QuestionSource | None = None
+    price: float | None = Field(None, ge=0, le=1)
+    fetch_date: str | None = None
+    prior: float | None = Field(None, gt=0, lt=1)
+    countries: list[str] | None = None  # whose residents trade on it; None = every country
+    partisan: float = Field(0.0, ge=-1, le=1)  # +1: the governing camp leans Yes (HEURISTIC shift)
+    topic: str = "world"
+    trader_share: float = Field(0.10, gt=0, le=1)
+    adult_age: float = 18.0
+    skew: dict[str, float] = Field(
+        default_factory=lambda: {
+            "male_under_35": 2.0,
+            "male_35_plus": 1.0,
+            "female_under_35": 1.0,
+            "female_35_plus": 0.5,
+        }
+    )
+    sources: list[str] = Field(default_factory=list)  # registry ids behind trader_share and the aggregation
+
+    @field_validator("id")
+    @classmethod
+    def _id(cls, v: str) -> str:
+        if not QUESTION_ID.fullmatch(v):
+            raise ValueError("a question id is 3-120 lower-case letters, digits or dashes")
+        return v
+
+    @field_validator("topic")
+    @classmethod
+    def _topic(cls, v: str) -> str:
+        if v not in TOPIC_NAMES:
+            raise ValueError(f"unknown topic {v}; known: {sorted(TOPIC_NAMES)}")
+        return v
+
+    def start_price(self) -> float:
+        if self.price is not None:
+            return float(self.price)
+        return float(self.prior if self.prior is not None else 0.5)
 
 
 class SocialPostEvent(BaseModel):
@@ -299,6 +376,7 @@ AnyEvent = Annotated[
     | Statement
     | SocialPostEvent
     | SocialDigest
+    | QuestionEvent
     | Control
     | Message
     | Post

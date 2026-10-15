@@ -7,6 +7,7 @@ import numpy as np
 from jahan.model.enums import EdgeKind
 from jahan.model.world import World
 from jahan.sim.params import SimParams
+from jahan.sim.questions import record_odds
 from jahan.sim.trust import effective_trust
 from jahan.store.eventlog import MetricsLog
 
@@ -58,6 +59,7 @@ def record(world: World, params: SimParams, stats: dict[str, int], out: MetricsL
             m = aware & mc
             if m.any() and w[m].sum() > 0:  # public figures carry no population weight
                 out.add(day, c, item, "mean_belief_aware", float(np.average(bel["belief"][:n, slot][m], weights=w[m])))
+    record_odds(world, out)
     if day % TRUST_EVERY == 0 and world.edges.n:
         t = effective_trust(world, slice(None), params)
         kind = world.edges["kind"]

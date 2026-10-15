@@ -20,6 +20,7 @@ from jahan.model.notables import (
     load_roster,
     validate_rosters,
 )
+from jahan.model.questions import odds_problems
 from jahan.model.social import load_social, validate_social
 
 Confidence = Literal["high", "medium", "low", "provisional", "placeholder"]
@@ -172,6 +173,7 @@ def validate_data(
     problems += _social_problems(data_dir, countries, reg, strict)
     problems += _markets_problems(data_dir, reg, strict)
     problems += _investors_problems(data_dir, reg, strict)
+    problems += odds_problems(data_dir, reg)
     if strict:
         try:
             roles = load_roles(data_dir)

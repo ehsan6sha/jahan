@@ -1,0 +1,22 @@
+prompt: >-
+  Watch the question "Will the US strike Iran again before December?" (starting at 30%), then a week later
+  Iran seizes a tanker in the Strait of Hormuz.
+events:
+  - type: question
+    id: us-strikes-iran-before-december
+    question: Will the US strike Iran again before December?
+    prior: 0.30
+    resolves_by: '2026-11-30'
+    countries: [USA, IRN]
+    topic: world
+    source: {name: manual}
+  - type: news
+    headline: Iran seizes an oil tanker in the Strait of Hormuz; US warships move closer
+    topic: world
+    valence: -0.7
+    salience: 0.85
+    countries: [USA, IRN]
+    start_day_offset: 7
+    duration_days: 5
+    bears_on:
+      - {question: us-strikes-iran-before-december, direction: 0.7}

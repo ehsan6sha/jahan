@@ -80,6 +80,13 @@ class SimParams(BaseModel):
     market_multiplier: float | None = None  # price impact of net flows (Gabaix and Koijen 2021: about 5)
     market_requires_internet: bool | None = None  # HEURISTIC: only holders with internet trade daily
 
+    # event odds (sim/questions.py; all HEURISTIC, unsourced)
+    # log-odds shift per unit of a story's direction for someone who knows the question: a story rated +1
+    # multiplies their odds of Yes by e (about 2.7)
+    k_odds: float = 1.0
+    odds_initial_sd: float = 0.5  # spread of traders' starting beliefs around the market price, on log-odds
+    odds_partisan_shift: float = 1.0  # log-odds offset per unit of political lean x a question's partisanship
+
     # decisions
     adopt_b0: float = -8.6
     adopt_belief: float = 3.0

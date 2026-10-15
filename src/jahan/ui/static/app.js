@@ -54,7 +54,8 @@
     play: { as: null, brief: null, circle: null, tab: "message", replies: true, target: "", autopilotDays: 7 },
     results: { what: "", seeds: 4, horizon: "", report: null, reportPath: null },
     run: { autonomy: null, keepIdle: false, custom: 14 },
-    watch: { data: null, key: null, loading: null, days: 60 },
+    watch: { data: null, key: null, loading: null, days: 60, seeds: null, seedsFor: null, force: false,
+      custom: { question: "", prior: "0.5", resolves: "", countries: "" } },
   };
 
   const GLOSSARY = {
@@ -75,6 +76,7 @@
     session: "Your time playing one or more people. Each action is saved, so it can be replayed after an undo.",
     baseline: "The same world without your prompt, with the same random draws, so differences come from the prompt alone.",
     watch: "A series you follow while time moves: a market, a currency, a country's mood or the odds of an event. The change is counted from the day you started watching.",
+    question: "A yes/no question about the future, such as whether the US-Iran ceasefire holds. Simulated traders (about one in ten adults online) hold a belief about it, starting near the real market price; the simulated odds are their average. News that bears on it moves the beliefs of the traders who hear it.",
     "people's trading": "Simulated US adults who hold stock (shares from the Federal Reserve's Survey of Consumer Finances) buy or sell when they hear news that makes the economy look better or worse (weekend news is traded on Monday). Their part of the US stock index is shown separately from the part moved by announcements and scripted what-ifs. It fades as the news fades: they buy back what they sold.",
   };
   const term = (key, label) => h("span", { class: "term", title: GLOSSARY[key] || "", tabindex: 0 }, label || key);
@@ -679,7 +681,7 @@
     }
     if (rec.status !== "ok") { box.replaceChildren(errorNotice(jobError(rec))); return; }
     const data = lastJson(rec);
-    W.preview = { kind, text, day: data.day, scenario: data.scenario, moves: data.market_moves || [], cmdline: rec.cmdline };
+    W.preview = { kind, text, day: data.day, scenario: data.scenario, moves: data.market_moves || [], odds: data.odds_effects || [], cmdline: rec.cmdline };
     W.answers = {};
     render();
   }
@@ -712,6 +714,7 @@
       h("p", {}, "These events will be added to the world on day ", h("strong", {}, P.day), ":"),
       h("ul", { class: "events-list" }, ...(P.scenario.events || []).map((e) => h("li", {}, describeEvent(e)))),
       ...(P.moves || []).map(marketMoves),
+      ...(P.odds || []).map(oddsEffect),
       P.scenario.horizon_days ? h("p", { class: "muted small" }, `Effects are followed for ${P.scenario.horizon_days} days when you measure them.`) : null,
       h("details", {}, h("summary", {}, "Exact events (as the simulator stores them)"), h("pre", { class: "out" }, JSON.stringify(P.scenario, null, 2))),
       stale ? h("div", { class: "notice warn" }, `The world moved to day ${st.day} since this preview; preview again so you add what you saw.`) : null,
@@ -731,6 +734,13 @@
       h("div", { class: "muted small" }, "Computed by the engine from published estimates times the surprise (data/global/markets.yaml), not by the simulated people and not by Claude. Educational use only; not a forecast."));
   }
 
+  function oddsEffect(r) {
+    return h("div", { class: r.known ? "notice" : "notice warn" },
+      h("strong", {}, `“${r.headline}” bears on the watched question “${r.question}”: `),
+      `direction ${r.direction > 0 ? "+" : ""}${r.direction}, so people who know the question and hear this story ${r.direction > 0 ? "raise" : "lower"} their odds of Yes.`,
+      h("div", { class: "muted small" }, r.known ? "How far the odds move is set by the engine from who hears the story, not by the text." : "This is not a watched question; adding would be refused."));
+  }
+
   function describeEvent(e) {
     const where = (list) => (list && list.length ? list.join(", ") : "every country");
     const when = (off) => (off ? ` from day +${off}` : "");
@@ -738,7 +748,7 @@
       case "product_launch":
         return `Product “${e.name}” at $${e.price_usd} in ${where(e.countries)}${when(e.available_from_day_offset)}; advertised ${((e.pushes || [])[0] || {}).duration_days || 0} days on ${(((e.pushes || [])[0] || {}).channel_kinds || []).join(", ")}.`;
       case "news":
-        return `News: “${e.headline}” in ${where(e.countries)}${e.language ? ` (${e.language})` : ""}${when(e.start_day_offset)} for ${e.duration_days} days; tone ${e.valence > 0 ? "good" : e.valence < 0 ? "bad" : "neutral"} (${e.valence}).`;
+        return `News: “${e.headline}” in ${where(e.countries)}${e.language ? ` (${e.language})` : ""}${when(e.start_day_offset)} for ${e.duration_days} days; tone ${e.valence > 0 ? "good" : e.valence < 0 ? "bad" : "neutral"} (${e.valence}).` + ((e.bears_on || []).length ? ` Bears on ${e.bears_on.map((b) => `${b.question} (${b.direction > 0 ? "+" : ""}${b.direction})`).join(", ")}.` : "");
       case "macro":
         return `${{ fx_local_per_usd: "Exchange rate (local currency per dollar)", gold: "Gold price", us_stocks: "US stocks (S&P 500)", sentiment: "Economic mood" }[e.variable] || e.variable} in ${e.country || "the whole world"}: ` +
           (e.steps || []).map((s) => `${s.pct_per_day > 0 ? "+" : ""}${s.pct_per_day}% a day for ${s.days} day(s)${when(s.start_day_offset)}`).join(", then ") + ".";
@@ -748,6 +758,8 @@
         return `Statement by ${String(e.speaker).replace(/^[A-Z]{3}\./, "").replace(/_/g, " ")} (${String(e.speaker).slice(0, 3)})${when(e.start_day_offset)}: “${e.headline}”; tone ${e.valence > 0 ? "good" : e.valence < 0 ? "bad" : "neutral"}.`;
       case "social":
         return `Real post by ${e.author_handle ? "@" + e.author_handle : e.author_name || "a user"} on ${({ x: "X", bluesky: "Bluesky", mastodon: "Mastodon", telegram: "Telegram" })[e.platform] || e.platform} in ${where(e.countries)} (${e.language}): “${e.headline}”; tone ${e.valence > 0 ? "good" : e.valence < 0 ? "bad" : "neutral"}; social channels for ${e.duration_days} days.`;
+      case "question":
+        return e.action === "close" ? `Stop watching the question ${e.id}.` : `Watch the question “${e.question}”${e.price !== null && e.price !== undefined ? `, starting at the market price ${(100 * e.price).toFixed(1)}% (${e.fetch_date})` : `, starting at ${(100 * (e.prior || 0.5)).toFixed(0)}%`}${e.resolves_by ? `; resolves ${e.resolves_by}` : ""}.`;
       case "social_digest":
         return `What the fetch saw (${e.fetch_day}): ${(e.seen || []).length} posts, trending topics and figures' recent posts, kept for display and context.`;
       default:
@@ -764,7 +776,7 @@
       const rec = await run(["inject", "--run", S.world, "--scenario", ex.path, "--preview", "--json"], { quiet: true });
       if (rec.status !== "ok") { box.replaceChildren(errorNotice(jobError(rec))); return; }
       const data = lastJson(rec);
-      W.preview = { kind: "scenario", path: ex.path, day: data.day, scenario: data.scenario, moves: data.market_moves || [], cmdline: rec.cmdline };
+      W.preview = { kind: "scenario", path: ex.path, day: data.day, scenario: data.scenario, moves: data.market_moves || [], odds: data.odds_effects || [], cmdline: rec.cmdline };
       render();
     };
     return h("div", {},
@@ -1700,6 +1712,10 @@
       box));
     const cat = d ? d.catalog : [];
     const groups = [["market", "Markets"], ["mood", "Moods"], ["odds", "Event odds"]];
+    const qs = rows.filter((s) => s.question);
+    if (qs.length) out.append(card(h("span", {}, "Event odds: simulated and real"), "The simulated odds are the average belief of simulated traders. The real price is shown for comparison only and never moves the simulation.",
+      ...qs.map(questionRow)));
+    out.append(oddsQuestionsCard(st, box));
     out.append(card("Add to the watch list", "Markets move on announcements, scripted what-ifs and, for US stocks, people's trading. Use What-if to add news or a market move and watch the effect.",
       !d ? loading() : h("div", {}, ...groups.filter(([k]) => cat.some((c) => c.kind === k)).map(([k, label]) => h("div", {},
         h("h4", {}, label),
@@ -1707,6 +1723,66 @@
           h("input", { type: "checkbox", checked: c.watched, onchange: (e) => toggle(c.id, e.target.checked) }), c.label))))))));
     if (d) out.append(h("p", { class: "muted small" }, d.disclaimer));
     return out;
+  }
+
+  const prob = (p) => (p === null || p === undefined || Number.isNaN(p) ? "n/a" : `${(100 * p).toFixed(1)}%`);
+
+  function questionRow(s) {
+    const q = s.question;
+    const sim = q.simulated;
+    const real = q.real;
+    const pastReal = real && S.status && real.fetch_date < S.status.date;
+    return h("div", { class: "qrow" },
+      h("div", {}, h("strong", {}, q.question), " ", q.source && q.source.url ? h("a", { href: q.source.url, target: "_blank", rel: "noopener noreferrer", class: "small" }, "market page") : null),
+      h("div", { class: "small" },
+        q.status === "open" ? `Simulated ${prob(sim ? sim.odds : null)}` : `Closed on day ${q.closed_day} at ${prob(q.final_odds)}`,
+        sim ? ` (${sim.n_traders.toLocaleString()} simulated traders, standing for about ${fmtPeople(sim.represents)} people)` : "",
+        real ? ` · real market ${prob(real.price)} on ${real.fetch_date}` : " · no real price",
+        real && real.resolved ? ` · resolved ${real.resolved} on the market` : "",
+        q.resolves_by ? ` · resolves ${q.resolves_by}` : ""),
+      pastReal ? h("div", { class: "muted small" }, `Real prices end at ${real.fetch_date}; the simulation runs on without them.`) : null,
+      q.movers.length ? h("ul", { class: "events-list small" }, ...q.movers.map((m) => h("li", {},
+        h("span", { class: m.moved > 0 ? "up" : "down" }, `${m.moved > 0 ? "+" : ""}${(100 * m.moved).toFixed(1)} points `),
+        `"${m.label}" (day ${m.day}, ${m.by === "scripted" ? "your what-if" : m.by === "llm" ? "rated by Claude" : m.by}${m.why && m.why !== "scripted" ? ": " + m.why : ""})`)))
+        : h("div", { class: "muted small" }, "No story has moved it yet."));
+  }
+
+  const slugify = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "question";
+
+  function oddsQuestionsCard(st, box) {
+    const W = S.watch;
+    if (W.seedsFor !== S.world) {
+      W.seedsFor = S.world;
+      W.seeds = null;
+      runJSON(["watch", "catalog", "--run", S.world, "--json"]).then((r) => { W.seeds = r.seeds || []; if (S.view === "watch") render(); })
+        .catch(() => { W.seeds = []; });
+    }
+    const watched = new Set(st.questions || []);
+    const add = (argv, ok) => act(box, ["watch", "add", "--run", S.world, ...argv], { ok, rerender: true });
+    const seedList = W.seeds === null ? loading() : W.seeds.length ? h("div", {},
+      h("p", { class: "muted small" }, `Read from Polymarket on ${W.seeds[0].fetch_date}. Watching one starts its simulated traders at that price.`),
+      h("label", { class: "check small" }, h("input", { type: "checkbox", checked: W.force, onchange: (e) => (W.force = e.target.checked) }), "Start from these prices even though the world's date is different"),
+      h("ul", { class: "events-list" }, ...W.seeds.map((q) => h("li", {},
+        h("span", { class: "num" }, prob(q.yes_price)), " ", q.question, q.resolves_by ? h("span", { class: "muted small" }, ` (resolves ${q.resolves_by})`) : null, " ",
+        watched.has(q.id) ? h("span", { class: "tag" }, "watching")
+          : h("button", { class: "btn small act", onclick: () => add([q.series, ...(W.force ? ["--force"] : [])], "Watching it: simulated traders start near the market price.") }, "Watch")))))
+      : h("p", { class: "muted" }, "No offline questions in data/global/questions.yaml.");
+    const C = W.custom;
+    const custom = h("div", { class: "form-grid" },
+      field("Your own yes/no question", h("input", { value: C.question, placeholder: "Will the US and Iran sign a deal by December?", oninput: (e) => (C.question = e.target.value) })),
+      field("Starting probability", select([["0.1", "10%"], ["0.25", "25%"], ["0.5", "50%"], ["0.75", "75%"], ["0.9", "90%"]], C.prior, (v) => (C.prior = v))),
+      field("Resolves by (optional)", h("input", { type: "date", value: C.resolves, onchange: (e) => (C.resolves = e.target.value) })),
+      field("Traders in (optional)", h("input", { value: C.countries, placeholder: "USA,IRN", oninput: (e) => (C.countries = e.target.value) }), "Default: every country"));
+    const addCustom = () => {
+      const text = clean(C.question);
+      if (!text) { box.replaceChildren(h("div", { class: "notice error" }, "Write the question first.")); return; }
+      const argv = [`odds:custom:${slugify(text)}`, "--question", text, "--prior", C.prior];
+      if (C.resolves) argv.push("--resolves-by", C.resolves);
+      if (C.countries.trim()) argv.push("--countries", C.countries.replace(/\s+/g, ""));
+      add(argv, "Watching your question.");
+    };
+    return card(h("span", {}, "Event ", term("question", "questions")), "Pick a real prediction-market question, or ask your own. Stories in What-if can bear on it (the preview says how).",
+      seedList, h("h4", {}, "Your own question"), custom, h("button", { class: "btn act", onclick: addCustom }, "Watch my question"));
   }
 
   const RENDER = { start: viewStart, world: viewWorld, whatif: viewWhatif, social: viewSocial, people: viewPeople, ask: viewAsk, play: viewPlay, results: viewResults, watch: viewWatch, activity: viewActivity, guide: viewGuide };

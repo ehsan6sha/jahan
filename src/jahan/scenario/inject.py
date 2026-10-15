@@ -20,15 +20,18 @@ from jahan.scenario.posts import record_post
 from jahan.scenario.spec import (
     DEFAULT_SENTIMENT_WEIGHT,
     Announcement,
+    Bearing,
     MacroPath,
     MacroStep,
     NewsEvent,
     ProductLaunch,
+    QuestionEvent,
     Scenario,
     SocialDigest,
     SocialPostEvent,
     Statement,
 )
+from jahan.sim import questions
 from jahan.store.eventlog import EventLog
 
 PERMANENT = 10_000
@@ -244,6 +247,7 @@ def start_news(world: World, ev: NewsEvent, log: EventLog, prompt_id: int) -> in
     )
     if item_id < 0:
         return 0
+    record_bearings(world, item_id, ev.bears_on, log)
     kinds = {int(CHANNEL_KIND_NAMES[k]) for k in ev.channel_kinds}
     lang = world.lang_id(ev.language) if ev.language else None
     if lang is not None:
@@ -293,6 +297,7 @@ def start_statement(world: World, ev: Statement, log: EventLog, prompt_id: int) 
     )
     if item_id < 0:
         return 0
+    record_bearings(world, item_id, ev.bears_on, log)
     all_kinds = {int(k) for k in CHANNEL_KIND_NAMES.values()}
     n = _push(world, item_id, [home], all_kinds, world.day, ev.duration_days, 1.0)
     if audience == "global":
@@ -534,7 +539,140 @@ def _news(world: World, ev: NewsEvent, log: EventLog, prompt_id: int, stats: dic
         stats["scheduled"] += 1
 
 
+def _open_ids(world: World) -> set[str]:
+    return {qid for qid, _ in questions.open_questions(world)}
+
+
+def check_scenario(world: World, scenario: Scenario) -> None:
+    """Problems found before anything is applied: questions to open or close, and stories' ``bears_on``."""
+    open_ids = _open_ids(world)
+    for ev in scenario.events:
+        if isinstance(ev, QuestionEvent):
+            if ev.action == "close":
+                if ev.id not in open_ids:
+                    raise InjectError(f"no watched question {ev.id!r} is open")
+                open_ids.discard(ev.id)
+                continue
+            if ev.id in open_ids:
+                raise InjectError(f"question {ev.id!r} is already watched")
+            if not ev.question:
+                raise InjectError(f"question {ev.id!r} needs its text")
+            if len(open_ids) >= questions.MAX_OPEN_QUESTIONS:
+                raise InjectError(f"at most {questions.MAX_OPEN_QUESTIONS} questions can be watched at once")
+            for c in ev.countries or []:
+                _country_index(world, c)
+            open_ids.add(ev.id)
+        elif isinstance(ev, NewsEvent | Statement):
+            for b in ev.bears_on:
+                if b.question not in open_ids:
+                    known = ", ".join(sorted(open_ids)) or "none"
+                    raise InjectError(f"bears_on names {b.question!r}, which is not a watched question (open: {known})")
+
+
+def start_question(world: World, ev: QuestionEvent, log: EventLog, prompt_id: int) -> int:
+    """Open a question (a tracked item whose belief is each person's probability of Yes) or close one."""
+    if ev.action == "close":
+        questions.close_question(world, ev.id, log, "removed by the user")
+        return 0
+    st = questions.ensure_state(world, ev.trader_share, ev.skew, ev.adult_age, ev.sources)
+    item = create_item(
+        world,
+        topic=int(TOPIC_NAMES[ev.topic]),
+        valence=0.0,
+        truth=float("nan"),  # unknown: nobody is pulled toward a "true" answer
+        salience=0.0,  # never broadcast: traders know it, others hear of it by word of mouth
+        origin=OriginKind.SCENARIO,
+        origin_id=prompt_id,
+        entity_id=-1,
+        active_days=PERMANENT,  # never evicted or expired; closed explicitly
+        release_utc_hour=0,
+        sentiment_weight=0.0,  # a question moves no one's mood
+        label=ev.question,
+        log=log,
+    )
+    if item < 0:
+        raise InjectError("no free tracked-item slot for the question; raise max_slots in the run config")
+    st["questions"][ev.id] = {
+        "id": ev.id,
+        "question": ev.question,
+        "description": ev.description,
+        "resolves_by": None if ev.resolves_by is None else ev.resolves_by.isoformat(),
+        "topic": ev.topic,
+        "source": None if ev.source is None else ev.source.model_dump(mode="json"),
+        "seed": None if ev.price is None else {"price": ev.price, "fetch_date": ev.fetch_date},
+        "prior": ev.start_price(),
+        "countries": ev.countries,
+        "partisan": ev.partisan,
+        "added_day": world.day,
+        "prompt_id": prompt_id,
+        "item": item,
+        "status": "open",
+        "closed_day": None,
+        "closed_reason": None,
+        "final_odds": None,
+        "claims": {},
+    }
+    n = questions.seed_question(world, ev.id, world.config.params)
+    if n == 0:
+        raise InjectError(f"no simulated traders for {ev.id!r} in {ev.countries or 'this world'}")
+    log.add(world.day, EventKind.QUESTION_OPENED, -1, n, item, ev.start_price(), -1, ev.id)
+    return n
+
+
+def record_bearings(world: World, item_id: int, bears_on: list[Bearing], log: EventLog) -> None:
+    """A story that bears on watched questions becomes a claim on each (scripted).  Never raises: a question
+    closed before a scheduled story starts is skipped and logged."""
+    st = questions.state(world)
+    for b in bears_on:
+        q = None if st is None else st["questions"].get(b.question)
+        if q is None or q["status"] != "open":
+            log.add(world.day, EventKind.ACTION_SKIPPED, -1, -1, item_id, 0.0, -1, f"bears_on {b.question}: not open")
+            continue
+        q["claims"][str(item_id)] = {
+            "direction": float(b.direction),
+            "by": "scripted",
+            "day": world.day,
+            "applied_day": None,
+            "why": "scripted",
+            "moved": 0.0,
+        }
+        log.add(world.day, EventKind.ODDS_RATED, -1, -1, item_id, float(b.direction), -1, f"{b.question} [scripted]")
+
+
+def preview_bearings(world: World, scenario: Scenario) -> list[dict[str, Any]]:
+    """Each story's stated bearing on watched questions, for previews (nothing is applied)."""
+    st = questions.state(world)
+    named = {ev.id: ev.question for ev in scenario.events if isinstance(ev, QuestionEvent) and ev.action == "open"}
+    out = []
+    for ev in scenario.events:
+        if isinstance(ev, NewsEvent | Statement):
+            for b in ev.bears_on:
+                q = None if st is None else st["questions"].get(b.question)
+                out.append(
+                    {
+                        "headline": ev.headline,
+                        "question_id": b.question,
+                        "question": named.get(b.question) or (q["question"] if q else b.question),
+                        "direction": b.direction,
+                        "start_day_offset": ev.start_day_offset,
+                        "known": b.question in named or (q is not None and q["status"] == "open"),
+                    }
+                )
+    return out
+
+
+def describe_bearings(rows: list[dict[str, Any]]) -> list[str]:
+    return [
+        f"'{r['headline']}' bears on the watched question \"{r['question']}\" (direction {r['direction']:+.2f}): "
+        f"people who know the question and learn the story {'raise' if r['direction'] > 0 else 'lower'} their "
+        "odds of Yes; the size is set by the engine, not by the text"
+        + ("" if r["known"] else " (not a watched question: this would be refused)")
+        for r in rows
+    ]
+
+
 def apply_scenario(world: World, scenario: Scenario, log: EventLog, prompt_id: int) -> dict[str, int]:
+    check_scenario(world, scenario)
     log.add(world.day, EventKind.SCENARIO_INJECTED, -1, prompt_id, -1, 0.0, -1, scenario.prompt[:500])
     stats = {"events": len(scenario.events), "pushes": 0, "scheduled": 0}
     for ev in scenario.events:
@@ -565,6 +703,9 @@ def apply_scenario(world: World, scenario: Scenario, log: EventLog, prompt_id: i
                 stats["scheduled"] += 1
         elif isinstance(ev, SocialDigest):
             apply_social_digest(world, ev)
+        elif isinstance(ev, QuestionEvent):
+            start_question(world, ev, log, prompt_id)
+            stats["questions"] = stats.get("questions", 0) + 1
         elif isinstance(ev, Statement):
             notable_by_key(world, ev.speaker)  # validate now, even if it starts later
             if ev.start_day_offset == 0:

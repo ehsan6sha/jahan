@@ -31,6 +31,7 @@ from jahan.model.enums import N_TOPICS, Big5, ChannelKind, EventKind
 from jahan.model.world import World
 from jahan.rng import Stream, u01
 from jahan.sim.params import SimParams
+from jahan.sim.questions import question_items
 from jahan.store.eventlog import EventLog
 
 KEEP_DAYS = 60  # per-day repost counts kept in world.macro
@@ -56,7 +57,7 @@ def reposts(world: World, params: SimParams, log: EventLog) -> dict[str, int]:
     age = world.ages()[:n]
     maturity = np.clip((age - params.share_min_age) / (params.share_full_age - params.share_min_age), 0.0, 1.0)
     base &= maturity > 0
-    products = {int(x) for x in world.products["item_id"]}
+    products = {int(x) for x in world.products["item_id"]} | question_items(world)  # questions are not stories
     extra = pop["big5"][:n, Big5.EXTRAVERSION].astype(np.float64)
     vis = pop["visibility"][:n].astype(np.float64)
     cand_rows: list[NDArray[np.int64]] = []

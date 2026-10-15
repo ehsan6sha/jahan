@@ -371,7 +371,11 @@ def receive(
         r = rows[acc]
         d = pop["discernment"][r].astype(np.float64)
         truth = float(world.items["truth"][item])
-        target = conv[acc] * (1 - params.discernment_pull * d) + params.discernment_pull * d * truth
+        target = (
+            conv[acc]
+            if np.isnan(truth)  # a watched question: no true answer to pull toward
+            else conv[acc] * (1 - params.discernment_pull * d) + params.discernment_pull * d * truth
+        )
         cur = bel["belief"][r, slot].astype(np.float64)
         bel["belief"][r, slot] = (cur + params.k_wom * trust[acc] * (target - cur)).astype(np.float32)
         bel["heard_from"][r, slot] = sender

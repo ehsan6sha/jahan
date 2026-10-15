@@ -148,7 +148,11 @@ def diffuse(
             rr = r[best]
             d = pop["discernment"][rr].astype(np.float64)
             truth = float(world.items["truth"][item])
-            target = conveyed[best] * (1 - params.discernment_pull * d) + params.discernment_pull * d * truth
+            target = (
+                conveyed[best]
+                if np.isnan(truth)  # a watched question: no true answer to pull toward
+                else conveyed[best] * (1 - params.discernment_pull * d) + params.discernment_pull * d * truth
+            )
             cur = bel["belief"][rr, slot].astype(np.float64)
             bel["belief"][rr, slot] = (cur + params.k_wom * tr[best] * (target - cur)).astype(np.float32)
             bel["heard_from"][rr, slot] = s[best]
