@@ -142,7 +142,15 @@ class EventKind(IntEnum):
     TRAVEL_END = 27
     SOCIAL_SHARED = 28  # an ordinary person reposted a tracked item on social media
     ITEM_EVICTED = 29  # the tracked-item pool was full; the oldest item no longer broadcast lost its slot
-    ITEM_UPDATED = 28  # a running story (e.g. a currency slide) got a new headline
+    # A running story (e.g. a currency slide) got a new headline.  Logs written before 2026-10-15 used 28 for
+    # this too, which collided with SOCIAL_SHARED; use `is_item_update` to read both.
+    ITEM_UPDATED = 30
+
+
+def is_item_update(kind: int, detail: str | None) -> bool:
+    """A headline update of a running story.  Older logs stored these as kind 28 (shared with reposts), which
+    carry no detail text, so a kind-28 row with a detail is a legacy update."""
+    return kind == EventKind.ITEM_UPDATED or (kind == EventKind.SOCIAL_SHARED and bool(detail))
 
 
 class WorkShift(IntEnum):

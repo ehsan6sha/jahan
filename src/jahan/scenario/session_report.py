@@ -8,7 +8,7 @@ from pathlib import Path
 import pyarrow.parquet as pq
 
 from jahan.actors.actions import Control, CreateAgent, Decision, Message, Post, PriceChange
-from jahan.model.enums import EventKind
+from jahan.model.enums import EventKind, is_item_update
 from jahan.scenario.experiment import session_dir
 from jahan.scenario.report import MetricIndex, _branch, _num, _pct
 from jahan.scenario.spec import ProductLaunch, Scenario
@@ -21,7 +21,7 @@ def _labels(events_path: Path, pre_labels: dict[str, int]) -> dict[str, int]:
     out = dict(pre_labels)
     t = pq.read_table(events_path).to_pydict()
     for k, it, det in zip(t["kind"], t["item"], t["detail"], strict=True):
-        if k in (EventKind.ITEM_CREATED, EventKind.ITEM_UPDATED) and it >= 0 and det:
+        if (k == EventKind.ITEM_CREATED or is_item_update(k, det)) and it >= 0 and det:
             out.setdefault(str(det), int(it))
     return out
 

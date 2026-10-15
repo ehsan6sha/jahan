@@ -18,7 +18,7 @@ import pyarrow.parquet as pq
 
 from jahan import paths
 from jahan.gen.registry import confidence_summary
-from jahan.model.enums import ChannelKind, EventKind, InfoTier, Sex
+from jahan.model.enums import ChannelKind, EventKind, InfoTier, Sex, is_item_update
 from jahan.model.world import World
 from jahan.rng import Stream, u01
 from jahan.scenario.inject import announcement_moves
@@ -119,7 +119,7 @@ def _created_items(events_path: Path) -> list[tuple[int, str]]:
         if k == EventKind.ITEM_CREATED:
             order.append(int(it))
             label[int(it)] = str(det)
-        elif k == EventKind.ITEM_UPDATED:
+        elif is_item_update(k, det):
             label[int(it)] = str(det)
     return [(i, label[i]) for i in order]
 
