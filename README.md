@@ -286,10 +286,15 @@ launch as prompt 1, run some days, inject the dollar rise as prompt 2, and run t
     benchmark). The simulated holders stand in for all US household equity; institutions are not
     modelled, and there is no random daily noise, so quiet days do not move at all.
   - **What it can and cannot do.** When a story stops being tracked, people buy back what they sold on
-    it, so this part fades with the news and cannot make lasting trends. In a test, the example Iran–US
+    it, so this part fades with the news and cannot make lasting trends. Its sizes are illustrations of the
+    mechanism, not calibrated price impact: one multiplier for every flow, no opposing traders and no
+    noise. In a test, the example Iran–US
     tension story took the people's part down 6.8% over four weeks, and it was back above its start
     two months later. A recession headline took it down 5.0%. Real US–Iran escalation days in 2026 moved the
     S&P 500 by less than 1% each.
+  - **Turning it off.** On the 2026 events it made the forecasts worse (see the benchmark). To run without
+    it, put `params: {market_people: false}` in the run config before `jahan gen`; announcements and
+    scripted moves then move US stocks alone.
   - **US tech stocks (Nasdaq-100)** are derived, not modelled on their own: each day they move by 1.299
     times the US stock index's move, the slope of the Nasdaq-100's daily changes on the S&P 500's from
     January 2023 to October 2026 (FRED; R² 0.89; only the coefficient is stored).
@@ -430,7 +435,9 @@ and 37 jobs reports, 67 announcements in all.
     47% over four weeks.
   - **The change.** People now trade on the news they learn that day. The same rule chose kappa = 0.058,
     with the same release-day results and much smaller multi-day moves. The 2026 results had been seen
-    before this change; it was prompted by the size of the what-if moves. Both fits are in the file.
+    before this change, so they are no longer a clean out-of-sample test; treat them as exploratory until
+    events after October 2026 are scored. The change was prompted by the size of the what-if moves. Both
+    fits are in the file.
   - **The fit sees only release days.** Most of the people's reaction comes on later days, as the news
     spreads, so the stability test, not the fit, governs those.
 - **Scoring.** The limits were fixed before the run:

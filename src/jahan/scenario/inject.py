@@ -555,6 +555,12 @@ def check_scenario(world: World, scenario: Scenario) -> None:
                 continue
             if ev.id in open_ids:
                 raise InjectError(f"question {ev.id!r} is already watched")
+            old = (questions.state(world) or {}).get("questions", {}).get(ev.id)
+            if old is not None and old["question"] != ev.question:
+                raise InjectError(
+                    f"the id {ev.id!r} was used on day {old['added_day']} for another question "
+                    f"({old['question']!r}); choose another id or wording"
+                )
             if not ev.question:
                 raise InjectError(f"question {ev.id!r} needs its text")
             if len(open_ids) >= questions.MAX_OPEN_QUESTIONS:

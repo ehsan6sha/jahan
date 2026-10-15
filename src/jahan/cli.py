@@ -193,7 +193,8 @@ def run_cmd(
 
     sid = session.current(rd)
     if sid is not None:
-        session.note_autonomy(rd, sid, hook is not None)
+        session.note_autonomy(rd, sid, hook is not None and hook.autonomy)
+        session.note_odds(rd, sid, hook is not None and hook.odds)
     last = _advance(rd, world, days, before_day=hook)
     typer.echo(
         f"Simulated to day {world.day} ({world.date().isoformat()}) in {time.perf_counter() - t0:.1f}s. "

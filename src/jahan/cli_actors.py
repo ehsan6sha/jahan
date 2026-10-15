@@ -663,7 +663,8 @@ def play(
         hook = _AutonomyHook(client)
     elif autonomy:
         hook = _autonomy_hook(rd, world, provider)
-    session.note_autonomy(rd, sid, hook is not None)
+    session.note_autonomy(rd, sid, hook is not None and hook.autonomy)
+    session.note_odds(rd, sid, hook is not None and hook.odds)
     reader = _LineReader()
     typer.echo(HELP)
     auto_left = 0
@@ -799,8 +800,13 @@ def session_replay(
         typer.echo("Nothing to replay: no undone turns.")
         return
     use_autonomy = session.autonomy_used(rd, session_id) if autonomy is None else autonomy
-    hook = _autonomy_hook(rd, world, provider) if use_autonomy else None
-    typer.echo(f"Public figures' own turns: {'replayed from recordings' if hook else 'off (as when played)'}.")
+    use_odds = session.odds_used(rd, session_id)
+    hook = (
+        _autonomy_hook(rd, world, provider, autonomy=use_autonomy, odds=use_odds) if use_autonomy or use_odds else None
+    )
+    turns = "replayed from recordings" if hook and hook.autonomy else "off (as when played)"
+    rated = "replayed" if hook and hook.odds else "off (as when played)"
+    typer.echo(f"Public figures' own turns: {turns}; ratings of stories against watched questions: {rated}.")
     data = session.load(rd)
     data["current"] = session_id
     session.save(rd, data)

@@ -270,7 +270,7 @@ def watch_add(
     from jahan.query.watch import add, catalog, resolve, show
     from jahan.scenario.inject import InjectError
     from jahan.scenario.spec import Scenario
-    from jahan.sim.questions import current_odds
+    from jahan.sim.questions import current_odds, open_questions
 
     rd = RunDir(run_dir)
     world = _load_head(rd)
@@ -285,7 +285,7 @@ def watch_add(
         "fetch_day": _fetch_day(fetch_day),
         "rec": None,
     }
-    open_series = {s.id for s in catalog(world)}
+    open_series = {s.id for s in catalog(world) if s.kind != "odds"} | {f"odds:{q}" for q, _ in open_questions(world)}
     new_q = [s for s in series if s.startswith("odds:") and s not in open_series]
     plain = [s for s in series if s not in new_q]  # markets, moods, and questions already open in the world
     if any(not s.startswith(("odds:seed:", "odds:custom:")) for s in new_q):

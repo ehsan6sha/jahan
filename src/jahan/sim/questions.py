@@ -177,12 +177,12 @@ def apply_bearings(world: World, params: SimParams, log: EventLog) -> int:
     n = world.pop.n
     bel = world.beliefs.m
     w = world.pop["pop_weight"].astype(np.float64)
-    tm: NDArray[np.bool_] | None = None
     for _qid, q in open_questions(world):
         qslot = int(world.items["slot"][int(q["item"])])
         if qslot < 0:
             continue
         aware_q = bel["aware"][:n, qslot] == 1
+        tm: NDArray[np.bool_] | None = None
         for key, claim in sorted(q["claims"].items(), key=lambda kv: int(kv[0])):
             first = claim.get("applied_day") is None
             if first:
@@ -200,7 +200,7 @@ def apply_bearings(world: World, params: SimParams, log: EventLog) -> int:
             if not learners.any():
                 continue
             if tm is None:
-                tm = trader_mask(world)
+                tm = trader_mask(world, _countries(world, q))
             b = np.clip(bel["belief"][:n, qslot][learners].astype(np.float64), P_MIN, P_MAX)
             b2 = np.clip(_sigmoid(_logit(b) + params.k_odds * d), P_MIN, P_MAX)
             denom = float((w * (tm & aware_q)).sum())
@@ -223,13 +223,12 @@ def current_odds(world: World) -> dict[str, dict[str, Any]]:
     n = world.pop.n
     bel = world.beliefs.m
     w = world.pop["pop_weight"].astype(np.float64)
-    tm = trader_mask(world)
     home = world.pop["country"]
     for qid, q in qs:
         slot = int(world.items["slot"][int(q["item"])])
         if slot < 0:
             continue
-        m = tm & (bel["aware"][:n, slot] == 1)
+        m = trader_mask(world, _countries(world, q)) & (bel["aware"][:n, slot] == 1)
         b = bel["belief"][:n, slot].astype(np.float64)
         tot = float(w[m].sum())
         by_country = {}

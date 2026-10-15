@@ -78,6 +78,21 @@ def autonomy_used(rd: RunDir, sid: int) -> bool:
     return bool(load(rd)["sessions"][str(sid)].get("autonomy", False))
 
 
+def note_odds(rd: RunDir, sid: int, active: bool) -> None:
+    """Remember that Claude rated stories against watched questions while this session ran (replay must match)."""
+    if not active:
+        return
+    data = load(rd)
+    data["sessions"][str(sid)]["odds"] = True
+    save(rd, data)
+
+
+def odds_used(rd: RunDir, sid: int) -> bool:
+    sess = load(rd)["sessions"][str(sid)]
+    # sessions recorded before the flag existed rated stories exactly when public figures acted
+    return bool(sess.get("odds", sess.get("autonomy", False)))
+
+
 def record_turn(rd: RunDir, sid: int, prompt_id: int, day: int, summary: str, fingerprint: str) -> None:
     """``fingerprint``: world state the turn was applied to (store.snapshot.world_fingerprint)."""
     data = load(rd)

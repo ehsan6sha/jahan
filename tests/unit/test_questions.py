@@ -105,6 +105,30 @@ def test_non_traders_do_not_count():
     assert _odds(w) == pytest.approx(before)
 
 
+def test_only_traders_in_the_questions_countries_count():
+    w = _world(countries=("USA", "IRN", "DEU"))
+    _open(w, countries=["USA"])
+    before = _odds(w)
+    slot = int(w.items["slot"][w.macro["odds"]["questions"][QID]["item"]])
+    deu = [c.iso3 for c in w.countries].index("DEU")
+    abroad = np.flatnonzero(trader_mask(w) & (w.pop["country"] == deu))
+    assert abroad.size
+    w.beliefs.m["aware"][abroad, slot] = 1  # e.g. heard of it from relatives in the USA
+    w.beliefs.m["belief"][abroad, slot] = 0.5
+    assert _odds(w) == pytest.approx(before)
+    assert set(current_odds(w)[QID]["by_country"]) == {"USA"}
+
+
+def test_reopening_a_closed_question():
+    w = _world(n=800, countries=("USA",))
+    _open(w, countries=None)
+    apply_scenario(w, Scenario(prompt="stop", events=[QuestionEvent(id=QID, action="close")]), EventLog(), 2)
+    with pytest.raises(InjectError, match="another question"):
+        _open(w, countries=None, question="Will something else happen?")
+    _open(w, countries=None)  # the same question can be watched again
+    assert w.macro["odds"]["questions"][QID]["status"] == "open"
+
+
 def test_word_of_mouth_spreads_the_question():
     w = _world()
     _open(w)
