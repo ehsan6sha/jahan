@@ -463,7 +463,10 @@ def watch_show(
         typer.echo(line)
     ex = data["explanation"]
     if ex and ex["quiet"]:
-        typer.echo(f"Nothing you watch moved between day {ex['from_day']} and day {ex['to_day']}:")
+        typer.echo(
+            f"Nothing you watch moved between day {ex['from_day']} and day {ex['to_day']} "
+            "(markets by less than 0.05%, odds by less than a twentieth of a point):"
+        )
         for sentence in ex["sentences"]:
             typer.echo(f"  - {sentence}")
 

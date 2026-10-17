@@ -185,7 +185,7 @@ def _economy_problems(data_dir: Path, countries: list[str], reg: dict[str, Regis
         check("global/everyday.yaml: mood.unemployed_shift", everyday.mood.unemployed_shift)
         check("global/everyday.yaml: mood.contagion", everyday.mood.contagion)
         check("global/everyday.yaml: min_holders", everyday.min_holders)
-        for name in everyday.saving.model_fields:
+        for name in type(everyday.saving).model_fields:
             if name != "countries":
                 check(f"global/everyday.yaml: saving.{name}", getattr(everyday.saving, name))
     if by is not None:

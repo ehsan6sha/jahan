@@ -64,7 +64,7 @@ def test_watch_list_history_and_parts(world):
     assert "only when news reaches them" in said and "Moods change only" in said
     assert "Claude is not set up" in said  # tests run offline
     text = cli("watch", "show", "--run", run, "--since-day", "5")
-    assert "Nothing you watch moved between day 5 and day 8:" in text
+    assert "Nothing you watch moved between day 5 and day 8 (markets by less than 0.05%" in text
 
 
 def test_unknown_series_lists_the_catalog(world):

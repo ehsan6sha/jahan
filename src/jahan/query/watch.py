@@ -342,7 +342,9 @@ def _compound(pcts: list[float]) -> float:
     return 100.0 * (level - 1.0)
 
 
-QUIET = {"index": 0.005, "rate": 0.005, "mood": 0.0005, "probability": 0.0005}  # below this a move is "none"
+# below this a move counts as "nothing moved": a twentieth of a typical day for markets (so the rare small steps of
+# saving and cashing out do not hide the explanation), half a thousandth of mood, a twentieth of a point of odds
+QUIET = {"index": 0.05, "rate": 0.05, "mood": 0.0005, "probability": 0.0005}
 ACTIVITY_STATS = ("media_exposures", "wom_aware", "shares", "reposts", "actions_delivered", "odds_beliefs_moved")
 
 

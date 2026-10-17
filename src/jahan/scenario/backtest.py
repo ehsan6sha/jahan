@@ -150,13 +150,15 @@ class EventResult:
     aware: list[list[float]] = field(default_factory=list)  # per seed: share of US adults aware, by day after
 
 
-def _config(base: RunConfig, date: dt.date, seed_offset: int, kappa: float | None = None) -> RunConfig:
+def _config(
+    base: RunConfig, date: dt.date, seed_offset: int, kappa: float | None = None, economy: bool = False
+) -> RunConfig:
     cfg = base.model_copy(deep=True)
     cfg.start_date = date - dt.timedelta(days=1)
     cfg.seed = base.seed + seed_offset
     # the published benchmark and kappa were made with people trading on the day they learn news; everyday
-    # activity's backtest (late reactions, rule v2) is a separate, pre-registered run
-    cfg.economy = False
+    # activity's backtest (late reactions, rule v2) is a separate, pre-registered run that asks for it
+    cfg.economy = economy
     if kappa is not None:
         cfg.params.market_kappa = kappa
     return cfg
@@ -372,6 +374,7 @@ def stability(base: RunConfig, kappa: float) -> dict[str, Any]:
 
     cfg = base.model_copy(deep=True)
     cfg.start_date = STABILITY_DATE
+    cfg.economy = False  # the v1 rule's stability test (people trade the day they learn news)
     cfg.params.market_kappa = kappa
     world = generate_world(cfg)
     shock = MacroPath(variable="us_stocks", steps=[MacroStep(days=1, pct_per_day=STABILITY_SHOCK_PCT)])
@@ -426,6 +429,7 @@ def scenario_sizes(base: RunConfig, kappa: float, days: int = 60) -> dict[str, d
     for name, sc in cases.items():
         cfg = base.model_copy(deep=True)
         cfg.start_date = STABILITY_DATE
+        cfg.economy = False  # the v1 rule's scenario sizes
         cfg.params.market_kappa = kappa
         world = generate_world(cfg)
         apply_scenario(world, sc, EventLog(), 1)

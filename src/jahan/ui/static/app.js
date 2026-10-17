@@ -1705,7 +1705,7 @@
     const rows = d ? d.series : [];
     const ex = d && d.explanation;
     if (ex && ex.quiet) out.append(h("div", { class: "notice warn" },
-      h("strong", {}, `Nothing you watch moved between day ${ex.from_day} and day ${ex.to_day}. Why:`),
+      h("strong", {}, `Nothing you watch moved between day ${ex.from_day} and day ${ex.to_day} (markets by less than 0.05%). Why:`),
       h("ul", { class: "events-list small" }, ...ex.sentences.map((s) => h("li", {}, s)))));
     out.append(card("Watching", d ? `Day ${d.day} (${d.date}). The line shows the last ${W.days} days; the dashed line is the level when you started watching.` : null,
       !d ? loading(W.loading ? "Reading the history…" : "") : rows.length

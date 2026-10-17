@@ -195,7 +195,7 @@ def _daily_job_loss(world: World, c: int) -> float:
 def note_job_losses(world: World, c: int, losers: NDArray[np.int64]) -> None:
     """Called by the labour phase before people lose their jobs: their cash-outs reach the market on the next
     day's market phase (phase 7 runs after it)."""
-    if not enabled(world) or losers.size == 0:
+    if not enabled(world) or losers.size == 0 or not world.config.params.market_savings:
         return
     iso = world.countries[c].iso3
     mk = state(world)["markets"].get(iso)
