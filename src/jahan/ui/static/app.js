@@ -77,7 +77,7 @@
     baseline: "The same world without your prompt, with the same random draws, so differences come from the prompt alone.",
     watch: "A series you follow while time moves: a market, a currency, a country's mood or the odds of an event. The change is counted from the day you started watching.",
     question: "A yes/no question about the future, such as whether the US-Iran ceasefire holds. Simulated traders (about one in ten adults online) hold a belief about it, starting near the real market price; the simulated odds are their average. News that bears on it moves the beliefs of the traders who hear it.",
-    "people's trading": "Simulated US adults who hold stock (shares from the Federal Reserve's Survey of Consumer Finances) buy or sell when they hear news that makes the economy look better or worse (weekend news is traded on Monday). Their part of the US stock index is shown separately from the part moved by announcements and scripted what-ifs. It fades as the news fades: they buy back what they sold.",
+    "people's trading": "Simulated adults who hold stock (in each country, the share its own surveys or investor counts report) want to hold more or less as news makes things look better or worse. The market moves when a story first reaches them and gives the move back when the story fades; people who act later trade what the market has already priced. In worlds with everyday activity, US cash-outs by people who lose their jobs also move prices a little. Shown separately from announcements and scripted what-ifs.",
   };
   const term = (key, label) => h("span", { class: "term", title: GLOSSARY[key] || "", tabindex: 0 }, label || key);
 
@@ -1730,7 +1730,7 @@
     if (qs.length) out.append(card(h("span", {}, "Event odds: simulated and real"), "The simulated odds are the average belief of simulated traders. The real price is shown for comparison only and never moves the simulation.",
       ...qs.map(questionRow)));
     out.append(oddsQuestionsCard(st, box));
-    out.append(card("Add to the watch list", "Markets move on announcements, scripted what-ifs and, for US stocks, people's trading. Use What-if to add news or a market move and watch the effect.",
+    out.append(card("Add to the watch list", "Markets move on announcements, scripted what-ifs and people's trading on the news they hear (every country's own market in worlds with everyday activity). Use What-if to add news or a market move and watch the effect.",
       !d ? loading() : h("div", {}, ...groups.filter(([k]) => cat.some((c) => c.kind === k)).map(([k, label]) => h("div", {},
         h("h4", {}, label),
         h("div", { class: "watch-cat" }, ...cat.filter((c) => c.kind === k).map((c) => h("label", { class: "check", title: c.note || "" },
@@ -1746,7 +1746,7 @@
       st.markets.people_trading
         ? "Its people trade US stocks only on the day news reaches them; moods move only with news, and there are no other countries' markets. "
         : "Its US stocks move only on announcements and what-ifs, and nobody in it buys or sells. ",
-      "Turning everyday activity on changes that from today: people act on news as they look at their accounts, each country gets its own market, job losses and cash-outs matter, and moods move with life and conversation. It is recorded as a prompt, so Undo (Results) takes the world back to just before it; days already simulated stay as they were. ",
+      "Turning everyday activity on changes that from today: markets react when news reaches their investors, each country gets its own market, job losses and cash-outs matter, and moods move with life and conversation. It is recorded as a prompt, so Undo (Results) takes the world back to just before it; days already simulated stay as they were. ",
       h("button", { class: "btn small act", onclick: () => act(box, ["economy", "on", "--run", S.world, "--yes"], { ok: "Everyday activity is on from today.", rerender: true }) }, "Turn on everyday activity")));
     if (!st.llm.ready) out.push(h("div", { class: "notice" },
       h("strong", {}, "Claude is not set up, so some things are off"),

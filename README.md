@@ -51,10 +51,13 @@ computer and shows its output and the exact command, so you can learn and script
 simulated in the browser. You can:
 
 - create and open worlds, and move time forward;
-- watch US stocks, US tech stocks, gold, currencies and each country's mood move as time passes (the
-  Watch page), with the part moved by people's trading shown separately;
+- watch US stocks, US tech stocks, each country's own stock market, gold, currencies and each country's
+  mood move as time passes (the Watch page). Each move is split into its parts: news reactions, saving and
+  cashing out, announcements and what-ifs. When nothing moved, the page says why;
 - watch the odds of real prediction-market questions (searched on Polymarket, or saved ones that work
-  offline) or your own, held by simulated traders, next to the real price;
+  offline) or your own, held by simulated traders, next to the real price. The odds also move as quiet days
+  pass and as traders talk;
+- turn on everyday activity in a world made before it existed (one button, undone like any what-if);
 - add what-ifs in plain words, future events, ready-made examples, or today's real news, after checking a
   preview of the exact events;
 - browse and filter people, open anyone's view of the world, ask them questions, and replay one of their
@@ -87,7 +90,10 @@ uv run jahan watch show --run runs/demo                   # how each watched ser
 uv run jahan watch catalog --run runs/demo               # what can be watched, with saved questions
 uv run jahan watch add  --run runs/demo odds:seed:us-x-iran-ceasefire-continues-through-october-31-20260917
 uv run jahan inject     --run runs/demo --scenario examples/scenarios/iran_hormuz_odds.yaml --yes
+uv run jahan watch set  --run runs/demo odds:<id> --kind by_date   # how quiet days move a question
+uv run jahan economy on --run runs/old --yes             # everyday activity in a world made before it
 uv run jahan backtest                                      # the benchmark below (offline, about 4 min)
+uv run jahan benchmark --tune                              # everyday activity against real data (1-2 hours)
 ```
 
 Example scenarios in `examples/scenarios/`: a product launch, a 20% dollar rise during a worldwide launch,
@@ -263,38 +269,75 @@ launch as prompt 1, run some days, inject the dollar rise as prompt 2, and run t
   Agents share what they believe; dishonest agents exaggerate; well-informed receivers pull claims toward
   the truth; acceptance depends on trust and a bounded-confidence window. Buzz fades with novelty.
 - **Mood and markets.** Exchange-rate and gold paths move local prices of dollar-priced goods and create
-  headlines; each agent's economic mood follows the news they know and shifts purchase decisions.
+  headlines; each agent's economic mood follows the news they know and shifts purchase decisions. With
+  everyday activity (below), mood also drifts lower while a person is unemployed and moves toward the moods
+  of the people they meet.
   An *announcement* (a Federal Reserve rate decision or a US jobs report) moves a US stock index, the
   dollar against the euro and, for jobs reports, gold by published event-study estimates times the
   surprise, which is the announced value minus what markets expected the day before
   (`data/global/markets.yaml`, each estimate cited in the registry). A fully expected decision moves
   nothing. The estimate for gold after rate decisions is shown but not applied, because studies disagree
   on its sign. Other currencies and gold move only when a prompt scripts them.
-- **People's trading in US stocks.** The US stock index has a second part, moved by the simulated people.
-  - **Who holds stock.** US adults hold stock with the shares the Federal Reserve's Survey of Consumer
-    Finances 2022 reports by household income: 34% of the bottom half, 78% of the next 40% and 95% of the
-    top tenth. Each holder's stake is that group's median holding: $12,600, $53,200 or $608,000. Jahan ranks
-    adults by household income where the survey ranks families. The draw reproduces the overall share
-    (56% of simulated adults, against Gallup's 62%), but not the gap by education: 61% of simulated
-    college graduates hold stock against Gallup's 84%, and 55% of those with high school or less against
-    42%. Residents of other countries hold nothing, for lack of a sourced share.
-  - **How they trade.** On weekdays, holders with internet trade on the news they learned that day: how
-    much better or worse it makes the economy look (weekend news is traded on Monday). Net buying moves
-    the index by five times the money, the multiplier Gabaix and Koijen (2021) estimate for flows into the
-    whole market; here it is applied to the simulated households' flow, a simplification. How much of
-    their holdings people move per unit of news, kappa, is the one fitted number (0.058; see the
-    benchmark). The simulated holders stand in for all US household equity; institutions are not
-    modelled, and there is no random daily noise, so quiet days do not move at all.
-  - **What it can and cannot do.** When a story stops being tracked, people buy back what they sold on
-    it, so this part fades with the news and cannot make lasting trends. Its sizes are illustrations of the
-    mechanism, not calibrated price impact: one multiplier for every flow, no opposing traders and no
-    noise. In a test, the example Iran–US
-    tension story took the people's part down 6.8% over four weeks, and it was back above its start
-    two months later. A recession headline took it down 5.0%. Real US–Iran escalation days in 2026 moved the
-    S&P 500 by less than 1% each.
-  - **Turning it off.** On the 2026 events it made the forecasts worse (see the benchmark). To run without
-    it, put `params: {market_people: false}` in the run config before `jahan gen`; announcements and
-    scripted moves then move US stocks alone.
+- **Everyday activity.** Worlds made since 17 October 2026 have it from the start; older worlds get it from
+  the day you run `jahan economy on` (recorded as a prompt, so `reset --before-prompt` undoes it), and
+  `jahan gen --no-economy` makes a world without it. Before it existed, a world with no news stayed exactly
+  flat. Now:
+  - **Every country has its own stock market**, moved by its residents. Who owns stock comes from each
+    country's own figures (below); price impact and the reaction size are measured only for the US and are
+    borrowed elsewhere (China has its own price-impact estimate).
+
+    | Country | Index | Adults owning stock (used) | Source | Label |
+    |---|---|---|---|---|
+    | USA | S&P 500 | 34% / 78% / 95% by income group (about 58% overall) | Federal Reserve SCF 2022 | sourced |
+    | Germany | DAX | 19.9% (people 14+, shares or equity funds) | Deutsches Aktieninstitut 2025 | sourced |
+    | Brazil | Ibovespa | 2% (people 16+ holding stocks) | ANBIMA Raio X 2026 | sourced |
+    | India | Nifty 50 | 9.5% (households investing in securities) | SEBI Investor Survey 2025 | household share used for adults |
+    | Indonesia | IDX Composite | 4.9% (depository IDs for exchange securities) | KSEI August 2026 | upper bound |
+    | Iran | TEDPIX | 4.6% (individuals with an active trading code) | Nabz-e Bourse, 1403 | illustrative |
+    | Nigeria | NGX All-Share | 2.3% ("fewer than three million") | SEC Nigeria, 2025 | illustrative, upper bound |
+    | China | CSI 300 | 21.7% (open, non-dormant accounts) | CSDC, end-2025 | illustrative, upper bound |
+
+    Ownership rises with household income: Germany uses its own income gradient (Bundesbank PHF 2023); the
+    others borrow the US one, moved to their own average. Tehran trades Saturday to Wednesday; holidays are
+    not modelled. Iran's Justice Shares (about 47 million registrations) are not counted as holdings.
+    No benchmark exists outside the US; every non-US size is an untested illustration using borrowed kappa
+    and multiplier.
+  - **News reactions are priced when the news arrives.** Each holder wants to hold more or less stock as
+    the news they know makes things look better or worse (kappa, the one fitted number: 0.048; fitted on
+    2023-2025, but the data cannot tell it apart from zero, and on 2026 it did worse than zero). The market
+    prices that demand on the day a story first reaches its holders, by how much it changes the views of
+    those who know it that day, and gives it back when the story stops being tracked. People who hear later,
+    and holders who act late on their own accounts (as often as Vanguard 401(k) savers log in: a median of
+    36 days in two years), trade demand the market has already priced, so their trades do not move the
+    index. Holders' own positions still lag, and the Watch page shows how much of the wanted change is still
+    to come. Why it works this way: when late reactions moved prices, 87% of the effect fell on the days
+    after a release, when the real S&P 500 no longer follows the news (see the benchmark).
+  - **Saving and cashing out (US).** Paycheck saving and retirees' withdrawals are steady and already in the
+    price; they are shown, never moving it. What moves the price is how far cash-outs differ from what is
+    normal for that day: each simulated job loser in a workplace plan cashes out by the size of their
+    balance (Vanguard How America Saves 2026: 28% of people, 6% of the dollars), plus hardship withdrawals
+    (6% of participants a year, median $1,900). Their steps are small (largest about 0.09% of the index in a
+    3,000-person world, 0.03% at 10,000) and never become "stocks fall" headlines. Layoffs can be scripted:
+    a what-if like "layoffs double for three months" raises job losses, and with them cash-outs.
+  - **Moods.** While unemployed, a person's mood drifts lower (Kuchler and Zafar 2019: becoming unemployed
+    raises the stated chance that national unemployment rises by 4-5 points; Jahan maps that onto mood, a
+    stated bridge), and back when they find work. People also pull toward the moods of those they meet (a
+    heuristic rate). Neither drives trading: the same study finds personal experience does not change
+    expectations about stock prices.
+  - **What it can and cannot do.** With no news at all, stocks stay almost flat (only the small saving
+    steps), moods move a little with job losses and new jobs, and event odds move with time. The example
+    Iran-US tension story takes US stocks down about 0.5% the day it breaks and gives it back when the story
+    fades; after the real US and Israeli strikes on Iran in March 2026 the S&P 500 fell 1.74% on its worst day
+    and 7.45% within 20 trading days, so the simulated size is small next to a real crisis. The whole move
+    is given back on the day a story stops being tracked: people's part reflects how the news feels, not a
+    lasting change in what companies are worth (only the published estimates on announcements are
+    lasting), and the one-day give-back is cruder than real fading. Simulated households always read good
+    economic news as good for stocks; real markets sometimes take it as bad (when it means higher interest
+    rates), as on both 2026 jobs reports. There is no random daily noise and no institutional trading, and
+    nothing checks the direction of reactions to news other than Fed decisions and jobs reports.
+  - **Turning parts off** (in the run config's `params`, before `jahan gen`): `market_people: false` (no
+    people-driven moves), `market_savings: false`, `mood_life: false`, `mood_contagion: 0`,
+    `market_kappa: <value>` to try another reaction size.
   - **US tech stocks (Nasdaq-100)** are derived, not modelled on their own: each day they move by 1.299
     times the US stock index's move, the slope of the Nasdaq-100's daily changes on the S&P 500's from
     January 2023 to October 2026 (FRED; R² 0.89; only the coefficient is stored).
@@ -304,7 +347,13 @@ launch as prompt 1, run some days, inject the dollar rise as prompt 2, and run t
   beliefs spread around the real market price, so their average equals it, and the simulated odds are
   that average: with log utility a prediction market's price equals its traders' mean belief (Wolfers and
   Zitzewitz 2006). Others can hear of the question by word of mouth, but only traders count.
-  - **What moves the odds.** News moves them when traders hear it. A story can bear on a question, either
+  - **What moves the odds.** Time moves them: each question has a kind, read from its wording or the saved
+    question and changeable with `jahan watch set` or on the Watch page. "Will X happen by a date" odds fall
+    as quiet days pass and "X holds through a date" odds rise, as a constant chance per day inside each
+    trader's own belief implies (it is the path when nothing happens; HEURISTIC: real chances often bunch
+    near deadlines). On 285 real Polymarket questions this beat a flat price (see the benchmark). Traders who
+    meet also talk and move toward each other (a heuristic pull; it changed the benchmark by 0.02 points).
+    News moves them when traders hear it. A story can bear on a question, either
     written into a what-if (`bears_on`, shown in the preview) or rated by Claude. Claude rates each new
     story against each watched question as time moves: a direction from -1 to +1, and 0 for most stories.
     It never sets a probability, and its ratings are recorded for exact replay. A trader who hears a story
@@ -315,9 +364,9 @@ launch as prompt 1, run some days, inject the dollar rise as prompt 2, and run t
     2026) work offline, or you can ask your own. `watch fetch` reads today's real prices for comparison;
     they never move the simulation. Check Polymarket's terms of use before reusing its prices; Jahan stores
     only the question, its page, the dates and the prices it read.
-  - **What it is not.** The odds are a belief average, not a market. There is no order book, no liquidity
-    and no drift toward the answer as the deadline nears. Nothing pulls them back toward the real price,
-    and Jahan does not know how a question resolves; it closes the question on its date.
+  - **What it is not.** The odds are a belief average, not a market. There is no order book and no
+    liquidity. Nothing pulls them back toward the real price, and Jahan does not know how a question
+    resolves; it closes the question on its date.
 - **Time travel.** Every prompt writes a snapshot first. `reset` restores it and truncates the logs;
   re-running produces the identical timeline.
 
@@ -326,10 +375,34 @@ launch as prompt 1, run some days, inject the dollar rise as prompt 2, and run t
 > **Read this first.** Most market moves in this benchmark come from published event-study estimates
 > multiplied by the surprise (see "Mood and markets" above). Those estimates are imposed from the studies,
 > not learned by the simulation, so those rows test the estimates as Jahan applies them. For US stocks the
-> simulated holders' trading adds a second part ("People's trading" above); its one number was fitted on
-> the 2023-2025 events and is tested on 2026, and on 2026 it made the forecasts worse. The simulation also
-> adds how far the news spreads and how public figures react. Educational and testing use only; not
-> financial advice; not a forecast; no accuracy is promised.
+> simulated holders' trading adds a second part ("Everyday activity" above); its one number was fitted on
+> the 2023-2025 events, and on the 2026 events it made the forecasts worse. The simulation also adds how far
+> the news spreads and how public figures react. Educational and testing use only; not financial advice;
+> not a forecast; no accuracy is promised.
+
+### Everyday activity benchmark (pre-registered)
+
+`jahan benchmark` checks everyday activity against real data. The checks, their pass limits, the only
+numbers that may be tuned and the split between fitting and testing were committed in
+`data/backtests/benchmarks.yaml` before any run; the full record is in [docs/benchmarks.md](docs/benchmarks.md).
+
+| Check | Result (17 October 2026) | Passed |
+|---|---|---|
+| B1: US stocks on Fed decisions and jobs reports, release day plus the next 4 trading days (58 events, 2023-2025) | kappa 0.048: average miss 0.828 with people's trading, 0.841 without, 0.840 for "no change" (in typical daily moves); on release days 1.018 against 1.075. The 95% interval of the difference includes zero | yes |
+| B1 on the 8 events of 2026 (seen before, exploratory) | 0.886 with, 0.869 without: worse | not used to choose |
+| B2: size of a multi-week move | the Iran example: worst day -0.54%; after the real March 2026 strikes the S&P 500 fell 1.74% on its worst day and 7.45% within 20 trading days | yes |
+| B3: a quiet year | news reactions exactly flat; saving steps without trend (yearly spread 0.31% at 3,000 people, 0.008% at 10,000); moods steady | yes |
+| B4: who invests and how often they look | every country's share of adults owning stock within 5 points of its source; logins too frequent (mean 97 days in two years against 85 published) | no: reported, not tuned |
+| B5: event odds over quiet stretches (285 real Polymarket questions) | time passing misses the real price by 8.3 points against 10.7 for a flat price (79 questions closing before July 2026), and 12.1 against 15.7 on 206 later ones | yes |
+| B6: mood and unemployment (exploratory) | per point of unemployment, simulated mood moves 0.02% of its scale and real sentiment 3.3% of its range: job losses alone barely move the national mood | reported only |
+| B7, B8 | no benchmark exists outside the US; trading volume is not modelled | stated |
+
+The first registered version (late reactions moving prices) chose kappa = 0: 87% of the simulated reaction
+fell on the days after a release, when the real index no longer follows the news. The mechanism was changed
+to pricing news when it arrives (a new registered rule), and both results are kept. On both 2026 jobs
+reports the market went the opposite way from the simulated people's reading (rate fears: "good news is bad
+news"); nothing sourced says in advance when that holds, so it is reported, not modelled. The clean test is
+the announcements from 17 October 2026 on, once 12 exist.
 
 This is a descriptive replay of published estimates on real events, not a blind test of forecasting skill.
 It covers every Fed rate decision and every US jobs report from January 2023 to October 2026: 30 decisions
@@ -421,8 +494,10 @@ and 37 jobs reports, 67 announcements in all.
 
   The samples run from 1990 to 2019, so every event here (2023-2026) is outside them; nothing was fitted to
   these events.
-- **Fitting people's trading.** `uv run jahan backtest --fit-people` chooses kappa under a rule written
-  in `data/global/investors.yaml` before the first fit:
+- **Fitting people's trading (the older engine).** These tables use worlds without everyday activity, where
+  people trade on the day they learn the news; everyday activity's own rules and results are in the section
+  above. `uv run jahan backtest --fit-people` chooses kappa under a rule written in
+  `data/global/investors.yaml` before the first fit:
   - **The loss.** It minimises the mean absolute miss of the US stock forecast (estimates plus people), in
     typical daily moves, over the 58 forecast events of 2023-2025 with a real stock move.
   - **The grid.** It searches kappa from 0 to 2 in steps of 0.001, at 10,000 people. The 2026 events never
@@ -472,7 +547,7 @@ to any of these events.
 | **Jobs reports 2023-2026** | 37 | 1.24 / 1.24 | 0.78 / 0.80 | 1.16 / 1.27 | 16 of 108 | 23 of 35 |
 | **All** | 67 | 1.07 / 1.06 | 0.84 / 0.85 | 1.15 / 1.23 | 26 of 196 | 25 of 41 |
 
-**US stocks with people's trading.** kappa = 0.058, fitted on 2023-2025; 2026 is held out and was never used to choose it. Average miss in typical daily moves; "people" is the simulated holders' trading alone, "hybrid" adds it to the published estimates; major misses and directions are for the hybrid.
+**US stocks with people's trading (older engine).** kappa = 0.058, fitted on 2023-2025; 2026 is held out and was never used to choose it. Average miss in typical daily moves; "people" is the simulated holders' trading alone, "hybrid" adds it to the published estimates; major misses and directions are for the hybrid.
 
 | Events | Count | Estimates only | People only | Hybrid | No change | Major misses | Direction right |
 |---|---|---|---|---|---|---|---|
@@ -641,24 +716,30 @@ Several numbers for player actions and public-figure autonomy are heuristics, no
   figure is published, post reach from followers and engagement, and every repost coefficient;
 - the salience of an announcement's headline (0.9), the 1% move that makes US stocks news, and the tone
   and weight of stock headlines in people's mood;
-- in people's trading: that only holders with internet trade, the 10% cap on a day's move, trading on
-  weekdays only (no market holidays), and trading on the day news is learned;
+- in everyday activity: that only holders with internet trade, the 10% cap on a day's move, no market
+  holidays, the pull toward the moods of people met (0.05 a day), weekends counting like weekdays for
+  logins, the 30-holder line below which a market is labelled illustrative, the mapping of Kuchler and
+  Zafar's percentage points onto mood (1 - 2p), and every value borrowed from the US for another country
+  (price impact, reaction size, how often people look, the shape of holdings by income);
 - in event odds: how far a story moves a trader (a story rated +1 multiplies their odds of Yes by about
   2.7), the spread of traders' starting beliefs (0.5 on the log-odds scale), the age and sex skew of who
-  trades, the optional partisan lean, and the limit of 8 open questions (each holds a tracked-item slot).
+  trades, the optional partisan lean, the limit of 8 open questions (each holds a tracked-item slot),
+  the constant chance per day behind time passing, the wording rule for a question's kind, and how often
+  and how far traders who meet move toward each other (0.1, 0.1 and a window of 2 on the log-odds scale).
 
 Market reactions use estimates from 1990-2019 samples, some measured over 5 or 30 minutes rather than a
 whole day; they apply the same sign every time, although about a third of Fed announcements move rates and
 stocks in the same direction (Jarociński and Karadi 2020). A Fed chair's own decisions in the simulation
 (`set_interest_rate`, by a player or by autonomy) still use the placeholder mood effect in `roles.yaml`;
 they move US stocks only through people's trading on that mood shock and on the news of it, not through
-the published estimates. People's trading covers US stocks only; its one
-fitted number rests on release days, and how far it moves the index over weeks is a consequence of the
-model, not a measurement.
+the published estimates. People's trading's one fitted number rests on US Fed decisions and jobs reports
+(the release day and the next four trading days); its sizes elsewhere, and in other countries, are a
+consequence of the model, not a measurement.
 
 Event odds ignore how much a trader believed the story that moved them, and how stories are rated is
 Claude's judgement (each rating, with a short reason, is logged and shown on the Watch page). Word of
-mouth lets odds drift slowly in a quiet world: about 1.5 points over two months in a test.
+mouth lets the odds of a question with no time effect drift slowly in a quiet world: about 1.5 points over
+two months in a test.
 
 Event logs written before 15 October 2026 used one number (28) for both reposts and headline updates;
 reports still read them, and new logs use 30 for updates.

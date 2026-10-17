@@ -175,6 +175,81 @@ trading:
       checks) are anticipated and do not move prices. Reason, from the v2 run: 87% of the simulated reaction
       fell on the four days after a release, whose real S&P 500 moves are unrelated to the news (correlations
       -0.18 to 0.20), while the real index had already reacted on the release day.
+    fitted_v3:
+      date: '2026-10-17'
+      command: jahan benchmark --tune
+      rule: data/global/investors.yaml trading.kappa.rule_v3 (registered 2026-10-17, after the rule v2 run)
+      registered_in: adbc9a988936fd52c00edf02e609e0b50a0310d9
+      config: m1, 10000 people, everyday activity, saving off
+      fit_events: 58
+      windows_cut: 12
+      grid: 0 to 2, step 0.001
+      kappa_optimum: 0.048
+      boundary_solution: false
+      per_seed_optimum:
+        '0': 0.058
+        '1': 0.037
+        '2': 0.053
+      kappa: 0.048
+      constraints:
+        '0.048':
+          day0: true
+          b2:
+            kappa: 0.048
+            sim:
+              largest_daily_fall_pct: -0.5351781039954151
+              largest_20_day_fall_pct: -0.5351781039954151
+              end_index: 99.99799792697
+            real:
+              from: '2026-02-27'
+              to: '2026-03-27'
+              largest_daily_fall_pct: -1.7406
+              largest_20_day_fall_pct: -7.4513
+            passed: true
+          stability:
+            kappa: 0.048
+            people_index_min: 99.989
+            people_index_max: 100.0
+            people_index_day_60: 100.0
+            bounded: true
+            reverted: true
+            passed: true
+      shadow_vs_full_five_day:
+        shadow: 0.8282
+        full: 0.8282
+      refinement: null
+      fit_scores:
+        events: 58.0
+        five_day: 0.8276
+        five_day_without_people: 0.8405
+        five_day_no_change: 0.8395
+        day0: 1.0176
+        day0_without_people: 1.0745
+        day0_no_change: 1.063
+        five_day_diff_ci95:
+        - -0.033048049535017825
+        - 0.007462048275262097
+      seen_2026_scores:
+        events: 8.0
+        five_day: 0.8859
+        five_day_without_people: 0.8693
+        five_day_no_change: 0.8769
+        day0: 1.1115
+        day0_without_people: 1.0282
+        day0_no_change: 1.0666
+        five_day_diff_ci95:
+        - -0.014224685856488006
+        - 0.047599507505219775
+      holdout: 0 forecast events from 2026-10-17; scored once 12 exist
+      loss_at:
+        '0': 0.8405
+        '0.01': 0.8361
+        '0.05': 0.8278
+        '0.1': 0.8397
+        '0.2': 0.9181
+        '0.5': 1.3593
+        '1': 2.1129
+        '2': 3.6201
     superseded:
       - mechanism: everyday activity, rule v2 (late reactions moved prices as holders traded)
         date: '2026-10-17'

@@ -36,7 +36,7 @@ from jahan.store.rundir import RunDir
 
 DISCLAIMER = (
     "Simulated, not a forecast: educational and testing use only; not financial advice; no warranty. "
-    "US stocks move by published estimates on announcements, scripted what-ifs, and the simulated holders' "
+    "Stocks move by published estimates on US announcements, scripted what-ifs, and the simulated holders' "
     "trading; event odds are the average belief of simulated traders."
 )
 WATCH_FILE = "watch.json"
@@ -112,8 +112,8 @@ def catalog(world: World) -> list[SeriesSpec]:
             "us_stocks_index",
             components=us_parts,
             note=(
-                "announcements and scripted moves, plus the simulated holders' news reactions (as they look at "
-                "their accounts) and cash-outs that differ from normal"
+                "announcements and scripted moves, plus the simulated holders' news reactions (priced when a "
+                "story reaches them) and cash-outs that differ from normal"
                 if economy is not None
                 else "announcements and scripted moves, plus the simulated holders' trading"
                 if "market" in world.macro
@@ -185,7 +185,8 @@ def catalog(world: World) -> list[SeriesSpec]:
                 "sentiment",
                 country=k,
                 unit="mood",
-                note="average of people in the country, -1 (gloomy) to 1 (upbeat); drives people's trading",
+                note="average of people in the country, -1 (gloomy) to 1 (upbeat); follows the news they know"
+                + ("; also lower while unemployed, and pulled toward the moods of people met" if economy else ""),
             )
         )
     return out + odds_specs(world)
@@ -390,7 +391,7 @@ def quiet_explanation(
     stocks = any(i in ("market:us_stocks", "market:us_tech_stocks") or i.startswith("market:stocks:") for i in ids)
     if stocks and everyday:
         say.append(
-            "People act on news as they look at their accounts; with no news nobody's view changes, so only "
+            "Markets react when news reaches their investors; with no news nobody's view changes, so only "
             "cash-outs that differ from normal (US) move stocks, and those are rare on any one day."
         )
     elif stocks:

@@ -322,7 +322,7 @@ class QuestionEvent(BaseModel):
 
 
 class EconomyEvent(BaseModel):
-    """Turn on everyday activity from today (people act on news as they look at their accounts, every country's
+    """Turn on everyday activity from today (markets react when news reaches their investors, every country's
     own stock market, saving and cashing out, moods moved by job losses and conversation).  Created by `jahan
     economy on` for worlds made before it existed (new worlds have it from the start), never by a free-text
     prompt.  ``cfg`` is the world's own copy of the settings, built from the data files by the command, so the

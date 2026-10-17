@@ -672,7 +672,7 @@ def render_people(report: Report) -> list[str]:
     fit = report.fit or {}
     holdout = f"; {', '.join(str(y) for y in HOLDOUT_YEARS)} is held out and was never used to choose it"
     lines = [
-        f"**US stocks with people's trading.** kappa = {k:g}"
+        f"**US stocks with people's trading (older engine).** kappa = {k:g}"
         + (", a boundary solution" if fit.get("boundary_solution") else "")
         + (f", fitted on {FIT_YEARS[0]}-{FIT_YEARS[-1]}{holdout}" if fit else ", not fitted")
         + '. Average miss in typical daily moves; "people" is the simulated holders\' trading alone, "hybrid" '

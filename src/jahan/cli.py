@@ -81,7 +81,7 @@ def gen(
     economy: Annotated[
         bool,
         typer.Option(
-            help="Everyday activity from day 0 (people act on news as they look at their accounts, each "
+            help="Everyday activity from day 0 (markets react when news reaches their investors, each "
             "country's stock market, saving and cashing out); --no-economy makes a world like older ones"
         ),
     ] = True,
@@ -1232,12 +1232,12 @@ def benchmark(
     if record is not None:
         import yaml as _yaml
 
-        typer.echo("Paste under trading.kappa.fitted_v2 in data/global/investors.yaml:")
-        typer.echo(_yaml.safe_dump({"fitted_v2": record}, sort_keys=False))
+        typer.echo("Paste under trading.kappa.fitted_v3 in data/global/investors.yaml:")
+        typer.echo(_yaml.safe_dump({"fitted_v3": record}, sort_keys=False))
 
 
 economy_app = typer.Typer(
-    help="Everyday activity: people act on news as they look at their accounts, each country's own stock "
+    help="Everyday activity: markets react when news reaches their investors, each country's own stock "
     "market, saving and cashing out, moods moved by job losses and conversation.",
     no_args_is_help=True,
 )
