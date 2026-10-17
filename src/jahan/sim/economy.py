@@ -323,7 +323,7 @@ def close_day(
         if trading_day(world, mcfg):
             cap = float(mcfg["max_daily_pct"])
             total = pend["news"] + pend["savings"]
-            if abs(total) > cap:  # the excess waits for the next trading day, split in proportion
+            if abs(total) > cap and not params.market_shadow:  # the excess waits, split in proportion
                 keep = cap / abs(total)
                 news_pct, savings_pct = pend["news"] * keep, pend["savings"] * keep
                 pend["news"], pend["savings"] = pend["news"] - news_pct, pend["savings"] - savings_pct
@@ -357,8 +357,9 @@ def close_day(
             stocks_headline(world, before, after, log, where, key=key, label=label)
         us = iso == "USA" and "market" in m
         total_pct = 100.0 * ((1 + (scripted if us else 0.0) / 100.0) * (1 + people_pct / 100.0) - 1.0)
-        if trading_day(world, mcfg):
-            mk["last_trading_pct"] = total_pct  # logins fall after a down day (read tomorrow)
+        if trading_day(world, mcfg):  # logins fall after a down day (read tomorrow); in shadow mode only the
+            # index's own move counts, so who looks never depends on kappa
+            mk["last_trading_pct"] = (scripted if us else 0.0) if params.market_shadow else total_pct
         gap = float((w * inv.holdings * np.abs(target - p))[inv.holds].sum() / held) if held > 0 else 0.0
         mk["last"] = {
             "day": world.day,

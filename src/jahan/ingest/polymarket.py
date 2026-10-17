@@ -11,6 +11,8 @@ Endpoints (https://gamma-api.polymarket.com, documented at docs.polymarket.com):
                                             busiest open events (the ordering parameters are not documented)
   /markets/slug/<slug>                      one market
   /events/slug/<slug>                       one event and its markets
+And https://clob.polymarket.com/prices-history?market=<token>&interval=max&fidelity=1440: a market's daily
+prices (used by `jahan benchmark`).
 ``outcomes``, ``outcomePrices`` and ``clobTokenIds`` arrive as JSON text inside the JSON and are decoded here.
 """
 
@@ -27,6 +29,7 @@ from jahan.ingest.feeds import fetch_url
 from jahan.llm.recordings import Recordings
 
 GAMMA = "https://gamma-api.polymarket.com"
+CLOB = "https://clob.polymarket.com"
 SITE = "https://polymarket.com"
 PURPOSE = "polymarket"
 
@@ -153,9 +156,34 @@ def parse_markets(body: bytes, fetch_date: str, include_closed: bool = False) ->
 Fetcher = Callable[[str], bytes] | None
 
 
-def search(query: str, rec: Recordings, fetch_day: str, limit: int = 10, fetcher: Fetcher = None) -> list[MarketRow]:
+def search(
+    query: str,
+    rec: Recordings,
+    fetch_day: str,
+    limit: int = 10,
+    fetcher: Fetcher = None,
+    include_closed: bool = False,
+) -> list[MarketRow]:
     q = urllib.parse.urlencode({"q": query, "limit_per_type": limit})
-    return parse_markets(fetch_url(f"{GAMMA}/public-search?{q}", rec, fetch_day, PURPOSE, fetcher), fetch_day)
+    body = fetch_url(f"{GAMMA}/public-search?{q}", rec, fetch_day, PURPOSE, fetcher)
+    return parse_markets(body, fetch_day, include_closed)
+
+
+def price_history(token: str, rec: Recordings, fetch_day: str, fetcher: Fetcher = None) -> list[tuple[str, float]]:
+    """A market's daily "Yes" prices as (UTC date, price), oldest first (one per day; the last of a day wins)."""
+    q = urllib.parse.urlencode({"market": token, "interval": "max", "fidelity": 1440})
+    body = fetch_url(f"{CLOB}/prices-history?{q}", rec, fetch_day, PURPOSE, fetcher)
+    try:
+        data = json.loads(body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as e:
+        raise PolymarketError(f"not a price history: {e}") from e
+    days: dict[str, float] = {}
+    for pt in data.get("history", []) if isinstance(data, dict) else []:
+        t, p = _num(pt.get("t")), _num(pt.get("p"))
+        if t is None or p is None or not 0.0 <= p <= 1.0:
+            continue
+        days[dt.datetime.fromtimestamp(t, dt.UTC).date().isoformat()] = p
+    return sorted(days.items())
 
 
 def top_events(

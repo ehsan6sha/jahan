@@ -272,7 +272,8 @@ def market_cfg(iso: str, ci: CountryInvestors, us: InvestorsConfig, everyday: Ev
         ]
     for b in bands:
         b["holdings_usd"] = b.pop("holdings")  # read by investor_masks; outside the US only ratios matter
-    kappa = us.trading.kappa.value
+    fitted = us.trading.kappa.fitted_v2  # everyday activity's own fit (rule v2), once it exists
+    kappa = float(fitted["kappa"]) if fitted else us.trading.kappa.value
     reasons = []
     if ci.ownership.confidence == "low":
         reasons.append(f"who owns stock rests on a weak number ({ci.ownership.definition or ci.ownership.kind})")

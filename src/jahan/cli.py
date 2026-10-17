@@ -1082,6 +1082,160 @@ def bench(
     )
 
 
+@app.command("benchmark")
+def benchmark(
+    only: Annotated[str | None, typer.Option(help="Checks to run, e.g. B1,B3 (default: all)")] = None,
+    tune: Annotated[
+        bool, typer.Option(help="Choose kappa under rule v2 (B1 with its B2 and stability bounds)")
+    ] = False,
+    config: Annotated[Path | None, typer.Option(help="RunConfig YAML (default configs/m1.yaml)")] = None,
+    agents_n: Annotated[int | None, typer.Option("--agents", help="Override the number of agents (tests only)")] = None,
+    seeds: Annotated[int, typer.Option(help="Seed offsets for the kappa fit (rule v2: 3)")] = 3,
+    replay: Annotated[bool, typer.Option(help="B5: recorded Polymarket answers only, no network")] = False,
+    fetch_day: Annotated[str | None, typer.Option(help="B5: the real date of the recordings to use")] = None,
+    allow_unregistered: Annotated[
+        bool, typer.Option(help="Run even if data/backtests/benchmarks.yaml changed since it was committed (tests)")
+    ] = False,
+    out: Annotated[Path | None, typer.Option(help="Also write the Markdown report to this file")] = None,
+    as_json: JsonOpt = False,
+) -> None:
+    """Check everyday activity against real data under the pre-registered rules (data/backtests/benchmarks.yaml).
+
+    Slow (B1 with --tune about 1-2 hours at 10,000 people); prints a pass/fail table and a record to paste.  B5
+    reads Polymarket (recorded under runs/_benchmark/recordings; --replay to stay offline)."""
+    import json
+
+    from jahan.llm.recordings import Recordings
+    from jahan.scenario import benchmark as bm
+    from jahan.scenario.backtest import BacktestFile, default_events_files
+
+    reg = bm.registration_record()
+    if reg["changed_since"] and not allow_unregistered:
+        raise typer.BadParameter("data/backtests/benchmarks.yaml changed since it was registered (commit it first)")
+    want = {c.strip().upper() for c in only.split(",")} if only else {"B1", "B2", "B3", "B4", "B5", "B6"}
+    cfg_path = config or paths.data_dir().parent / "configs" / "m1.yaml"
+    base = RunConfig.load(cfg_path) if cfg_path.exists() else RunConfig(countries=["USA", "DEU"], n_agents=10000)
+    if agents_n is not None:
+        base.n_agents = agents_n
+    say = (lambda _m: None) if as_json else (lambda m: typer.echo(f"  {m}", err=True))
+    actuals = bm.load_actuals()
+    file = BacktestFile.load_all(default_events_files())
+    from jahan.model.economy import economy_cfg
+
+    cfg_now = economy_cfg(paths.data_dir(), ["USA"])
+    kappa = float(cfg_now["markets"]["USA"]["kappa"]) if cfg_now else 0.0
+    checks: dict = {}
+    record = None
+    if "B1" in want or tune:
+        if tune:
+            fit = bm.fit_kappa(file, base, actuals, tuple(range(seeds)), say)
+            record, kappa = fit.record, float(fit.record["kappa"])
+            sc = record["fit_scores"]
+            seen = record["seen_2026_scores"]
+        else:
+            events = bm.b1_events(file)
+            win = bm._windows(events, actuals)
+            fit_rows = [bm.event_basis(e, base, win[e.id], 0, 1.0, True) for e in events if e.date.year in bm.FIT_YEARS]
+            seen_rows = [
+                bm.event_basis(e, base, win[e.id], 0, 1.0, True) for e in events if e.date.year in bm.SEEN_YEARS
+            ]
+            sc, seen = bm.b1_score(fit_rows, kappa), bm.b1_score(seen_rows, kappa) if seen_rows else None
+        five, five0, d0, d00 = sc["five_day"], sc["five_day_without_people"], sc["day0"], sc["day0_without_people"]
+        ok = five <= five0 + 1e-12 and d0 <= d00 + 1e-12
+        checks["B1"] = {
+            "summary": f"kappa {kappa:g}: 5-day miss {five:.4f} with people vs {five0:.4f} without "
+            f"(no change {sc['five_day_no_change']:.4f}); day 0 {d0:.4f} vs {d00:.4f}",
+            "passed": bool(ok),
+            "fit_2023_2025": sc,
+            "seen_2026_exploratory": seen,
+            "fit_record": record,
+        }
+    if "B2" in want:
+        b2 = bm.b2_check(base, kappa, actuals) if kappa > 0 else None
+        stab = bm.stability_v2(base, kappa) if kappa > 0 else None
+        checks["B2"] = {
+            "summary": "kappa 0: nothing to bound"
+            if b2 is None
+            else "Iran example: largest day {:+.2f}% (real {:+.2f}%), 20 days {:+.2f}% (real {:+.2f}%)".format(
+                b2["sim"]["largest_daily_fall_pct"],
+                b2["real"]["largest_daily_fall_pct"],
+                b2["sim"]["largest_20_day_fall_pct"],
+                b2["real"]["largest_20_day_fall_pct"],
+            ),
+            "passed": True if b2 is None else bool(b2["passed"] and stab is not None and stab["passed"]),
+            "iran": b2,
+            "stability": stab,
+        }
+    if "B3" in want:
+        q = bm.quiet_year(progress=say)
+        s3, s10 = q["sizes"].get("3000", {}), q["sizes"].get("10000", {})
+        checks["B3"] = {
+            "summary": "news part flat: {} / {}; yearly saving wander (sd) {:.3f}% at 3,000, {:.3f}% at 10,000".format(
+                s3.get("news_part_flat"),
+                s10.get("news_part_flat"),
+                s3.get("saving_year_wander_sd_pct", float("nan")),
+                s10.get("saving_year_wander_sd_pct", float("nan")),
+            ),
+            **q,
+        }
+    if "B4" in want:
+        w4 = bm.who_invests(progress=say)
+        bad = [k for k, v in w4["ownership"].items() if not v["passed"]]
+        lg = w4["logins"]
+        checks["B4"] = {
+            "summary": ("ownership within 5 points everywhere" if not bad else f"ownership off in {', '.join(bad)}")
+            + f"; days logged in: median {lg['median_days']} (36), mean {lg['mean_days']} (85.2)",
+            **w4,
+        }
+    if "B5" in want:
+        import datetime as _dt
+
+        day = fetch_day or _dt.datetime.now(_dt.UTC).date().isoformat()
+        rec = Recordings(paths.data_dir().parent / "runs" / "_benchmark" / "recordings")
+        rec.replay_only = replay
+        cases = bm.odds_cases(rec, day, say)
+        r5 = bm.odds_benchmark(cases, say)
+        fit5 = r5["time_passing"].get("fit", {}).get("all", {})
+        checks["B5"] = {
+            "summary": "{} fit questions: time passing misses by {} points, the flat price by {}".format(
+                fit5.get("questions", 0), fit5.get("sim_points", float("nan")), fit5.get("flat_points", float("nan"))
+            ),
+            **r5,
+        }
+    if "B6" in want:
+        r6 = bm.mood_unemployment(actuals, progress=say)
+        checks["B6"] = {
+            "summary": f"simulated {r6['sim_slope_in_daily_change_sd']:.3g} vs real {r6['real']['slope_in_sd']:.3g} "
+            "(different scales; exploratory)",
+            "passed": None,
+            **r6,
+        }
+    import datetime as _dt2
+
+    report = {
+        "date": _dt2.date.today().isoformat(),
+        "command": "jahan benchmark" + (" --tune" if tune else "") + (f" --only {only}" if only else ""),
+        "registered_in": reg["registered_in"],
+        "kappa": kappa,
+        "checks": checks,
+    }
+    if out is not None:
+        out.write_text(bm.render_markdown(report), encoding="utf-8")
+    if as_json:
+        typer.echo(json.dumps(report, default=float))
+        return
+    for key, c in checks.items():
+        verdict = "yes" if c.get("passed") else "reported only" if c.get("passed") is None else "NO"
+        typer.echo(f"{key}: {c['summary']} [{verdict}]")
+    for key, text in bm.STATEMENTS.items():
+        typer.echo(f"{key}: {text}")
+    if record is not None:
+        import yaml as _yaml
+
+        typer.echo("Paste under trading.kappa.fitted_v2 in data/global/investors.yaml:")
+        typer.echo(_yaml.safe_dump({"fitted_v2": record}, sort_keys=False))
+
+
 economy_app = typer.Typer(
     help="Everyday activity: people act on news as they look at their accounts, each country's own stock "
     "market, saving and cashing out, moods moved by job losses and conversation.",
