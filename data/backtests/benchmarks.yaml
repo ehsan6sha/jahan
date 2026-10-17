@@ -6,10 +6,24 @@
 # stay published next to the new ones.
 #
 # The rule for kappa (the one fitted number of people's trading) is in data/global/investors.yaml
-# (trading.kappa.rule_v2); B1 and B2 are its score and its bounds.
+# (trading.kappa.rule_v3, after rule_v2); B1 and B2 are its score and its bounds.
 
-version: 1
+version: 2
 registered: '2026-10-17'
+history:
+  - version: 1
+    registered: '2026-10-17'
+    result: >-
+      B1 kappa 0 (every positive kappa worse over five days); B2 nothing to bound; B3 passed; B4 ownership passed,
+      logins failed (mean 97.3 days against 85.2: the interpolated spread's own mean is 90.4, the rest sampling of
+      512 simulated US holders); B5 passed (time passing beat a flat price: 8.28 against 10.66 points on 79 fit
+      questions; 12.06 against 15.69 on 206 hold-out questions); B6 flagged, but its registered unit (standard
+      deviations of daily mood changes) is near zero in a world without news, so the ratio was meaningless.
+    changes_in_version_2: >-
+      (1) The mechanism priced by B1 and B2 is rule_v3 (news priced when it arrives; late trades do not move
+      prices), registered before it was run, for the reason given in investors.yaml. (2) B6's units: both slopes
+      are now expressed as a share of the series' observed range (real: the University of Michigan index's
+      1978-2025 range; simulated: the mood scale's width of 2), still reported only. Everything else unchanged.
 
 split:
   stocks:
@@ -93,9 +107,9 @@ checks:
     what: mood and unemployment (exploratory)
     data: FRED UNRATE and UMCSENT, monthly, 1978-2025 (only the fitted coefficient is kept)
     score: >-
-      real: the change in sentiment (standard deviations) per 1-point rise in unemployment over 12 months
-      (OLS of 12-month changes); simulated: a layoffs what-if raising US unemployment by about 1 point, no news,
-      the change in US mood in standard deviations of its daily changes
+      real: the change in sentiment per 1-point rise in unemployment over 12 months (OLS of 12-month changes), as
+      a share of the index's 1978-2025 range; simulated: a layoffs what-if raising US unemployment by about 1
+      point, no news, the change in US mood per point, as a share of the mood scale's width (2)
     pass: reported only; a gap above 3 times is flagged to the user (real sentiment also moves with news)
     tune: none
   B7:

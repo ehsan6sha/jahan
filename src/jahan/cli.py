@@ -1205,8 +1205,8 @@ def benchmark(
     if "B6" in want:
         r6 = bm.mood_unemployment(actuals, progress=say)
         checks["B6"] = {
-            "summary": f"simulated {r6['sim_slope_in_daily_change_sd']:.3g} vs real {r6['real']['slope_in_sd']:.3g} "
-            "(different scales; exploratory)",
+            "summary": "per point of unemployment: simulated mood {:+.3%} of its scale, real sentiment {:+.2%} of its "
+            "range (exploratory)".format(r6["sim_share_of_range_per_point"], r6["real_share_of_range_per_point"]),
             "passed": None,
             **r6,
         }

@@ -165,7 +165,32 @@ trading:
       0.6, ..., 1.5 choose among those. 2026 events are reported as seen and exploratory; the clean hold-out is
       the forecast events from 2026-10-17 on, once 12 exist. If no positive kappa meets the constraints, kappa
       is 0. Results are published whatever they are.
+    rule_v3: >-
+      Registered 2026-10-17, after the rule v2 run and before any run of this mechanism. Everything as in
+      rule_v2 (score, events, grid, seeds, shadow basis at kappa 1, constraints, bisection, full-feedback check,
+      refinement, the 2026 events as seen and exploratory, the clean hold-out from 2026-10-17, kappa 0 if no
+      positive kappa meets the constraints), with one change of mechanism: the people's part of a market is
+      priced when a story first reaches its holders (the change in the views of those who know it that day) and
+      reversed exactly when the story stops being tracked; holders' later trades (word of mouth, late account
+      checks) are anticipated and do not move prices. Reason, from the v2 run: 87% of the simulated reaction
+      fell on the four days after a release, whose real S&P 500 moves are unrelated to the news (correlations
+      -0.18 to 0.20), while the real index had already reacted on the release day.
     superseded:
+      - mechanism: everyday activity, rule v2 (late reactions moved prices as holders traded)
+        date: '2026-10-17'
+        command: jahan benchmark --tune
+        kappa: 0.0
+        boundary_solution: true
+        per_seed_optimum: {'0': 0.0, '1': 0.0, '2': 0.0}
+        fit_scores: {events: 58, five_day: 0.8405, five_day_without_people: 0.8405, five_day_no_change: 0.8395, day0: 1.0745}
+        seen_2026_scores: {events: 8, five_day: 0.8693, five_day_without_people: 0.8693, five_day_no_change: 0.8769}
+        loss_at: {'0': 0.8405, '0.01': 0.8411, '0.05': 0.8486, '0.1': 0.8695, '0.2': 0.9257, '0.5': 1.1838}
+        reason: >-
+          Every positive kappa made the five-day score worse, so the registered outcome was kappa 0 (people's news
+          reactions off). Diagnosis on the same events: 87% of the people's part fell on the four days after the
+          release (late account checks, and news reaching most people a day or more later, Friday news landing on
+          Monday), where the real index moves are unrelated to the news. Replaced by rule_v3 (priced on arrival);
+          the user asked to fix the root rather than switch the reactions off.
       - mechanism: people traded on the day's change in their economic mood (a slow moving average of the news)
         date: '2026-10-15'
         kappa: 0.581

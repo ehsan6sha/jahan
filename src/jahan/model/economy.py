@@ -272,7 +272,7 @@ def market_cfg(iso: str, ci: CountryInvestors, us: InvestorsConfig, everyday: Ev
         ]
     for b in bands:
         b["holdings_usd"] = b.pop("holdings")  # read by investor_masks; outside the US only ratios matter
-    fitted = us.trading.kappa.fitted_v2  # everyday activity's own fit (rule v2), once it exists
+    fitted = us.trading.kappa.fitted_v3  # everyday activity's own fit (rule v3), once it exists
     kappa = float(fitted["kappa"]) if fitted else us.trading.kappa.value
     reasons = []
     if ci.ownership.confidence == "low":

@@ -80,36 +80,28 @@ def test_quiet_world_news_part_flat_and_mood_moves():
     assert abs(mood[39]) < 0.02
 
 
-def test_late_reactions_build_and_fade():
-    w = _world(n=2000, market_kappa=0.2, market_savings=False)
+def test_news_is_priced_when_it_arrives_and_reversed_when_it_fades():
+    w = _world(n=2000, market_kappa=0.05, market_savings=False)
     _news(w, days=7)
-    rec = run_in_memory(w, 120)
+    rec = run_in_memory(w, 40)
     usa = [c.iso3 for c in w.countries].index("USA")
     news = _series(rec, "stocks_news_pct", usa)
-    level = 100 * np.cumprod([1 + news[d] / 100 for d in sorted(news)])
-    low = int(np.argmin(level))
-    assert level[low] < 99.5 and low >= 3  # the fall builds over several days, not just the first
-    assert level[-1] > level[low]  # as the stories stop being tracked, holders buy back as they look
-    gap = _series(rec, "stocks_gap", usa)  # the share of the wanted change still to be traded
-    peak = max(gap, key=gap.get)
-    assert gap[1] < gap[peak] and gap[119] < 0.5 * gap[peak]  # builds during the story, then is traded away
+    moved = {d: v for d, v in news.items() if abs(v) > 1e-9}
+    assert min(moved) <= 1 and news[min(moved)] < 0  # priced when people first react, not weeks later
+    assert any(v > 0 for v in moved.values())  # and given back when the story stops being tracked
+    gap = _series(rec, "stocks_gap", usa)  # holders still act late on their own accounts
+    assert gap[2] > 0 and gap[2] > gap[39]
 
 
-def test_attention_off_reacts_the_day_people_learn():
-    slow = _world(n=1500, market_kappa=0.2, market_savings=False)
-    fast = _world(n=1500, market_kappa=0.2, market_savings=False, market_attention=False)
+def test_late_account_checks_do_not_move_prices():
+    slow = _world(n=1500, market_kappa=0.05, market_savings=False)
+    fast = _world(n=1500, market_kappa=0.05, market_savings=False, market_attention=False)
     for w in (slow, fast):
         _news(w)
-    rs, rf = run_in_memory(slow, 3), run_in_memory(fast, 3)
+    rs, rf = run_in_memory(slow, 10), run_in_memory(fast, 10)
     usa = [c.iso3 for c in slow.countries].index("USA")
-    s, f = _series(rs, "stocks_news_pct", usa), _series(rf, "stocks_news_pct", usa)
-    assert sum(f.values()) < sum(s.values()) < 0  # everyone acting at once moves more, faster
-    pos = fast.pstate[economy.POS][: fast.pop.n]
-    inv = economy._investors(fast, fast.macro["economy"]["markets"]["USA"]["cfg"], fast.config.params)
-    from jahan.sim.world_events import news_mood
-
-    trades = inv.trades & inv.holds
-    assert np.allclose(pos[trades], np.clip(0.2 * news_mood(fast)[trades], -1, 1))
+    assert _series(rs, "stocks_news_pct", usa) == pytest.approx(_series(rf, "stocks_news_pct", usa))
+    assert _series(rs, "stocks_gap", usa)[3] > _series(rf, "stocks_gap", usa)[3]  # positions differ
 
 
 def test_logins_fall_after_a_down_day():

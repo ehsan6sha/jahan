@@ -68,6 +68,8 @@ class Kappa(BaseModel):
     # everyday activity (late reactions): its own pre-registered rule and fit (data/backtests/benchmarks.yaml)
     rule_v2: str | None = None
     fitted_v2: dict[str, Any] | None = None
+    rule_v3: str | None = None  # news priced when it arrives (after the v2 run; see superseded)
+    fitted_v3: dict[str, Any] | None = None
 
 
 class Trading(BaseModel):

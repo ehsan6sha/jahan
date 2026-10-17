@@ -721,6 +721,9 @@ b2_iran_2026:
 b6_sentiment_unemployment:
   months: 563
   range: 1978-01-01..2025-12-01
+  index_min: 50.0
+  index_max: 112.0
+  slope_share_of_range: -0.03288
   slope_points_per_unemployment_point: -2.039
   sd_of_12_month_changes: 10.692
   slope_in_sd: -0.191

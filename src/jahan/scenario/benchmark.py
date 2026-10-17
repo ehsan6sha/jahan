@@ -243,7 +243,7 @@ def iran_example(base: RunConfig, kappa: float, days: int = 60) -> dict[str, Any
     apply_scenario(
         world, Scenario.load(paths.data_dir().parent / "examples" / "scenarios" / "iran_us_tension.yaml"), EventLog(), 1
     )
-    falls, levels = [], []
+    falls, levels = [], [float(world.macro["us_stocks_index"])]  # from the level before the story
     for _ in range(days):
         d = world.date()
         run_in_memory(world, 1)
@@ -384,7 +384,7 @@ def fit_kappa(
     record = {
         "date": dt.date.today().isoformat(),
         "command": "jahan benchmark --tune",
-        "rule": "data/global/investors.yaml trading.kappa.rule_v2 (pre-registered 2026-10-17)",
+        "rule": "data/global/investors.yaml trading.kappa.rule_v3 (registered 2026-10-17, after the rule v2 run)",
         "registered_in": reg["registered_in"],
         "config": f"{base.name}, {base.n_agents} people, everyday activity, saving off",
         "fit_events": len(rows),
@@ -677,15 +677,16 @@ def mood_unemployment(actuals: dict[str, Any], days: int = 365, progress: Progre
         }
     du = out["layoffs"]["unemployment_end_pct"] - out["baseline"]["unemployment_end_pct"]
     dm = out["layoffs"]["mood_end"] - out["baseline"]["mood_end"]
-    sd = out["baseline"]["daily_change_sd"]
-    sim_sd = (dm / du) / sd if du and sd else float("nan")
+    sim_share = (dm / du) / 2.0 if du else float("nan")  # per point, as a share of the mood scale's width
     real = actuals["b6_sentiment_unemployment"]
-    ratio = sim_sd / float(real["slope_in_sd"]) if real["slope_in_sd"] else float("nan")
+    real_share = float(real["slope_share_of_range"])
+    ratio = sim_share / real_share if real_share else float("nan")
     return {
         "unemployment_rise_points": round(du, 3),
         "mood_change": dm,
         "sim_slope_per_point": dm / du if du else float("nan"),
-        "sim_slope_in_daily_change_sd": sim_sd,
+        "sim_share_of_range_per_point": sim_share,
+        "real_share_of_range_per_point": real_share,
         "real": real,
         "ratio_sim_to_real": ratio,
         "flag": bool(not (1 / 3 <= abs(ratio) <= 3)) if ratio == ratio else True,

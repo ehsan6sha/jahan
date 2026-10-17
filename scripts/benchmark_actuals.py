@@ -67,7 +67,9 @@ def iran_window(sp: list[tuple[str, float]]) -> dict:
     i0 = days.index(B2_BEFORE)
     i1 = days.index(B2_FIRST)
     rows = sp[i0 : i1 + B2_DAYS]  # the last close before, then the first 20 trading days from 2026-03-02
-    moves = [{"date": d, "us_stocks": round(100 * (b / a - 1), 4)} for (_, a), (d, b) in zip(rows, rows[1:], strict=False)]
+    moves = [
+        {"date": d, "us_stocks": round(100 * (b / a - 1), 4)} for (_, a), (d, b) in zip(rows, rows[1:], strict=False)
+    ]
     levels = [v for _, v in rows]
     worst = 0.0
     for a in range(len(levels)):
@@ -97,9 +99,13 @@ def sentiment_slope(unrate: list[tuple[str, float]], umc: list[tuple[str, float]
     mx, my = statistics.fmean(x), statistics.fmean(y)
     slope = sum((a - mx) * (b - my) for a, b in pairs) / sum((a - mx) ** 2 for a in x)
     sd = statistics.stdev(y)
+    level = [s[d] for d in months]
     return {
         "months": len(pairs),
         "range": f"{months[0]}..{months[-1]}",
+        "index_min": round(min(level), 2),
+        "index_max": round(max(level), 2),
+        "slope_share_of_range": round(slope / (max(level) - min(level)), 5),
         "slope_points_per_unemployment_point": round(slope, 3),
         "sd_of_12_month_changes": round(sd, 3),
         "slope_in_sd": round(slope / sd, 3),
@@ -137,7 +143,10 @@ def main(argv: list[str]) -> int:
     OUT.write_text(header + yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
     b2, b6 = data["b2_iran_2026"], data["b6_sentiment_unemployment"]
     print(f"B1: windows for {len(data['b1_windows'])} events")
-    print(f"B2: {b2['from']}..{b2['to']}: largest daily fall {b2['largest_daily_fall_pct']}%, 20-day {b2['largest_20_day_fall_pct']}%")
+    print(
+        f"B2: {b2['from']}..{b2['to']}: largest daily fall {b2['largest_daily_fall_pct']}%, "
+        f"20-day {b2['largest_20_day_fall_pct']}%"
+    )
     print(f"B6: {b6}")
     print(f"wrote {OUT.relative_to(ROOT)}")
     return 0

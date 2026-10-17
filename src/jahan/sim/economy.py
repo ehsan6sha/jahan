@@ -7,13 +7,20 @@ keep the older engine (sim/market.py) and are byte-identical to before.
 Each market (one per country with investor data, ``macro["economy"]["markets"][ISO3]``) has two people-driven
 parts:
 
-**News reactions, acted on late.**  Each holder wants a position of kappa x their view of the news (their news
-mood plus any scripted mood shock), as a share of their holdings, but adjusts only as they look at their account:
-every day they close the share ``a`` of the gap, where ``a`` is their lifetime login rate (Sicherman,
-Loewenstein, Seppi and Utkus 2016: days logged in out of 730), times 0.905 after a market fall (the same paper:
-9.5% fewer logins).  So a story's effect builds over days and weeks and fades the same way after it stops being
-tracked.  Positions are kept per person (``world.pstate["mkt_pos"]``).  This is deterministic (no daily random
-logins), so its size does not depend on how many people the world has.
+**News reactions, priced when the news arrives.**  Each holder wants a position of kappa x their view of the
+news (their news mood plus any scripted mood shock), as a share of their holdings.  The market prices that
+demand when a story first reaches the market's holders: on the day people there first react to it, by the change
+it makes to the views of those who know it then; when the story stops being tracked, exactly that amount is
+reversed.  People who hear it later, and holders who act late, trade demand the market has already priced, so
+their trades do not move the index (as with steady saving, predictable flows are priced when they become
+predictable).  Why: in the 2023-2025 backtest, 87% of the simulated reaction fell on the four days after a
+release while the real S&P 500 had already reacted on the day (data/backtests/benchmarks.yaml, rule v2 result).
+
+Each holder still acts late on their own account: every day they close the share ``a`` of the gap between
+their position and their target, where ``a`` is their lifetime login rate (Sicherman, Loewenstein, Seppi and
+Utkus 2016: days logged in out of 730), times 0.905 after a market fall.  Positions are kept per person
+(``world.pstate["mkt_pos"]``) and shown as the share of the wanted change still to be traded; they do not move
+prices.
 
 **Saving and cashing out (US only).**  Paycheck contributions and retiree drawdowns are steady and already in the
 price; what moves it is how far today's cash-outs differ from what is normal for today's population: each
@@ -95,6 +102,8 @@ def switch_on(world: World, cfg: dict[str, Any], log: EventLog, prompt_id: int |
                 "news_index": 100.0,
                 "savings_index": 100.0,
                 "pending": {"news": carried if iso == "USA" else 0.0, "savings": 0.0},
+                # stories known before the switch stay as they are: nothing priced, nothing reversed
+                "priced": {str(int(i)): 0.0 for i in world.beliefs.slot_item if i >= 0},
                 "pending_cash": 0.0,
                 "last_trading_pct": 0.0,
                 "last": {},
@@ -265,6 +274,56 @@ def _apply(level: float, news: float, savings: float) -> float:
     return level * (1.0 + news / 100.0) * (1.0 + savings / 100.0)
 
 
+def _news_sums(world: World) -> tuple[NDArray[np.float64], dict[int, NDArray[np.float64]]]:
+    """Each person's news sum before squashing (news mood = tanh of it) and each live item's part of it."""
+    bs = world.beliefs
+    n = world.pop.n
+    total = np.zeros(n)
+    parts: dict[int, NDArray[np.float64]] = {}
+    for s in np.flatnonzero(bs.slot_item >= 0):
+        item = int(bs.slot_item[s])
+        wt = float(world.items["sentiment_weight"][item])
+        if wt == 0.0:
+            continue
+        c = (bs.m["belief"][:n, s].astype(np.float64) - 0.5) * 2.0 * bs.m["aware"][:n, s].astype(np.float64) * wt
+        parts[item] = c
+        total += c
+    return total, parts
+
+
+def priced_news_flow(
+    world: World, mk: dict[str, Any], inv: Investors, kappa: float, c: int, sums: tuple[NDArray[np.float64], dict]
+) -> float:
+    """Today's demand the market prices in this market: stories its holders first react to today (the change in
+    their views), minus what was priced for stories no longer tracked, plus scripted mood shocks in the country."""
+    w = world.pop["pop_weight"].astype(np.float64)
+    total, parts = sums
+    priced: dict[str, float] = mk.setdefault("priced", {})
+    who = inv.trades & inv.holds
+    base = w * inv.holdings * kappa
+    flow = 0.0
+    for item, part in parts.items():
+        key = str(item)
+        if key in priced:
+            continue
+        knows = who & (part != 0.0)
+        if not knows.any():
+            continue
+        dv = np.tanh(total[knows]) - np.tanh(total[knows] - part[knows])  # the view this story adds
+        priced[key] = float((base[knows] * dv).sum())
+        flow += priced[key]
+    for key in [k for k in priced if int(world.items["slot"][int(k)]) < 0]:  # no longer tracked
+        flow -= priced.pop(key)
+    shift = list(world.macro.get("sentiment_shift", []))
+    seen = float(mk.get("shift_seen", shift[c] if c < len(shift) else 0.0))
+    if c < len(shift) and shift[c] != seen:
+        flow += float(base[who].sum()) * (float(shift[c]) - seen)
+        mk["shift_seen"] = float(shift[c])
+    elif c < len(shift):
+        mk["shift_seen"] = float(shift[c])
+    return flow
+
+
 def close_day(
     world: World, params: SimParams, log: EventLog, opened: DayOpen, news: NDArray[np.float64]
 ) -> dict[str, int]:
@@ -275,6 +334,7 @@ def close_day(
     pos = world.pstate[POS]
     view = news[: world.pop.n] + _shift(world)
     rates = login_rates(world, everyday["attention"])
+    sums = _news_sums(world)
     w = world.pop["pop_weight"].astype(np.float64)
     m = world.macro
     stats: dict[str, int] = {}
@@ -310,8 +370,9 @@ def close_day(
         p[cont] += step[cont]
         held = float((w * inv.holdings)[inv.holds].sum())
         mult = float(mcfg["multiplier"]) if params.market_multiplier is None else float(params.market_multiplier)
-        flow = float((w * inv.holdings * step)[cont].sum())
-        news_raw = 100.0 * mult * flow / held if held > 0 else 0.0
+        flow = float((w * inv.holdings * step)[cont].sum())  # what people actually traded (not priced again)
+        priced = priced_news_flow(world, mk, inv, _kappa(world, mk, params), c, sums)
+        news_raw = 100.0 * mult * priced / held if held > 0 else 0.0
         sav = saving_flow(world, c, mk, inv, held) if params.market_savings else saving_flow_off()
         savings_raw = 100.0 * mult * sav["net"] / held if held > 0 else 0.0
         if not params.market_people:
@@ -368,6 +429,7 @@ def close_day(
             "people_pct": people_pct,
             "total_pct": total_pct,
             "flow": flow,
+            "priced": priced,
             "saving": sav,
             "holders": int(inv.holds.sum()),
             "few_holders": int(inv.holds.sum()) < float(everyday.get("min_holders", 0)),
