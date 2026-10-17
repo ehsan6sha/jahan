@@ -26,6 +26,7 @@ def world(tmp_path_factory):
         "4",
         "--start-date",
         "2026-10-13",
+        "--no-economy",  # people trade only on news: a quiet world stays exactly flat (see test_economy_markets)
     )
     cli("run", "--run", str(run), "--days", "5", "--no-autonomy")
     return run
@@ -55,6 +56,15 @@ def test_watch_list_history_and_parts(world):
     assert status["watch"] == ["market:dollar", "market:us_stocks", "mood:USA"]
     text = cli("watch", "show", "--run", run)
     assert "US stocks (S&P 500): 100.00, +0.00% since day 5" in text
+    assert data["explanation"] is None  # only asked for with --since-day
+    ex = _json(cli("watch", "show", "--run", run, "--json", "--since-day", "5"))["explanation"]
+    assert ex["quiet"] and (ex["from_day"], ex["to_day"]) == (5, 8)
+    said = " ".join(ex["sentences"])
+    assert "Nothing was added between day 5 and day 8" in said and "Nobody heard any news" in said
+    assert "only when news reaches them" in said and "Moods change only" in said
+    assert "Claude is not set up" in said  # tests run offline
+    text = cli("watch", "show", "--run", run, "--since-day", "5")
+    assert "Nothing you watch moved between day 5 and day 8:" in text
 
 
 def test_unknown_series_lists_the_catalog(world):

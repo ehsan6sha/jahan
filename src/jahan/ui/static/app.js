@@ -545,8 +545,10 @@
         rerender: (rec) => {
           const note = rec.lines.find((l) => l.startsWith("Note:"));
           const figures = rec.lines.find((l) => l.startsWith("Public figures took"));
+          const off = rec.lines.find((l) => l.startsWith("This run,"));
           return h("div", {},
             figures ? h("div", {}, figures) : null,
+            off ? h("div", {}, off) : null,
             note ? h("div", {}, "These days are after today's real date, so no real news exists for them. ",
               h("button", { class: "btn link", onclick: () => { S.whatif.tab = "future"; go("whatif"); } }, "Add hypothetical events")) : null);
         },
@@ -1686,26 +1688,38 @@
     const box = h("div", {});
     const key = `${S.world}|${st.day}|${st.prompts.length}|${(st.watch || []).join(",")}|${W.days}`;
     if (W.key !== key && !W.loading) {
-      W.loading = runJSON(["watch", "show", "--run", S.world, "--json", "--days", String(W.days)])
-        .then((d) => { W.data = d; W.key = key; W.loading = null; if (S.view === "watch") render(); })
+      // after time moved forward, also ask why nothing moved since the day the page last showed
+      if (W.seenWorld !== S.world || W.seenDay === undefined || st.day < W.seenDay) W.fromDay = null;
+      else if (st.day > W.seenDay) W.fromDay = W.seenDay;
+      const argv = ["watch", "show", "--run", S.world, "--json", "--days", String(W.days)];
+      if (W.fromDay !== null && W.fromDay !== undefined) argv.push("--since-day", String(W.fromDay));
+      W.loading = runJSON(argv)
+        .then((d) => { W.data = d; W.key = key; W.loading = null; W.seenWorld = S.world; W.seenDay = d.day; if (S.view === "watch") render(); })
         .catch((e) => { W.loading = null; W.key = key; box.replaceChildren(errorNotice(e)); });
     }
     const d = W.data && W.data.day !== undefined && W.key && W.key.startsWith(S.world + "|") ? W.data : null;
     const toggle = (id, on) => act(box, ["watch", on ? "add" : "remove", "--run", S.world, id], { ok: on ? "Watching it from today." : "Stopped watching it.", rerender: true });
-    const out = page("Watch", h("span", {}, "Pick what to follow, move time forward, and see how it moved. US stocks have two parts: announcements and scripted what-ifs, and ", term("people's trading"), ". Everything here is simulated, not a forecast."));
+    const out = page("Watch", h("span", {}, "Pick what to follow, move time forward, and see how it moved, and why: each market move is split into its parts (news reactions, saving and cashing out, announcements and what-ifs). Everything here is simulated, not a forecast."));
+    for (const n of watchNotices(st, box)) out.append(n);
     out.append(timeCard());
     const rows = d ? d.series : [];
+    const ex = d && d.explanation;
+    if (ex && ex.quiet) out.append(h("div", { class: "notice warn" },
+      h("strong", {}, `Nothing you watch moved between day ${ex.from_day} and day ${ex.to_day}. Why:`),
+      h("ul", { class: "events-list small" }, ...ex.sentences.map((s) => h("li", {}, s)))));
     out.append(card("Watching", d ? `Day ${d.day} (${d.date}). The line shows the last ${W.days} days; the dashed line is the level when you started watching.` : null,
       !d ? loading(W.loading ? "Reading the history…" : "") : rows.length
         ? h("div", { class: "table-wrap" }, h("table", {},
           h("thead", {}, h("tr", {}, h("th", {}, "Series"), h("th", { class: "num" }, "Now"), h("th", { class: "num" }, "Since watched"),
-            h("th", { class: "num" }, "People's trading"), h("th", { class: "num" }, "Announcements & scripted"), h("th", {}, `Last ${W.days} days`), h("th", {}, ""))),
+            h("th", {}, "Why it moved"), h("th", {}, `Last ${W.days} days`), h("th", {}, ""))),
           h("tbody", {}, ...rows.map((s) => h("tr", {},
-            h("td", {}, h("strong", {}, s.label), h("div", { class: "muted small" }, `since day ${s.since_day} (${s.since_date})${s.rebased ? ", restarted after an undo" : ""}`), s.note ? h("div", { class: "muted small" }, s.note) : null),
+            h("td", {}, h("strong", {}, s.label), s.illustrative ? h("span", { class: "tag", title: s.note || "" }, "illustrative") : null,
+              h("div", { class: "muted small" }, `since day ${s.since_day} (${s.since_date})${s.rebased ? ", restarted after an undo" : ""}`), s.note ? h("div", { class: "muted small" }, s.note) : null),
             h("td", { class: "num" }, watchValue(s.now, s.unit)),
             h("td", { class: "num" }, watchChange(s)),
-            h("td", { class: "num" }, s.components ? pctCell(s.components.people_pct) : h("span", { class: "muted" }, "—")),
-            h("td", { class: "num" }, s.components ? pctCell(s.components.scripted_pct) : h("span", { class: "muted" }, "—")),
+            h("td", {}, s.components && s.parts.length ? h("div", { class: "chips parts" }, ...s.parts.map((p) => h("span", { class: "chip small" }, `${p.label} `,
+                s.unit === "probability" ? ptsCell(s.components[`${p.name}_pts`]) : pctCell(s.components[`${p.name}_pct`]))))
+              : h("span", { class: "muted" }, "—")),
             h("td", {}, sparkline(s.history.map((r) => r.value), s.since_value, (s.since_watched_abs || 0) < 0)),
             h("td", {}, h("button", { class: "btn small act", onclick: () => toggle(s.id, false) }, "Stop")))))))
         : h("p", { class: "muted" }, "Nothing watched yet: tick something below, then move time forward."),
@@ -1725,10 +1739,41 @@
     return out;
   }
 
+  function watchNotices(st, box) {
+    const out = [];
+    if (st.markets && !st.markets.everyday) out.push(h("div", { class: "notice warn" },
+      h("strong", {}, "This world was made before everyday activity existed"),
+      st.markets.people_trading
+        ? "Its people trade US stocks only on the day news reaches them; moods move only with news, and there are no other countries' markets. "
+        : "Its US stocks move only on announcements and what-ifs, and nobody in it buys or sells. ",
+      "Turning everyday activity on changes that from today: people act on news as they look at their accounts, each country gets its own market, job losses and cash-outs matter, and moods move with life and conversation. It is recorded as a prompt, so Undo (Results) takes the world back to just before it; days already simulated stay as they were. ",
+      h("button", { class: "btn small act", onclick: () => act(box, ["economy", "on", "--run", S.world, "--yes"], { ok: "Everyday activity is on from today.", rerender: true }) }, "Turn on everyday activity")));
+    if (!st.llm.ready) out.push(h("div", { class: "notice" },
+      h("strong", {}, "Claude is not set up, so some things are off"),
+      "Public figures do not act on their own, new headlines are not rated against your questions, and what-ifs in plain words do not work. Start the browser with ",
+      h("code", {}, "jahan ui --key-file <file>"), " or see ", h("code", {}, "jahan doctor"), "."));
+    return out;
+  }
+
   const prob = (p) => (p === null || p === undefined || Number.isNaN(p) ? "n/a" : `${(100 * p).toFixed(1)}%`);
+
+  function ptsCell(v) {
+    if (v === null || v === undefined || Number.isNaN(v)) return h("span", { class: "muted" }, "n/a");
+    const pts = 100 * v;
+    return h("span", { class: Math.abs(pts) < 0.05 ? "" : pts > 0 ? "up" : "down" }, `${pts >= 0 ? "+" : ""}${pts.toFixed(1)} pts`);
+  }
+
+  function kindPicker(q, box) {
+    const set = (k) => act(box, ["watch", "set", "--run", S.world, `odds:${q.id}`, "--kind", k], { ok: "Time effect changed (a prompt you can undo).", rerender: true });
+    return h("div", { class: "small" }, "Time effect: ",
+      select([["by_date", "happens by the date (odds fall on quiet days)"], ["holds_through", "holds through the date (odds rise on quiet days)"], ["other", "none"]], q.kind, set),
+      h("span", { class: "muted" }, ` (${q.kind_by === "user" ? "your choice" : q.kind_by === "seed" ? "set in the saved question" : q.kind_by === "rule" ? "read from the wording" : "added before time effects existed"}${q.kind_why ? ": " + q.kind_why : ""}; heuristic: a constant chance per day inside each trader's belief)`),
+      q.days_left !== null && q.days_left !== undefined ? h("span", { class: "muted" }, ` · ${q.days_left} day(s) left`) : null);
+  }
 
   function questionRow(s) {
     const q = s.question;
+    const qb = h("div", {});
     const sim = q.simulated;
     const real = q.real;
     const pastReal = real && S.status && real.fetch_date < S.status.date;
@@ -1741,6 +1786,8 @@
         real && real.resolved ? ` · resolved ${real.resolved} on the market` : "",
         q.resolves_by ? ` · resolves ${q.resolves_by}` : ""),
       pastReal ? h("div", { class: "muted small" }, `Real prices end at ${real.fetch_date}; the simulation runs on without them.`) : null,
+      q.status === "open" && q.resolves_by ? kindPicker(q, qb) : null,
+      qb,
       q.movers.length ? h("ul", { class: "events-list small" }, ...q.movers.map((m) => h("li", {},
         h("span", { class: m.moved > 0 ? "up" : "down" }, `${m.moved > 0 ? "+" : ""}${(100 * m.moved).toFixed(1)} points `),
         `"${m.label}" (day ${m.day}, ${m.by === "scripted" ? "your what-if" : m.by === "llm" ? "rated by Claude" : m.by}${m.why && m.why !== "scripted" ? ": " + m.why : ""})`)))

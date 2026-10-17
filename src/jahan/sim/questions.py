@@ -7,8 +7,16 @@ aware of it with beliefs spread around the real market price; everyone else may 
 
 The simulated odds are the population-weighted mean belief of the traders who know the question (Wolfers and
 Zitzewitz 2006: with log utility and beliefs unrelated to wealth a prediction market's price equals the mean
-belief).  It is a belief average, not a market: no order book, no liquidity, no time decay toward the deadline,
-and no pull toward the real market's price.
+belief).  It is a belief average, not a market: no order book, no liquidity, and no pull toward the real
+market's price.
+
+Time passes (phase 0c, questions with a kind): with a constant hazard inside each person's own belief, a day
+without the event makes "will X happen by the date" less likely (b' = 1 - (1-b)^r) and "X holds through the
+date" more likely (b' = b^r), where r = days left today / days left yesterday.  Under each person's belief this
+is a martingale (their expected belief tomorrow equals today's); the drift is the path when nothing happens.
+Real hazards often cluster near deadlines (HEURISTIC).  Traders who meet talk (phase 4c, everyday activity):
+pairs move toward each other on the log-odds scale (HEURISTIC rates), symmetrically, so talk never pushes two
+people apart.
 
 News moves beliefs through "claims": a (news item, question) pair with a direction in -1..1 (+1 makes Yes more
 likely), scripted in a prompt (``bears_on``) or rated by Claude outside the core (recorded for replay).  A
@@ -165,7 +173,95 @@ def seed_question(world: World, qid: str, params: SimParams) -> int:
     return int(rows.size)
 
 
-def apply_bearings(world: World, params: SimParams, log: EventLog) -> int:
+def _mean(world: World, q: dict[str, Any], slot: int) -> float:
+    """Population-weighted mean belief of the traders who know the question (the simulated odds)."""
+    n = world.pop.n
+    m = trader_mask(world, _countries(world, q)) & (world.beliefs.m["aware"][:n, slot] == 1)
+    w = world.pop["pop_weight"].astype(np.float64)
+    if w[m].sum() <= 0:
+        return float("nan")
+    return float(np.average(world.beliefs.m["belief"][:n, slot][m].astype(np.float64), weights=w[m]))
+
+
+def _slot(world: World, q: dict[str, Any]) -> int:
+    return int(world.items["slot"][int(q["item"])])
+
+
+def pass_time(world: World) -> dict[str, float]:
+    """Phase 0c: a day passed without the event.  Returns each question's change in odds."""
+    out: dict[str, float] = {}
+    today = world.date()
+    n = world.pop.n
+    bel = world.beliefs.m
+    for qid, q in open_questions(world):
+        kind = q.get("kind", "other")
+        by = q.get("resolves_by")
+        if kind == "other" or not by or world.day <= int(q["added_day"]):
+            continue
+        slot = _slot(world, q)
+        left = (dt.date.fromisoformat(str(by)) - today).days + 1  # days left, counting today
+        if slot < 0 or left < 1:
+            continue
+        r = left / (left + 1.0)
+        aware = bel["aware"][:n, slot] == 1
+        if not aware.any():
+            continue
+        before = _mean(world, q, slot)
+        b = np.clip(bel["belief"][:n, slot][aware].astype(np.float64), P_MIN, P_MAX)
+        b2 = 1.0 - np.power(1.0 - b, r) if kind == "by_date" else np.power(b, r)
+        col = bel["belief"][:n, slot]
+        col[aware] = np.clip(b2, P_MIN, P_MAX).astype(np.float32)
+        out[qid] = _mean(world, q, slot) - before
+    return out
+
+
+def traders_talk(world: World, contacted: NDArray[np.bool_], params: SimParams) -> dict[str, float]:
+    """Phase 4c (everyday activity): traders who met today and both know a question may discuss it and move
+    toward each other on the log-odds scale.  Returns each question's change in odds."""
+    out: dict[str, float] = {}
+    if "economy" not in world.macro or params.odds_talk_p <= 0 or params.odds_talk_rate <= 0:
+        return out
+    qs = open_questions(world)
+    if not qs or contacted.size == 0 or not contacted.any():
+        return out
+    e = world.edges
+    rows = np.flatnonzero(contacted)
+    key = e["uid"][rows].astype(np.int64) >> 1
+    _, first = np.unique(key, return_index=True)  # each tie once (both directions share one contact draw)
+    rows, key = rows[first], key[first]
+    a = e["src"][rows].astype(np.int64)
+    b = e["dst"][rows].astype(np.int64)
+    n = world.pop.n
+    bel = world.beliefs.m
+    for qid, q in qs:
+        slot = _slot(world, q)
+        if slot < 0:
+            continue
+        tm = trader_mask(world, _countries(world, q)) & (bel["aware"][:n, slot] == 1)
+        ok = tm[a] & tm[b]
+        if not ok.any():
+            continue
+        u = u01(world.sim_seed, Stream.ODDS_TALK, world.day, key, k=int(q["item"]))
+        x = _logit(np.clip(bel["belief"][:n, slot].astype(np.float64), P_MIN, P_MAX))
+        gap = x[b] - x[a]
+        ok &= (u < params.odds_talk_p) & (np.abs(gap) < params.odds_talk_window)
+        if not ok.any():
+            continue
+        pa, pb, g = a[ok], b[ok], gap[ok]
+        partners = np.bincount(pa, minlength=n) + np.bincount(pb, minlength=n)
+        s = params.odds_talk_rate / np.maximum(partners[pa], partners[pb])
+        dx = np.zeros(n)
+        np.add.at(dx, pa, s * g)
+        np.add.at(dx, pb, -s * g)
+        before = _mean(world, q, slot)
+        moved = dx != 0
+        col = bel["belief"][:n, slot]
+        col[moved] = np.clip(_sigmoid(x[moved] + dx[moved]), P_MIN, P_MAX).astype(np.float32)
+        out[qid] = _mean(world, q, slot) - before
+    return out
+
+
+def apply_bearings(world: World, params: SimParams, log: EventLog, deltas: dict[str, float] | None = None) -> int:
     """Phase 4c: people who know a question and learn a news item that bears on it update their belief.
 
     The first time a claim is applied it reaches everyone who already knows both; afterwards only those who
@@ -177,10 +273,11 @@ def apply_bearings(world: World, params: SimParams, log: EventLog) -> int:
     n = world.pop.n
     bel = world.beliefs.m
     w = world.pop["pop_weight"].astype(np.float64)
-    for _qid, q in open_questions(world):
+    for qid, q in open_questions(world):
         qslot = int(world.items["slot"][int(q["item"])])
         if qslot < 0:
             continue
+        before = _mean(world, q, qslot) if deltas is not None and q["claims"] else None
         aware_q = bel["aware"][:n, qslot] == 1
         tm: NDArray[np.bool_] | None = None
         for key, claim in sorted(q["claims"].items(), key=lambda kv: int(kv[0])):
@@ -211,6 +308,8 @@ def apply_bearings(world: World, params: SimParams, log: EventLog) -> int:
             col = bel["belief"][:n, qslot]
             col[learners] = b2.astype(np.float32)
             moved += int(learners.sum())
+        if before is not None and deltas is not None:
+            deltas[qid] = _mean(world, q, qslot) - before
     return moved
 
 
@@ -245,8 +344,9 @@ def current_odds(world: World) -> dict[str, dict[str, Any]]:
     return out
 
 
-def record_odds(world: World, out: MetricsLog) -> None:
-    """Daily metrics: odds.<id> (country -1 and per country) and odds_n_traders.<id>, item = the question."""
+def record_odds(world: World, out: MetricsLog, parts: dict[str, dict[str, float]] | None = None) -> None:
+    """Daily metrics: odds.<id> (country -1 and per country) and odds_n_traders.<id>, item = the question; and
+    each part of the day's change (odds_time.<id>, odds_news.<id>, odds_talk.<id>) when it moved."""
     st = state(world)
     if st is None:
         return
@@ -257,6 +357,9 @@ def record_odds(world: World, out: MetricsLog) -> None:
             continue
         out.add(world.day, -1, item, f"odds.{qid}", row["odds"])
         out.add(world.day, -1, item, f"odds_n_traders.{qid}", float(row["n_traders"]))
+        for part, deltas in (parts or {}).items():
+            if qid in deltas and deltas[qid] == deltas[qid]:  # skip NaN
+                out.add(world.day, -1, item, f"odds_{part}.{qid}", float(deltas[qid]))
         for iso, v in row["by_country"].items():
             out.add(world.day, codes.index(iso), item, f"odds.{qid}", v)
 

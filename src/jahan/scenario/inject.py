@@ -21,6 +21,7 @@ from jahan.scenario.spec import (
     DEFAULT_SENTIMENT_WEIGHT,
     Announcement,
     Bearing,
+    EconomyEvent,
     MacroPath,
     MacroStep,
     NewsEvent,
@@ -548,6 +549,15 @@ def check_scenario(world: World, scenario: Scenario) -> None:
     open_ids = _open_ids(world)
     for ev in scenario.events:
         if isinstance(ev, QuestionEvent):
+            if ev.action == "set":
+                if ev.id not in open_ids:
+                    raise InjectError(f"no watched question {ev.id!r} is open")
+                q = (questions.state(world) or {}).get("questions", {}).get(ev.id)
+                if ev.kind != "other" and q is not None and not q.get("resolves_by"):
+                    raise InjectError(f"question {ev.id!r} has no resolve date, so time passing cannot bear on it")
+                continue
+            if ev.kind != "other" and ev.resolves_by is None:
+                raise InjectError(f"question {ev.id!r} needs a resolve date for time passing to bear on it")
             if ev.action == "close":
                 if ev.id not in open_ids:
                     raise InjectError(f"no watched question {ev.id!r} is open")
@@ -568,6 +578,14 @@ def check_scenario(world: World, scenario: Scenario) -> None:
             for c in ev.countries or []:
                 _country_index(world, c)
             open_ids.add(ev.id)
+        elif isinstance(ev, EconomyEvent):
+            if "economy" in world.macro:
+                raise InjectError(f"everyday activity is already on (since day {world.macro['economy']['since_day']})")
+            if ev.version != 1:
+                raise InjectError(f"unknown everyday-activity version {ev.version}")
+            codes = {c.iso3 for c in world.countries}
+            if not any(iso in codes for iso in ev.cfg.get("markets", {})):
+                raise InjectError("no stock market data for any country in this world")
         elif isinstance(ev, NewsEvent | Statement):
             for b in ev.bears_on:
                 if b.question not in open_ids:
@@ -579,6 +597,11 @@ def start_question(world: World, ev: QuestionEvent, log: EventLog, prompt_id: in
     """Open a question (a tracked item whose belief is each person's probability of Yes) or close one."""
     if ev.action == "close":
         questions.close_question(world, ev.id, log, "removed by the user")
+        return 0
+    if ev.action == "set":
+        st = questions.state(world)
+        assert st is not None
+        st["questions"][ev.id].update(kind=ev.kind, kind_by=ev.kind_by or "user", kind_why=ev.kind_why)
         return 0
     st = questions.ensure_state(world, ev.trader_share, ev.skew, ev.adult_age, ev.sources)
     item = create_item(
@@ -618,6 +641,8 @@ def start_question(world: World, ev: QuestionEvent, log: EventLog, prompt_id: in
         "final_odds": None,
         "claims": {},
     }
+    if ev.kind_by is not None:  # questions added before kinds existed keep exactly their old record
+        st["questions"][ev.id].update(kind=ev.kind, kind_by=ev.kind_by, kind_why=ev.kind_why)
     n = questions.seed_question(world, ev.id, world.config.params)
     if n == 0:
         raise InjectError(f"no simulated traders for {ev.id!r} in {ev.countries or 'this world'}")
@@ -709,6 +734,10 @@ def apply_scenario(world: World, scenario: Scenario, log: EventLog, prompt_id: i
                 stats["scheduled"] += 1
         elif isinstance(ev, SocialDigest):
             apply_social_digest(world, ev)
+        elif isinstance(ev, EconomyEvent):
+            from jahan.sim import economy  # deferred: the economy builds on world events and this module
+
+            economy.switch_on(world, ev.cfg, log, prompt_id)
         elif isinstance(ev, QuestionEvent):
             start_question(world, ev, log, prompt_id)
             stats["questions"] = stats.get("questions", 0) + 1

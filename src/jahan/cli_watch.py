@@ -165,6 +165,22 @@ def _seed(qid: str):  # noqa: ANN202
     raise typer.BadParameter(f"no seed question {qid!r} in data/global/questions.yaml (known: {known})")
 
 
+def _kind(question: str, given: str | None, seed: str | None = None, has_date: bool = True) -> dict:  # noqa: ANN202
+    """How time passing bears on a question: the user's choice, else the seed file's, else the wording rule."""
+    from jahan.model.questions import classify_kind
+
+    if not has_date and given in (None, "other"):
+        return {"kind": "other", "kind_by": "rule", "kind_why": "no resolve date"}
+    if given is not None:
+        if given not in ("by_date", "holds_through", "other"):
+            raise typer.BadParameter("--kind is by_date, holds_through or other")
+        return {"kind": given, "kind_by": "user", "kind_why": "chosen by the user"}
+    if seed is not None:
+        return {"kind": seed, "kind_by": "seed", "kind_why": "set by hand in data/global/questions.yaml"}
+    kind, words = classify_kind(question)
+    return {"kind": kind, "kind_by": "rule", "kind_why": f'wording: "{words}"' if words else "no time words found"}
+
+
 def _question_event(world, sid: str, opts: dict):  # noqa: ANN001, ANN202
     """A QuestionEvent for ``odds:seed:<id>`` or ``odds:custom:<id>``, with the trader settings of odds.yaml."""
     from jahan.model.questions import load_odds_config
@@ -197,6 +213,7 @@ def _question_event(world, sid: str, opts: dict):  # noqa: ANN001, ANN202
                 partisan=opts["partisan"],
                 topic=q.topic,
                 **traders,
+                **_kind(q.question, opts["kind"], q.kind),
             )
         if kind not in ("seed", "custom"):  # a live Polymarket market
             from jahan.ingest.polymarket import PolymarketError, market_by_slug
@@ -227,6 +244,7 @@ def _question_event(world, sid: str, opts: dict):  # noqa: ANN001, ANN202
                 partisan=opts["partisan"],
                 topic=opts["topic"],
                 **traders,
+                **_kind(row.question, opts["kind"], has_date=row.resolves_by is not None),
             )
         if kind == "custom":
             if not opts["question"]:
@@ -241,6 +259,7 @@ def _question_event(world, sid: str, opts: dict):  # noqa: ANN001, ANN202
                 partisan=opts["partisan"],
                 topic=opts["topic"],
                 **traders,
+                **_kind(opts["question"], opts["kind"], has_date=bool(opts["resolves_by"])),
             )
     except ValueError as e:  # pydantic: a bad id, date or range
         raise typer.BadParameter(str(e)) from e
@@ -262,6 +281,13 @@ def watch_add(
     ] = 0.0,
     topic: Annotated[str, typer.Option(help="odds:custom: topic of the question")] = "world",
     force: Annotated[bool, typer.Option(help="Start from a market price far from the world's date")] = False,
+    kind: Annotated[
+        str | None,
+        typer.Option(
+            help="Questions: how time passing bears on it: by_date (odds fall as quiet days pass), holds_through "
+            "(they rise) or other (no effect); default: the seed file's, else read from the wording"
+        ),
+    ] = None,
     fetch_day: FetchDayOpt = None,
     replay: ReplayOpt = False,
 ) -> None:
@@ -282,6 +308,7 @@ def watch_add(
         "partisan": partisan,
         "topic": topic,
         "force": force,
+        "kind": kind,
         "fetch_day": _fetch_day(fetch_day),
         "rec": None,
     }
@@ -306,10 +333,13 @@ def watch_add(
         if ev.price is not None and ev.source is not None:
             row = {"fetch_date": ev.fetch_date, "price": ev.price, "source_url": ev.source.url, "closed": False}
             append_real(rd, {ev.id: row}, [], str(ev.fetch_date))
+        from jahan.model.questions import KIND_LABELS
+
         typer.echo(
             f'Watching "{ev.question}" (odds:{ev.id}) from day {world.day}: {odds["n_traders"]} simulated traders, '
             f"odds {100 * odds['odds']:.1f}%"
             + ("" if ev.price is None else f" (market {100 * ev.price:.1f}% on {ev.fetch_date})")
+            + f". Time: {KIND_LABELS[ev.kind]} ({ev.kind_by}: {ev.kind_why}); change it with `jahan watch set`."
         )
     if plain:
         added = add(rd, world, plain)
@@ -356,6 +386,33 @@ def watch_remove(
     typer.echo(f"Stopped watching {', '.join(gone)}." if gone else "None of these were watched.")
 
 
+@watch_app.command("set")
+def watch_set(
+    run_dir: RunOpt,
+    series: Annotated[str, typer.Argument(help="A watched question, odds:<id>")],
+    kind: Annotated[
+        str, typer.Option(help="by_date (odds fall as quiet days pass), holds_through (they rise) or other (no effect)")
+    ],
+) -> None:
+    """Change how time passing bears on a watched question (a numbered prompt you can undo)."""
+    from jahan.scenario.inject import InjectError
+    from jahan.scenario.spec import QuestionEvent, Scenario
+
+    if not series.startswith("odds:"):
+        raise typer.BadParameter("give a watched question as odds:<id>")
+    rd = RunDir(run_dir)
+    world = _load_head(rd)
+    k = _kind("", kind)
+    ev = QuestionEvent(id=series[len("odds:") :], action="set", **k)
+    try:
+        pid = _inject_spec(
+            rd, world, Scenario(prompt=f"Time effect of {ev.id}: {kind}", events=[ev]), True, "watch", quiet=True
+        )
+    except InjectError as e:
+        raise typer.BadParameter(str(e)) from e
+    typer.echo(f"{series}: time effect is now {kind} (prompt {pid}).")
+
+
 @watch_app.command("list")
 def watch_list(run_dir: RunOpt, as_json: JsonOpt = False) -> None:
     """The series you watch and since when."""
@@ -372,12 +429,20 @@ def watch_list(run_dir: RunOpt, as_json: JsonOpt = False) -> None:
 
 
 @watch_app.command("show")
-def watch_show(run_dir: RunOpt, days: DaysOpt = 60, as_json: JsonOpt = False) -> None:
+def watch_show(
+    run_dir: RunOpt,
+    days: DaysOpt = 60,
+    since_day: Annotated[
+        int | None, typer.Option(help="Also explain why nothing moved from this day to today (e.g. the last step)")
+    ] = None,
+    as_json: JsonOpt = False,
+) -> None:
     """How each watched series moved since you started watching it, with its recent history."""
+    from jahan.query.status import llm_ready
     from jahan.query.watch import show
 
     rd = RunDir(run_dir)
-    data = show(rd, _load_head(rd), days=days)
+    data = show(rd, _load_head(rd), days=days, since_day=since_day, llm_ready=llm_ready())
     if as_json:
         typer.echo(json.dumps(data, ensure_ascii=False, default=float))
         return
@@ -389,9 +454,18 @@ def watch_show(run_dir: RunOpt, days: DaysOpt = 60, as_json: JsonOpt = False) ->
             " (rebased after an undo)" if s["rebased"] else ""
         )
         c = s["components"]
-        if c is not None:
-            line += f"; people's trading {c['people_pct']:+.2f}%, announcements and scripted {c['scripted_pct']:+.2f}%"
+        if c is not None and s["unit"] == "probability":
+            line += "; " + ", ".join(f"{p['label']} {100 * c[p['name'] + '_pts']:+.1f} points" for p in s["parts"])
+        elif c is not None:
+            line += "; " + ", ".join(f"{p['label']} {c[p['name'] + '_pct']:+.2f}%" for p in s["parts"])
+        if s["illustrative"]:
+            line += " (illustrative: see `jahan watch catalog`)"
         typer.echo(line)
+    ex = data["explanation"]
+    if ex and ex["quiet"]:
+        typer.echo(f"Nothing you watch moved between day {ex['from_day']} and day {ex['to_day']}:")
+        for sentence in ex["sentences"]:
+            typer.echo(f"  - {sentence}")
 
 
 @watch_app.command("fetch")

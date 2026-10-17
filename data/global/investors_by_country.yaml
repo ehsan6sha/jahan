@@ -1,0 +1,221 @@
+# Each country's own stock market, moved by its residents (sim/economy.py; worlds with everyday activity).
+#
+# Copied into the world when it is generated (or by `jahan economy on`), so editing this file never changes or
+# breaks an existing world. Not hashed into snapshots. Do not put these numbers in data/countries/*.yaml: those
+# files are hashed, and an edit there would refuse every saved world.
+#
+# Who owns stock: a national survey of adults with a matching definition where one exists; otherwise unique
+# investor counts divided by adults 18+ (UN WPP 2024, 2026 medium variant: data/generated/wpp2024); raw account
+# counts only as an upper bound (confidence low). Ownership rises with household income: the country's own
+# gradient where sourced, otherwise the US Survey of Consumer Finances bands moved together on the log-odds scale
+# until their average equals the country's share. Outside the US only the ratios between holdings matter (a
+# market moves by flow / holdings), so the US holdings shape is borrowed.
+#
+# No benchmark exists outside the US; every non-US size is an untested illustration using borrowed kappa and
+# multiplier.
+
+countries:
+  USA:
+    index:
+      name: S&P 500
+      label: US stocks
+      currency: USD
+      weekdays: [0, 1, 2, 3, 4]
+      weekdays_source: {heuristic: true, note: "Monday to Friday; US market holidays are not modelled"}
+      max_daily_pct: {value: 10, heuristic: true, note: safety cap on the people-driven daily move}
+    ownership:
+      kind: bands
+      source: investors.scf2022
+      definition: families holding stock directly or indirectly, by usual-income group (data/global/investors.yaml)
+      as_of: '2022'
+      confidence: high
+    holdings: {source: investors.scf2022, note: conditional median stock holdings by income group}
+    attention_scale: {value: 1.0, source: investors.sicherman2016, note: Vanguard 401(k) accounts}
+    multiplier: {value: 5.0, source: markets.gabaix_koijen2021}
+    kappa: {source: investors.kappa_fit, note: fitted on US announcement days (data/global/investors.yaml)}
+    cross_checks:
+      - {source: investors.gallup2025, what: US adults owning stock (percent), value: 62}
+
+  DEU:
+    index:
+      name: DAX
+      label: German stocks
+      currency: EUR
+      weekdays: [0, 1, 2, 3, 4]
+      weekdays_source: {heuristic: true, note: "Monday to Friday; exchange holidays are not modelled"}
+      max_daily_pct: {value: 10, heuristic: true, note: safety cap on the people-driven daily move}
+    ownership:
+      kind: survey_share
+      value: 19.9
+      definition: people aged 14 and over holding shares, equity funds or ETFs (used for adults 18+)
+      as_of: '2025'
+      source: investors.deu_dai2025
+      confidence: high
+    gradient:
+      source: investors.deu_phf2023
+      note: >-
+        households holding funds, by gross income group (Bundesbank PHF 2023), moved together on the log-odds
+        scale to the DAI share of people
+      bands:
+        - {pct_from: 0, pct_to: 20, own_share: 10}
+        - {pct_from: 20, pct_to: 40, own_share: 13}
+        - {pct_from: 40, pct_to: 60, own_share: 22}
+        - {pct_from: 60, pct_to: 80, own_share: 31}
+        - {pct_from: 80, pct_to: 90, own_share: 43}
+        - {pct_from: 90, pct_to: 100, own_share: 42}
+    holdings: {borrowed_from: USA, note: only the ratios between income groups matter; the US shape is used}
+    attention_scale: {value: 1.0, borrowed_from: USA, note: no German data on how often investors look}
+    multiplier: {value: 5.0, borrowed_from: USA, note: no German estimate of the price impact of flows was found}
+    kappa: {borrowed_from: USA, note: no German benchmark}
+    cross_checks:
+      - {source: investors.deu_phf2023, what: households holding shares directly (percent), value: 18}
+      - {source: investors.deu_phf2023, what: households holding funds (percent), value: 24}
+      - {source: investors.deu_dai2025, what: people 14+ holding individual shares (percent), value: 6.9}
+
+  BRA:
+    index:
+      name: Ibovespa
+      label: Brazilian stocks
+      currency: BRL
+      weekdays: [0, 1, 2, 3, 4]
+      weekdays_source: {heuristic: true, note: "Monday to Friday; exchange holidays are not modelled"}
+      max_daily_pct: {value: 10, heuristic: true, note: safety cap on the people-driven daily move}
+    ownership:
+      kind: survey_share
+      value: 2.0
+      definition: people aged 16 and over holding stocks (used for adults 18+)
+      as_of: '2025'
+      source: investors.bra_anbima2026
+      confidence: high
+    holdings: {borrowed_from: USA, note: only the ratios between income groups matter; the US shape is used}
+    attention_scale: {value: 1.0, borrowed_from: USA, note: no Brazilian login data}
+    multiplier: {value: 5.0, borrowed_from: USA, note: no Brazilian estimate of the price impact of flows was found}
+    kappa: {borrowed_from: USA, note: no Brazilian benchmark}
+    gradient: {borrowed_from: USA, note: no Brazilian ownership by income was found}
+    cross_checks:
+      - {source: investors.bra_b3_2026, what: unique individual investors in cash-market stocks, June 2026 (millions), value: 4.3}
+
+  NGA:
+    index:
+      name: NGX All-Share
+      label: Nigerian stocks
+      currency: NGN
+      weekdays: [0, 1, 2, 3, 4]
+      weekdays_source: {heuristic: true, note: "Monday to Friday; exchange holidays are not modelled"}
+      max_daily_pct: {value: 10, heuristic: true, note: safety cap on the people-driven daily move}
+    ownership:
+      kind: unique_investors
+      value: 3000000
+      definition: the securities regulator's statement that fewer than three million Nigerians invest in the capital market (an upper bound)
+      as_of: '2025'
+      adults: 128860000
+      adults_source: wpp2024.NGA
+      source: investors.nga_sec2025
+      confidence: low
+    holdings: {borrowed_from: USA, note: only the ratios between income groups matter; the US shape is used}
+    attention_scale: {value: 1.0, borrowed_from: USA, note: no Nigerian login data}
+    multiplier: {value: 5.0, borrowed_from: USA, note: no Nigerian estimate}
+    kappa: {borrowed_from: USA, note: no Nigerian benchmark}
+    gradient: {borrowed_from: USA, note: no Nigerian ownership by income was found}
+    gaps: [ownership by income, holdings, share of the market held by individuals]
+
+  IRN:
+    index:
+      name: TEDPIX
+      label: Iranian stocks
+      currency: IRR
+      weekdays: [5, 6, 0, 1, 2]
+      weekdays_source: {source: investors.irn_tse_week, note: Saturday to Wednesday}
+      max_daily_pct: {value: 10, heuristic: true, note: safety cap on the people-driven daily move}
+    ownership:
+      kind: unique_investors
+      value: 3174456
+      definition: individuals with an active trading code in the Iranian year 1403 (2024/25); Justice Shares holders who never trade are not counted
+      as_of: '2025'
+      adults: 69100000
+      adults_source: wpp2024.IRN
+      source: investors.irn_active_codes1403
+      confidence: medium
+    holdings: {borrowed_from: USA, note: only the ratios between income groups matter; the US shape is used}
+    attention_scale: {value: 1.0, borrowed_from: USA, note: no Iranian login data}
+    multiplier: {value: 5.0, borrowed_from: USA, note: no Iranian estimate}
+    kappa: {borrowed_from: USA, note: no Iranian benchmark}
+    gradient: {borrowed_from: USA, note: no Iranian ownership by income was found}
+    cross_checks:
+      - {source: investors.irn_sejam2025, what: SEJAM registrations, mostly Justice Shares (millions), value: 47.4}
+      - {source: investors.irn_sejam2025, what: SEJAM authenticated registrations (millions), value: 40.1}
+    gaps: [Justice Shares (about 47 million registrations) are not counted as holders, ownership by income, holdings, prices are nominal in a high-inflation economy]
+    illustrative: the count of active traders comes from a news report naming no official source, and prices are nominal in a high-inflation economy
+
+  IND:
+    index:
+      name: Nifty 50
+      label: Indian stocks
+      currency: INR
+      weekdays: [0, 1, 2, 3, 4]
+      weekdays_source: {heuristic: true, note: "Monday to Friday; exchange holidays are not modelled"}
+      max_daily_pct: {value: 10, heuristic: true, note: safety cap on the people-driven daily move}
+    ownership:
+      kind: survey_share
+      value: 9.5
+      definition: households investing in securities-market products, mutual funds included (a household share, used for adults)
+      as_of: '2025'
+      source: investors.ind_sebi2025
+      confidence: medium
+    cross_checks:
+      - {source: investors.ind_nse2026, what: unique registered investors at NSE, August 2026 (crore), value: 13.52}
+      - {source: investors.ind_nse2026, what: individuals who traded cash equities in the last 12 months (crore), value: 3.59}
+      - {source: investors.ind_sebi2025, what: households holding equities directly (percent), value: 5.3}
+    holdings: {borrowed_from: USA, note: only the ratios between income groups matter; the US shape is used}
+    attention_scale: {value: 1.0, borrowed_from: USA, note: no Indian login data}
+    multiplier: {value: 5.0, borrowed_from: USA, note: no market-wide Indian estimate}
+    kappa: {borrowed_from: USA, note: no Indian benchmark}
+    gradient: {borrowed_from: USA, note: no Indian ownership by income was found}
+
+  CHN:
+    index:
+      name: CSI 300
+      label: Chinese stocks
+      currency: CNY
+      weekdays: [0, 1, 2, 3, 4]
+      weekdays_source: {heuristic: true, note: "Monday to Friday; exchange holidays are not modelled"}
+      max_daily_pct: {value: 10, heuristic: true, note: "safety cap; most A shares also have a 10% daily price limit"}
+    ownership:
+      kind: accounts
+      value: 250060000
+      definition: natural persons with an open, non-dormant securities account at the depository (accounts, not people holding stock - an upper bound)
+      as_of: '2025'
+      adults: 1152200000
+      adults_source: wpp2024.CHN
+      source: investors.chn_csdc2025
+      confidence: low
+    holdings: {borrowed_from: USA, note: only the ratios between income groups matter; the US shape is used}
+    attention_scale: {value: 2.2, source: investors.jones_retail_china, note: "BRIDGE: Chinese market turnover 48% a month vs US 22% (2016-19), applied to how often people look"}
+    multiplier: {value: 4.0, source: investors.li_pearson_zhang, note: "a demand shock of 10 basis points raised the market about 40 basis points (range 30-48)"}
+    kappa: {borrowed_from: USA, note: no Chinese benchmark}
+    gradient: {borrowed_from: USA, note: no recent Chinese stock ownership by income was found}
+
+  IDN:
+    index:
+      name: IDX Composite
+      label: Indonesian stocks
+      currency: IDR
+      weekdays: [0, 1, 2, 3, 4]
+      weekdays_source: {heuristic: true, note: "Monday to Friday; exchange holidays are not modelled"}
+      max_daily_pct: {value: 10, heuristic: true, note: safety cap on the people-driven daily move}
+    ownership:
+      kind: unique_investors
+      value: 10137103
+      definition: unique investor IDs in the depository's exchange-securities system (stocks and bonds; IDs with no balance may count - an upper bound)
+      as_of: '2026'
+      adults: 204910000
+      adults_source: wpp2024.IDN
+      source: investors.idn_ksei2026
+      confidence: medium
+    cross_checks:
+      - {source: investors.idn_snlik2025, what: people 15-79 using capital-market products (percent), value: 1.34}
+    holdings: {borrowed_from: USA, note: only the ratios between income groups matter; the US shape is used}
+    attention_scale: {value: 1.0, borrowed_from: USA, note: no Indonesian login data}
+    multiplier: {value: 5.0, borrowed_from: USA, note: no Indonesian estimate}
+    kappa: {borrowed_from: USA, note: no Indonesian benchmark}
+    gradient: {borrowed_from: USA, note: no Indonesian ownership by income was found}

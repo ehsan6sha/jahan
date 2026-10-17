@@ -10,12 +10,39 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
 QUESTION_ID = re.compile(r"^[a-z0-9][a-z0-9-]{2,199}$")
+QuestionKind = Literal["by_date", "holds_through", "other"]
+KIND_LABELS = {
+    "by_date": "happens by a date (odds fall as quiet days pass)",
+    "holds_through": "something holds through a date (odds rise as quiet days pass)",
+    "other": "no time effect (a level on a date, a vote, a scheduled decision)",
+}
+_OTHER = re.compile(
+    r"\b(above|below|at least|more than|less than|over|under|largest|biggest|highest|lowest|win|wins|winner|"
+    r"elected|election|next|meeting|no change|cut|hike|price of|on (january|february|march|april|may|june|july|"
+    r"august|september|october|november|december) \d)",
+    re.IGNORECASE,
+)
+_HOLDS = re.compile(
+    r"\b(continue|continues|remain|remains|stay|stays|hold|holds|still|keep|keeps|survive|survives)\b", re.IGNORECASE
+)
+_BY = re.compile(r"\b(by|before|prior to|end of|in 20\d\d)\b", re.IGNORECASE)
+
+
+def classify_kind(question: str) -> tuple[QuestionKind, str]:
+    """How time passing bears on a question, from its wording (a rule; people can override it): ``holds_through``
+    (a state continues through the date), ``by_date`` (an event happens by the date) or ``other``.  Returns the
+    kind and the words that decided it."""
+    for pattern, kind in ((_HOLDS, "holds_through"), (_OTHER, "other"), (_BY, "by_date")):
+        m = pattern.search(question)
+        if m:
+            return kind, m.group(0)  # type: ignore[return-value]
+    return "other", ""
 
 
 class TraderShare(BaseModel):
@@ -59,6 +86,7 @@ class SeedQuestion(BaseModel):
     topic: str = "world"
     countries: list[str] | None = None
     note: str = ""
+    kind: QuestionKind = "other"  # how time passing bears on it (set by hand)
 
 
 class SeedFile(BaseModel):

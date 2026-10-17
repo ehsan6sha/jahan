@@ -148,6 +148,7 @@ class EventKind(IntEnum):
     QUESTION_OPENED = 31  # a watched question: item = its belief slot's item, value = starting price
     QUESTION_CLOSED = 32  # value = the simulated odds when it closed, detail = why
     ODDS_RATED = 33  # a story's bearing on a question: item = the story, value = direction, detail = question id
+    ECONOMY_STARTED = 34  # everyday activity turned on: value = version, detail = the markets (ISO3 codes)
 
 
 def is_item_update(kind: int, detail: str | None) -> bool:

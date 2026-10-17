@@ -1,7 +1,8 @@
 """One simulated day.  The phase order is part of the reproducibility contract.
 
 0 scheduled world events      scenario news/macro steps due today, auto-headlines, item expiry;
-                              watched questions past their resolve date close;
+                              watched questions past their resolve date close, and a quiet day passes for the
+                              others (odds of "by a date" questions fall, "holds through" ones rise);
                               trips start and end (location and time zone switch)
 1 availability masks          sleep, work, school by local time zone
 1b actions                    messages and posts by controlled agents and public figures are delivered
@@ -9,10 +10,14 @@
 2 media exposure
 3 contact sampling
 4 word-of-mouth diffusion; claims about products move views of those products
-4c event odds                 people who know a watched question update it on stories that bear on it
+4c event odds                 people who know a watched question update it on stories that bear on it;
+                              with everyday activity, traders who met talk about it
 4b reposts                    convinced, online people repost stories on social media (from tomorrow)
-5 mood                        economic sentiment drifts toward the news each agent knows
-5b markets                    US holders of stock trade on their change in mood and move the index (weekdays)
+5 mood                        economic sentiment drifts toward the news each agent knows (with everyday
+                              activity: also lower while unemployed, and pulled toward people met today)
+5b markets                    holders of stock trade on the news they know and move the index (trading days);
+                              with everyday activity, every country's market, acted on as people look at
+                              their accounts, plus cash-outs that differ from normal (sim/economy.py)
 6 decisions and realised outcomes -> trust updates
 7 life events                 deaths, births, marriages, divorces, labour moves, birthday transitions
 8 metrics
@@ -25,7 +30,7 @@ import numpy as np
 
 from jahan.actors.engine import deliver_actions
 from jahan.model.world import World
-from jahan.sim import market, metrics, questions
+from jahan.sim import economy, market, metrics, questions
 from jahan.sim.availability import compute_masks
 from jahan.sim.contacts import sample_contacts
 from jahan.sim.decisions import decide_and_realise
@@ -47,9 +52,12 @@ def run_day(
 ) -> dict[str, int]:
     params = world.config.params
     stats: dict[str, int] = {}
+    everyday = economy.enabled(world)
     opened = market.open_day(world)
+    eopened = economy.open_day(world)
     stats.update(apply_due(world, log))
     stats.update(questions.resolve_due(world, log))
+    odds_parts: dict[str, dict[str, float]] = {"time": questions.pass_time(world)}
     if params.travel:
         stats.update(travel(world, params, log))
     masks = compute_masks(world, params)
@@ -71,15 +79,20 @@ def run_day(
             )
     stats.update(diffuse(world, contacted, params, log, trace, trace_rows))
     stats["claims_applied"] = propagate_entity_claims(world, params)
-    odds_moved = questions.apply_bearings(world, params, log)
+    odds_parts["news"] = {}
+    odds_moved = questions.apply_bearings(world, params, log, odds_parts["news"])
     if odds_moved:
         stats["odds_beliefs_moved"] = odds_moved
+    odds_parts["talk"] = questions.traders_talk(world, contacted, params)
     stats.update(reposts(world, params, log))
-    update_sentiment(world, params)
-    stats.update(market.close_day(world, params, log, opened))
+    news = update_sentiment(world, params, contacted)
+    if everyday:
+        stats.update(economy.close_day(world, params, log, eopened, news))
+    else:
+        stats.update(market.close_day(world, params, log, opened))
     stats.update(decide_and_realise(world, params, log))
     if params.life_events:
         stats.update(run_life_events(world, params, log))
-    metrics.record(world, params, stats, mlog)
+    metrics.record(world, params, stats, mlog, odds_parts)
     world.day += 1
     return stats

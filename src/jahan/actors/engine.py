@@ -696,6 +696,7 @@ def create_agent(world: World, ev: CreateAgent, log: EventLog, prompt_id: int) -
     world.pop.append(1, **cols)
     world.beliefs.ensure_rows(world.pop.n)
     world.ptrust.ensure_rows(world.pop.n)
+    world.pstate.ensure_rows(world.pop.n)
     pop = world.pop
     row = world.agent_row(new_id)
     world.households["n_members"][hh] += 1

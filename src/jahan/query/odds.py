@@ -6,8 +6,10 @@ undone by a reset) and never pull the simulated odds.
 
 from __future__ import annotations
 
+import datetime as dt
 from typing import Any
 
+from jahan.model.questions import KIND_LABELS
 from jahan.model.world import World
 from jahan.query.watch import SeriesSpec
 from jahan.sim.questions import current_odds
@@ -82,6 +84,13 @@ def question_rows(rd: RunDir, world: World) -> list[dict[str, Any]]:
                 "final_odds": q.get("final_odds"),
                 "movers": _movers(world, q),
                 "claims": len(q["claims"]),
+                "kind": q.get("kind", "other"),
+                "kind_by": q.get("kind_by"),
+                "kind_why": q.get("kind_why", ""),
+                "kind_label": KIND_LABELS[q.get("kind", "other")],
+                "days_left": None
+                if not q.get("resolves_by")
+                else (dt.date.fromisoformat(str(q["resolves_by"])) - world.date()).days + 1,
             }
         )
     return rows
@@ -104,6 +113,7 @@ def question_specs(world: World) -> list[SeriesSpec]:
                 f"odds.{qid}",
                 item=int(q["item"]),
                 unit="probability",
+                components=("time", "news", "talk"),
                 note=("resolves " + str(q["resolves_by"]) if q.get("resolves_by") else "")
                 + ("" if q["status"] == "open" else f"; closed on day {q.get('closed_day')}"),
                 extra={"now": float("nan") if sim is None else sim["odds"], "qid": qid, "added_day": q["added_day"]},

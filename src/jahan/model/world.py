@@ -86,6 +86,62 @@ class BeliefStore:
         return bs
 
 
+class PersonState:
+    """Per-person arrays that only some worlds have (no schema change): created by a switch that turns on a
+    behaviour (e.g. everyday activity's stock positions), saved in snapshots as ``ps.<name>`` and hashed into the
+    fingerprint only when present, so worlds without them load, run and hash exactly as before.
+
+    Arrays are only ever added by such a switch, never to a world that already has the behaviour."""
+
+    def __init__(self, rows: int = 0) -> None:
+        self._rows = rows
+        self.arrays: dict[str, NDArray[Any]] = {}
+        self.fills: dict[str, float] = {}
+
+    def __contains__(self, name: str) -> bool:
+        return name in self.arrays
+
+    def __bool__(self) -> bool:
+        return bool(self.arrays)
+
+    def create(self, name: str, dtype: str, fill: float, rows: int) -> NDArray[Any]:
+        self._rows = max(self._rows, rows)
+        self.arrays[name] = np.full(self._rows, fill, dtype=dtype)
+        self.fills[name] = fill
+        return self.arrays[name]
+
+    def ensure_rows(self, rows: int) -> None:
+        """Room for ``rows`` people (births, created agents); new rows get each array's fill value."""
+        if rows <= self._rows or not self.arrays:
+            self._rows = max(self._rows, rows)
+            return
+        new_rows = max(rows, int(self._rows * 1.5) + 1)
+        for k, a in self.arrays.items():
+            b = np.full(new_rows, self.fills[k], dtype=a.dtype)
+            b[: a.shape[0]] = a
+            self.arrays[k] = b
+        self._rows = new_rows
+
+    def __getitem__(self, name: str) -> NDArray[Any]:
+        return self.arrays[name]
+
+    def to_arrays(self, n: int) -> dict[str, NDArray[Any]]:
+        out = {f"ps.{k}": np.ascontiguousarray(v[:n]) for k, v in self.arrays.items()}
+        out |= {f"psfill.{k}": np.asarray([self.fills[k]], dtype=v.dtype) for k, v in self.arrays.items()}
+        return out
+
+    @classmethod
+    def from_arrays(cls, arrays: dict[str, NDArray[Any]], capacity: int) -> PersonState:
+        ps = cls(capacity)
+        for key, a in arrays.items():
+            if key.startswith("ps."):
+                name = key[3:]
+                fill = arrays[f"psfill.{name}"]
+                ps.create(name, str(a.dtype), float(fill[0]), capacity)
+                ps.arrays[name][: a.shape[0]] = a
+        return ps
+
+
 class ParasocialStore:
     """Trust of every agent in every notable (Beta evidence; the prior is computed from attributes)."""
 
@@ -138,6 +194,7 @@ class World:
     # notable public figures: roster entries (JSON-able) + agent_id + country index; column j of ptrust
     notables: list[dict[str, Any]] = field(default_factory=list)
     ptrust: ParasocialStore = field(default_factory=lambda: ParasocialStore(16, ParasocialStore.RESERVED))
+    pstate: PersonState = field(default_factory=PersonState)  # per-person arrays of switched-on behaviours
     roles: dict[str, Any] = field(default_factory=dict)  # role -> RoleSpec (data/roles.yaml)
     markets: MarketsConfig | None = None  # market reactions to announcements (data/global/markets.yaml)
     product_names: list[str] = field(default_factory=list)  # index = product id

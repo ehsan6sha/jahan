@@ -78,6 +78,13 @@ def gen(
             "approval and stances may then include later information",
         ),
     ] = False,
+    economy: Annotated[
+        bool,
+        typer.Option(
+            help="Everyday activity from day 0 (people act on news as they look at their accounts, each "
+            "country's stock market, saving and cashing out); --no-economy makes a world like older ones"
+        ),
+    ] = True,
 ) -> None:
     """Generate a new world."""
     rd = RunDir(run_dir)
@@ -94,6 +101,8 @@ def gen(
         cfg.seed = seed
     if start_date:
         cfg.start_date = dt.date.fromisoformat(start_date)
+    if not economy:
+        cfg.economy = False
     problems = validate_data(paths.data_dir(), cfg.countries, start_date=cfg.start_date if cfg.notables else None)
     if allow_later_roster:
         later = [p for p in problems if is_later_roster(p)]
@@ -1070,6 +1079,54 @@ def bench(
     typer.echo(
         f"generate: {t1 - t0:.2f}s; simulate {days} days: {t2 - t1:.2f}s "
         f"({1000 * (t2 - t1) / max(days, 1):.1f} ms/day; {world.edges.n} directed edges)"
+    )
+
+
+economy_app = typer.Typer(
+    help="Everyday activity: people act on news as they look at their accounts, each country's own stock "
+    "market, saving and cashing out, moods moved by job losses and conversation.",
+    no_args_is_help=True,
+)
+app.add_typer(economy_app, name="economy")
+
+
+@economy_app.command("on")
+def economy_on(
+    run_dir: RunOpt,
+    yes: Annotated[bool, typer.Option("--yes", "-y", help="Skip confirmation")] = False,
+) -> None:
+    """Turn on everyday activity from today in a world made before it existed (new worlds have it).
+
+    Recorded as a prompt with a snapshot before it, so `jahan reset --before-prompt N` undoes it; days already
+    simulated stay as they were."""
+    from jahan.model.economy import economy_cfg
+    from jahan.scenario.spec import EconomyEvent
+
+    rd = RunDir(run_dir)
+    world = _load_head(rd)
+    if "economy" in world.macro:
+        typer.echo(f"Everyday activity is already on in this world (since day {world.macro['economy']['since_day']}).")
+        return
+    cfg = economy_cfg(paths.data_dir(), [c.iso3 for c in world.countries])
+    if cfg is None or not cfg["markets"]:
+        raise typer.BadParameter("no everyday-activity data for the countries of this world (data/global)")
+    from jahan.model.questions import classify_kind
+    from jahan.scenario.spec import QuestionEvent
+    from jahan.sim.questions import open_questions
+
+    events: list = [EconomyEvent(cfg=cfg)]
+    for qid, q in open_questions(world):  # questions watched before kinds existed: time passes for them too
+        kind, words = classify_kind(q["question"])
+        if q.get("kind_by") is None and kind != "other" and q.get("resolves_by"):
+            events.append(
+                QuestionEvent(id=qid, action="set", kind=kind, kind_by="rule", kind_why=f'wording: "{words}"')
+            )
+    spec = Scenario(prompt="Turn on everyday activity", events=events)
+    pid = _inject_spec(rd, world, spec, yes, source="economy", quiet=True)
+    markets = ", ".join(f"{m['label']} ({m['name']})" for m in cfg["markets"].values())
+    typer.echo(
+        f"Everyday activity is on from day {world.day} (prompt {pid}). Markets: {markets}. "
+        f"Undo with `jahan reset --run {run_dir} --before-prompt {pid}`."
     )
 
 

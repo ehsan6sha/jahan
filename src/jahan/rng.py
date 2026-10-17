@@ -60,6 +60,9 @@ class Stream(IntEnum):
     SOCIAL = 20  # social media: reposts by ordinary people
     INVEST = 21  # who holds US stock: a lifetime draw per person (day fixed at 0)
     ODDS = 22  # event-market traders (k=0) and their initial beliefs about a question (k>=1)
+    ATTENTION = 23  # how often a stock holder looks at their account: a lifetime draw (day fixed at 0)
+    SAVE = 24  # retirement-plan participation (k=0, lifetime) and hardship withdrawals (k=1, daily)
+    ODDS_TALK = 25  # which pairs of traders who met discuss a watched question (per contact and question)
 
 
 def mix_int(x: int) -> int:

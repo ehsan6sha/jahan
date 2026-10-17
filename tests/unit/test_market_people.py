@@ -22,7 +22,10 @@ START = "2026-10-13"  # a Tuesday
 
 
 def _world(countries=("USA",), n=1200, seed=5, **params):
-    cfg = RunConfig(n_agents=n, countries=list(countries), seed=seed, start_date=START, params=SimParams(**params))
+    # the older engine (people trade the day they learn news): worlds without everyday activity (test_economy.py)
+    cfg = RunConfig(
+        n_agents=n, countries=list(countries), seed=seed, start_date=START, economy=False, params=SimParams(**params)
+    )
     return generate_world(cfg)
 
 

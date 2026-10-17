@@ -158,4 +158,12 @@ def generate_world(config: RunConfig, data_dir: Path | None = None) -> World:
     investors = load_investors(dd)
     world.init_macro(None if investors is None else investors.to_world())
     world.day = 0
+    if config.economy:
+        from jahan.model.economy import economy_cfg
+        from jahan.sim.economy import switch_on  # deferred: the simulation builds on generation
+        from jahan.store.eventlog import EventLog
+
+        cfg = economy_cfg(dd, list(config.countries))
+        if cfg is not None and cfg["markets"]:
+            switch_on(world, cfg, EventLog(), None)
     return world

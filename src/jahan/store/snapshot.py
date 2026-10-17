@@ -29,7 +29,7 @@ from jahan.model.schema import (
     SCHEMA_VERSION,
     WORKPLACE_COLUMNS,
 )
-from jahan.model.world import BeliefStore, ParasocialStore, World
+from jahan.model.world import BeliefStore, ParasocialStore, PersonState, World
 from jahan.soa import SoATable
 
 TABLES = {
@@ -85,6 +85,9 @@ def world_fingerprint(world: World) -> str:
     h.update(np.ascontiguousarray(world.ptrust.beta[: world.pop.n]).tobytes())
     for a in (world.product_price, world.product_available, world.product_price_usd):
         h.update(np.ascontiguousarray(a).tobytes())
+    for name, arr in sorted(world.pstate.to_arrays(world.pop.n).items()):  # none in worlds without them
+        h.update(name.encode())
+        h.update(np.ascontiguousarray(arr).tobytes())
     meta = {
         "day": world.day,
         "seed": world.sim_seed,
@@ -111,6 +114,7 @@ def save_snapshot(world: World, path: Path, data_dir: Path | None = None, label:
     arrays["product_price_usd"] = world.product_price_usd
     arrays["ptrust.alpha"] = world.ptrust.alpha[: world.pop.n]
     arrays["ptrust.beta"] = world.ptrust.beta[: world.pop.n]
+    arrays.update(world.pstate.to_arrays(world.pop.n))
     np.savez(path.with_suffix(".npz"), **arrays)
     meta = {
         "schema_version": SCHEMA_VERSION,
@@ -165,6 +169,7 @@ def load_snapshot(path: Path, data_dir: Path | None = None, check_data: bool = T
     world.ptrust = ParasocialStore(world.pop.capacity, int(pa.shape[1]))
     world.ptrust.alpha[: pa.shape[0]] = pa
     world.ptrust.beta[: pb.shape[0]] = pb
+    world.pstate = PersonState.from_arrays(arrays, world.pop.capacity)
     world.day = int(meta["day"])
     world.sim_seed = int(meta["sim_seed"])
     world.counters = {k: int(v) for k, v in meta["counters"].items()}

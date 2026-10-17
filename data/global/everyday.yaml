@@ -1,0 +1,96 @@
+# Everyday activity (sim/economy.py, sim/world_events.update_sentiment): what simulated people do on days with
+# no news, and how late they act on news.
+#
+# Read when a world is generated (or by `jahan economy on`) and copied into the world (macro["economy"]["cfg"]),
+# so editing this file never changes or breaks an existing world. Not hashed into snapshots.
+#
+# Every number has a registry `source`, or `heuristic: true` with a note, or `borrowed_from` with a note.
+
+attention:
+  # How often stock holders look at their accounts. Sicherman, Loewenstein, Seppi and Utkus (2016), Table 2:
+  # days logged in over 2007-2008 (730 days) at each percentile of 100,000 Vanguard 401(k) accounts. Each
+  # simulated holder gets a lifetime draw from this spread; a holder who looks on a share `a` of days closes the
+  # share `a` of the gap between their position and their target every day (deterministic partial adjustment).
+  source: investors.sicherman2016
+  # cross-check (not used): Gargano and Rossi's brokerage data, mean 27.5 days between logins, median 11.2
+  of_days: 730
+  percentiles: [0, 1, 5, 10, 25, 50, 75, 90, 95, 99, 100]
+  days: [0, 0, 1, 4, 11, 36, 115, 242, 338, 507, 730]  # 100th percentile: every day (the bound, not a reading)
+  published_mean: 85.2  # the interpolation above implies about 90 (reported by the benchmark)
+  down_day_factor:
+    value: 0.905
+    source: investors.sicherman2016
+    note: logins fall 9.5% after a market decline (the Dow on the previous trading day)
+  weekend_factor:
+    value: 1.0
+    heuristic: true
+    note: >-
+      the paper reports fewer logins at weekends but gives no number here, so weekends count like weekdays; weekend
+      trades wait for the next trading day anyway
+
+mood:
+  unemployed_shift:
+    value: -0.09
+    source: investors.kuchler_zafar2019
+    note: >-
+      BRIDGE (ours): becoming unemployed raises the stated chance that US unemployment rises in a year by 4-5
+      percentage points (individual fixed effects; finding a job lowers it by 4). Mapped onto the -1..1 mood scale
+      as mood = 1 - 2p, so 4.5 points = -0.09. Used for every country (measured in the US). The same paper finds
+      no effect of personal experience on stock-price expectations, so it does not drive trading.
+  contagion:
+    value: 0.05
+    heuristic: true
+    note: >-
+      daily pull of a person's mood toward the average mood of the people they met that day (a convex mix with
+      their own target: moods neither collapse to one value nor split apart). No published estimate of this
+      rate was found; the benchmark reports how much it matters.
+
+saving:
+  # Workplace retirement saving. Paycheck contributions and retiree drawdowns are steady and already in the
+  # price (shown, never moving it); cash-outs and hardship withdrawals that differ from what is normal for the
+  # day move prices. Only the USA is modelled (no sourced flows elsewhere).
+  countries: [USA]
+  participation_by_wage_quartile:
+    values: [23, 47, 66, 80]
+    source: investors.bls_ncs2025
+    note: percent of private-industry workers participating in a retirement plan, lowest to highest wage quartile
+  contribution_share_of_pay:
+    value: 0.121
+    source: investors.vanguard_has2026
+    note: average total contribution rate, employee plus employer (2025 estimate)
+  equity_share:
+    value: 0.76
+    source: investors.vanguard_has2026
+    note: share of plan assets in equities, 2025 (dollar-weighted)
+  dc_share_of_equity:
+    value: 0.128
+    source: investors.fed_z1_2026q2
+    note: >-
+      equity in defined-contribution plans as a share of household equity (2026 Q2). IRAs are not touched by
+      leaving a job, so only DC plans count here
+  cashout_by_balance:
+    # share of people leaving a job who take cash, by the size of their plan balance (1 - the share preserving
+    # their savings); a simulated job loser's plan balance is dc_share x their stock holdings / equity_share
+    source: investors.vanguard_has2026
+    note: "Vanguard plans, 2025: overall 28% of people but 6% of the dollars took cash"
+    balance_usd: [1000, 5000, 10000, 25000, 50000, 100000, 250000, 500000]
+    cash_share: [0.31, 0.38, 0.41, 0.36, 0.26, 0.18, 0.11, 0.07, 0.05]
+  hardship_rate:
+    value: 0.06
+    source: investors.vanguard_has2026
+    note: share of participants with the option taking a hardship withdrawal in 2025 (5% in 2024)
+  hardship_amount_usd:
+    value: 1900
+    source: investors.vanguard_has2026
+    note: median hardship withdrawal, 2025
+  drawdown_rate:
+    value: 0.05
+    source: investors.ici_ira2026
+    note: >-
+      median share of balance withdrawn by traditional-IRA households that withdrew (tax year 2024); the
+      required minimum at 73 is 3.77%. Display only: steady drawdowns are already in the price
+
+min_holders:
+  value: 30
+  heuristic: true
+  note: a market with fewer simulated holders than this is labelled illustrative (a few people carry it)

@@ -1496,6 +1496,216 @@ entries:
   license: n/a (fitted in this repository)
   confidence: provisional
   notes: "No published value links a change in mood to a change in equity holdings; this is the one fitted number of the people-driven market. The fit record and its hold-out results are in data/global/investors.yaml."
+- id: investors.sicherman2016
+  country: USA
+  variable: how often stock holders look at their accounts (days logged in), and how logins change after market falls
+  source: "Sicherman, Loewenstein, Seppi and Utkus (2016), Financial Attention, Review of Financial Studies 29(4), 863-897, Table 2 and Section 3"
+  url: https://www.cmu.edu/dietrich/sds/docs/loewenstein/FinancialAttention.pdf
+  year: 2016
+  retrieved: '2026-10-17'
+  license: citation (journal article)
+  confidence: high
+  notes: "100,000 paperless Vanguard 401(k) accounts, 2007-2008 (730 days). Days logged in at percentiles 1/5/10/25/50/75/90/95/99: 0/1/4/11/36/115/242/338/507, mean 85.2; days traded median 1, mean 2.03. Logins fall 9.5% after market declines (the ostrich effect). Retirement accounts in a crisis period; borrowed for every country. Cross-check: Gargano and Rossi (2017 working paper, a US brokerage): mean 27.51 days between logins, median 11.20."
+- id: investors.kuchler_zafar2019
+  country: USA
+  variable: how a person's own job loss or job finding changes their expectation of national unemployment
+  source: "Kuchler and Zafar (2019), Personal Experiences and Expectations about Aggregate Outcomes, Journal of Finance 74(5); Federal Reserve Bank of New York Staff Report 748 (2015), Table 6"
+  url: https://www.newyorkfed.org/medialibrary/media/research/staff_reports/sr748.pdf
+  year: 2019
+  retrieved: '2026-10-17'
+  license: citation (journal article; staff report public)
+  confidence: high
+  notes: "Survey of Consumer Expectations, 28,615 observations of 4,554 people. With individual fixed effects, becoming unemployed raises the stated chance that US unemployment will be higher in a year by 4-5 percentage points (mean 38.8%); finding a job out of unemployment lowers it by about 4. Labour experiences do not affect expectations about stock prices or interest rates. Jahan maps 4.5 points onto mood as 1 - 2p (a bridge, -0.09)."
+- id: investors.bls_ncs2025
+  country: USA
+  variable: participation in workplace retirement plans by wage quartile, private industry
+  source: "US Bureau of Labor Statistics, Employee Benefits in the United States, March 2025 (news release 25 September 2025), Table 1"
+  url: https://www.bls.gov/news.release/archives/ebs2_09252025.htm
+  year: 2025
+  retrieved: '2026-10-17'
+  license: public domain (US government work)
+  confidence: high
+  notes: "Participation 53% of private-industry workers (access 72%); by average wage quartile, lowest to highest: 23, 47, 66, 80 percent."
+- id: investors.vanguard_has2026
+  country: USA
+  variable: workplace retirement plan behaviour - contributions, equity share, cash-outs on leaving a job, hardship withdrawals
+  source: "Vanguard, How America Saves 2026 (2025 data), pp. 6, 9, 55, 98-106"
+  url: https://workplace.vanguard.com/content/dam/inst/iig-transformation/has/2026/pdf/HowAmericaSaves2026.pdf
+  year: 2026
+  retrieved: '2026-10-17'
+  license: citation (industry report)
+  confidence: high
+  notes: "Total contribution rate including employer 12.1% (average, 2025 estimate); 76% of plan assets in equities; of participants with the option, 6% took a hardship withdrawal (median $1,900); of participants who left a plan, 28% took cash, 6% of the assets; share of participants preserving savings by balance - under $1k 69%, $1-5k 62%, $5-10k 59%, $10-25k 64%, $25-50k 74%, $50-100k 82%, $100-250k 89%, $250-500k 93%, $500k+ 95%. Vanguard-administered plans only. Read by a research agent from the PDF; re-checked figures quoted."
+- id: investors.fed_z1_2026q2
+  country: USA
+  variable: share of household equity held in defined-contribution plans
+  source: "Board of Governors of the Federal Reserve System, Financial Accounts of the United States (Z.1), table S.1.e, 2026 Q2 (released 11 September 2026)"
+  url: https://www.federalreserve.gov/releases/z1/current/html/S1M_e_b.htm
+  year: 2026
+  retrieved: '2026-10-17'
+  license: public domain (US government work)
+  confidence: medium
+  notes: "Equity in defined-contribution plans (8,368.5 + 761.2 + 374.1) of 74,027.1 household equity shares at market value = 12.8% (13.6% at end-2025). IRAs are not broken out (DC plus IRA lies between 12.8% and about 40%); the denominator likely includes closely held equity, which understates the share. Only DC plans matter for cash-outs on leaving a job."
+- id: investors.ici_ira2026
+  country: USA
+  variable: how much retirees withdraw from retirement accounts each year
+  source: "Investment Company Institute, The Role of IRAs in US Households' Saving for Retirement, 2026 (ICI Research Perspective 32-7), p. 16; IRS Publication 590-B (required minimum distributions from age 73)"
+  url: https://www.ici.org/system/files/2026-06/per32-07.pdf
+  year: 2026
+  retrieved: '2026-10-17'
+  license: citation (industry report); public domain (IRS)
+  confidence: high
+  notes: "Traditional-IRA households that withdrew took a median of 5% of the balance (tax year 2024); 70% based the amount on the required minimum distribution, which is 3.77% at age 73 (Uniform Lifetime divisor 26.5). Used for display only: steady drawdowns are already in the price."
+- id: investors.deu_dai2025
+  country: DEU
+  variable: share of people aged 14+ holding shares, equity funds or ETFs
+  source: "Deutsches Aktieninstitut, Aktionaerszahlen 2025 (13 January 2026), pp. 3, 18-19, 23"
+  url: https://www.dai.de/fileadmin/user_upload/260113_Aktionaerszahlen_2025_Deutsches_Aktieninstitut.pdf
+  year: 2026
+  retrieved: '2026-10-17'
+  license: citation (association study)
+  confidence: high
+  notes: "14.1 million people, 19.9% of the population aged 14+ (2024: 12.1m, 17.2%); individual shares only 6.9%. From 2025 the count includes employer-paid savings plans (VL), about +0.4m. By personal net income: none 8.4%, under EUR 1k 10.2%, 1-2k 12.9%, 2-3k 24.1%, 3-4k 40.4%, 4k+ 47.1%."
+- id: investors.deu_phf2023
+  country: DEU
+  variable: households holding shares and funds by gross-income group, and median holdings
+  source: "Deutsche Bundesbank, Monatsbericht April 2025, Vermoegen und Finanzen privater Haushalte in Deutschland: Ergebnisse der Vermoegensbefragung 2023, pp. 66-67"
+  url: https://publikationen.bundesbank.de/publikationen-de/berichte-studien/monatsberichte
+  year: 2025
+  retrieved: '2026-10-17'
+  license: citation (central bank publication)
+  confidence: high
+  notes: "PHF 2023: households holding shares directly 18%, funds 24%; by gross-income quantile 0-20/20-40/40-60/60-80/80-90/90-100: shares 10/8/15/19/34/37, funds 10/13/22/31/43/42; conditional medians shares EUR 14,500, funds EUR 19,300. (PHF 2021: 15% / 21%.)"
+- id: investors.bra_anbima2026
+  country: BRA
+  variable: share of people aged 16+ holding stocks, funds or any financial investment
+  source: "ANBIMA, Raio X do Investidor Brasileiro, 9th edition (release of 23 April 2026; 2025 data, n=5,832)"
+  url: https://www.anbima.com.br/pt_br/noticias/anbima-lanca-a-nona-edicao-do-raio-x-do-investidor-brasileiro-36-da-populacao-aplica-em-produtos-financeiros.htm
+  year: 2026
+  retrieved: '2026-10-17'
+  license: citation (association survey)
+  confidence: high
+  notes: "Stocks 2% (3% in 2024), funds 5%, any financial investment 36%. Read from the release, not the full report."
+- id: investors.bra_b3_2026
+  country: BRA
+  variable: individual investors (distinct tax IDs) holding listed products at B3
+  source: "B3, Uma analise da evolucao dos investidores pessoa fisica, 2nd quarter 2026; B3 news, 6 July 2026"
+  url: https://www.b3.com.br/pt_br/noticias/avanco-dos-etfs-destacam-evolucao-do-investidor-pessoa-fisica-na-b3.htm
+  year: 2026
+  retrieved: '2026-10-17'
+  license: citation (exchange publication)
+  confidence: high
+  notes: "June 2026: 5.714 million distinct CPFs with a position in variable income (stocks, real-estate funds, ETFs, BDRs), 4.3 million in cash-market stocks; median cash-market stock balance about R$1.1k (medium confidence); about 1.7 million trade equities each month."
+- id: investors.nga_sec2025
+  country: NGA
+  variable: number of Nigerians investing in the capital market
+  source: "Arise News, report of remarks by SEC Director-General Emomotimi Agama (27 October 2025); earlier SEC statement of under 5% of adults (Financial Edge, undated)"
+  url: https://www.arise.tv/sec-boss-agama-decries-5-5m-daily-gambling-spend-as-nigerians-shun-capital-market
+  year: 2025
+  retrieved: '2026-10-17'
+  license: citation (news report of an official's remarks)
+  confidence: low
+  notes: "Fewer than three million Nigerians invest in the capital market (a statement, not survey data); under 4% of adults active per the report's narration; an earlier SEC head said under 5% of adults. CSCS: about 6 million accounts, about 10% active (a third party's remark). Jahan uses 3 million as an upper bound."
+- id: investors.irn_active_codes1403
+  country: IRN
+  variable: individuals with an active trading code in the Iranian stock markets
+  source: "Nabz-e Bourse, number of active trading codes in 1403 (16 Farvardin 1404, about 5 April 2025)"
+  url: https://www.nabzebourse.com/fa/news/97414
+  year: 2025
+  retrieved: '2026-10-17'
+  license: citation (news)
+  confidence: medium
+  notes: "3,174,456 individuals and 5,112 legal entities traded in the Iranian year 1403 (about March 2024 - March 2025), excluding codes that only took part in IPOs; the report names no official source. Individuals were 71% of trading value. Justice Shares holders who never trade are not counted."
+- id: investors.irn_sejam2025
+  country: IRN
+  variable: registrations in the SEJAM investor registry (mostly Justice Shares holders)
+  source: "Taadol newspaper, citing the Central Securities Depository of Iran (18 September 2025)"
+  url: https://www.taadolnewspaper.ir/fa/news/357825
+  year: 2025
+  retrieved: '2026-10-17'
+  license: citation (news)
+  confidence: high
+  notes: "47,445,110 registrations and 40,063,835 authenticated at the end of Mordad 1404 (about 22 August 2025). Most stem from Justice Shares, allocated by the government; not used as holders (user decision 2026-10-16)."
+- id: investors.irn_tse_week
+  country: IRN
+  variable: trading days of the Tehran stock markets
+  source: "Nabz-e Bourse market notices (3 and 30 June 2026); Tehran Stock Exchange schedule as reported"
+  url: https://www.nabzebourse.com/fa/news/132749
+  year: 2026
+  retrieved: '2026-10-17'
+  license: citation (news)
+  confidence: medium
+  notes: "Trading Saturday to Wednesday, closed Thursday and Friday; equities 09:00-12:30 from 6 June 2026. The official tse.ir page could not be opened."
+- id: investors.ind_sebi2025
+  country: IND
+  variable: share of households investing in securities-market products
+  source: "Securities and Exchange Board of India, Investor Survey 2025, Main Report (press release 30 September 2025), pp. 32, 36, 41"
+  url: https://www.sebi.gov.in/sebi_data/commondocs/jan-2026/Investor%20Survey%202025%20Main%20Report.pdf
+  year: 2025
+  retrieved: '2026-10-17'
+  license: citation (regulator publication)
+  confidence: high
+  notes: "3.21 crore of 33.72 crore households (9.5%) invest in securities-market products (mutual funds included); urban 15%, rural 6%; households with direct equities 5.3% (6.3% on p. 41). A household share, used by Jahan as the share of adults (a bridge)."
+- id: investors.ind_nse2026
+  country: IND
+  variable: unique registered investors at the National Stock Exchange of India, and how many trade
+  source: "NSE Market Pulse, September 2026"
+  url: https://nsearchives.nseindia.com/web/mediaattachment/2026-09/Market_Pulse_September_2026_Final.pdf
+  year: 2026
+  retrieved: '2026-10-17'
+  license: citation (exchange publication)
+  confidence: high
+  notes: "13.52 crore unique registered investors (unique PANs) on 31 August 2026, of whom about 1.45 crore traded that month; 3.59 crore individuals traded the cash segment over the trailing 12 months."
+- id: investors.chn_csdc2025
+  country: CHN
+  variable: investors with an open, non-dormant securities account at China's depository
+  source: "China Securities Depository and Clearing, 2025 statistics (reprinted by 36kr, Sina and Eastmoney, June 2026)"
+  url: https://36kr.com/newsflashes/3851531714680072
+  year: 2026
+  retrieved: '2026-10-17'
+  license: citation (depository statistics via reprints)
+  confidence: low
+  notes: "250.67 million unified accounts with non-cancelled, non-dormant A/B-share accounts at end-2025: 250.06 million natural persons, 0.61 million institutions. Counts accounts, not people holding stock: an upper bound. No national survey of direct stock ownership after 2017 was found (CHFS 2015: 9.3% of households). chinaclear.cn could not be opened."
+- id: investors.jones_retail_china
+  country: CHN
+  variable: trading activity of retail investors in China compared with the US
+  source: "Jones, Shi, Zhang and Zhang, Understanding Retail Investors: Evidence from China (Journal of Financial and Quantitative Analysis; ABFER 2022 version)"
+  url: https://abfer.org/media/abfer-events-2022/annual-conference/papers-investfin/AC22P3020_Understanding-Retail-Investors_Evidence-from-China.pdf
+  year: 2022
+  retrieved: '2026-10-17'
+  license: citation (journal article)
+  confidence: high
+  notes: "Shanghai Stock Exchange 2016-2019: retail investors did 81% of trading volume and held 22% of tradable market value; average monthly turnover 48.32% against 22% in the US over the same period. Jahan uses the turnover ratio as a bridge to how often Chinese holders act (x2.2), stated as a bridge."
+- id: investors.li_pearson_zhang
+  country: CHN
+  variable: price impact of a demand shock on the aggregate Chinese stock market
+  source: "Li, Pearson and Zhang, Price Elasticity of Demand in the Chinese Stock Market (SSRN 3731219)"
+  url: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3731219
+  year: 2021
+  retrieved: '2026-10-17'
+  license: citation (working paper)
+  confidence: medium
+  notes: "A demand shock of 10 basis points of market value raised the aggregate market about 40 basis points (range 30-48), using IPO subscription freezes; Jahan reads this as a multiplier of about 4. Read from an abstract and summary."
+- id: investors.idn_ksei2026
+  country: IDN
+  variable: unique investor IDs at Indonesia's central securities depository
+  source: "Kustodian Sentral Efek Indonesia, Statistik Publik, August 2026 (and December 2025)"
+  url: https://web.ksei.co.id/files/Statistik_Publik_Agustus_2026_final.pdf
+  year: 2026
+  retrieved: '2026-10-17'
+  license: citation (depository statistics)
+  confidence: medium
+  notes: "August 2026: 31,136,576 investor IDs in total, 29,841,507 in mutual funds, 10,137,103 in C-BEST (stocks and other exchange securities, bonds included; mutual-fund-only investors are in S-INVEST); December 2025: 20.3m and 8.6m. Whether IDs with a zero balance count is not stated, so C-BEST is an upper bound on people holding stocks."
+- id: investors.idn_snlik2025
+  country: IDN
+  variable: capital-market literacy and inclusion of people aged 15-79
+  source: "Otoritas Jasa Keuangan and Badan Pusat Statistik, Survei Nasional Literasi dan Inklusi Keuangan 2025, as reported by Detik Finance (2 May 2025)"
+  url: https://finance.detik.com/moneter/d-7896819
+  year: 2025
+  retrieved: '2026-10-17'
+  license: citation (news report of an official survey)
+  confidence: medium
+  notes: "Capital-market literacy 17.78%, inclusion (use of products) 1.34%; n=10,800, fieldwork January-February 2025; the inclusion reference period is not confirmed. Shown as a cross-check: it is far below the depository's ID count."
 - id: odds.kagan2026
   country: USA
   variable: share of US internet-using adults who placed a prediction-market trade in the past year

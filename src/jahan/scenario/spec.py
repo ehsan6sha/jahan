@@ -148,6 +148,10 @@ class MacroPath(BaseModel):
     ``country`` None applies it to every non-USD country.  ``gold``: global gold price index.
     ``us_stocks``: US stock index (S&P 500), news in the USA.
     ``sentiment``: direct shift of economic mood in a country (or everywhere).
+    ``job_loss_rate`` / ``job_find_rate``: how often people lose or find jobs, relative to the country's normal
+    rate (+100 doubles it; the change lasts until another step changes it back, e.g. +100 on day 0, then -50 on
+    day 90 to return to normal).  In worlds with everyday activity, people who lose jobs cash out part of their
+    retirement savings, so layoffs above normal make US stocks fall.
     Large moves generate automatic headlines in the affected countries when ``auto_news`` is true.
     For a Fed rate decision or a jobs report use an ``announcement`` instead: the engine computes the market
     moves from published estimates.
@@ -155,7 +159,7 @@ class MacroPath(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
     type: Literal["macro"] = "macro"
-    variable: Literal["fx_local_per_usd", "gold", "us_stocks", "sentiment"]
+    variable: Literal["fx_local_per_usd", "gold", "us_stocks", "sentiment", "job_loss_rate", "job_find_rate"]
     country: str | None = None
     steps: list[MacroStep]
     auto_news: bool = True
@@ -260,11 +264,17 @@ class QuestionEvent(BaseModel):
     ``price`` is the market's "Yes" price on ``fetch_date`` (the traders' starting point); ``prior`` is used
     when there is no market price.  ``trader_share`` and ``skew`` come from data/global/odds.yaml when the
     command builds the event, so the event alone replays the same world.
+
+    ``kind`` says how time passing bears on it: ``by_date`` (an event happens by the date: with no news the
+    odds fall as days pass), ``holds_through`` (a state continues through the date: they rise), ``other`` (a
+    level on a date, a vote: no time effect).  ``kind_by`` records who decided (seed file, wording rule, user);
+    events written before kinds existed have none and keep no time effect.  ``action`` ``set`` changes the kind
+    of an open question.
     """
 
     model_config = ConfigDict(extra="forbid")
     type: Literal["question"] = "question"
-    action: Literal["open", "close"] = "open"
+    action: Literal["open", "close", "set"] = "open"
     id: str
     question: str = ""
     description: str = Field("", max_length=400)
@@ -287,6 +297,9 @@ class QuestionEvent(BaseModel):
         }
     )
     sources: list[str] = Field(default_factory=list)  # registry ids behind trader_share and the aggregation
+    kind: Literal["by_date", "holds_through", "other"] = "other"
+    kind_by: Literal["seed", "rule", "user"] | None = None
+    kind_why: str = Field("", max_length=200)
 
     @field_validator("id")
     @classmethod
@@ -306,6 +319,19 @@ class QuestionEvent(BaseModel):
         if self.price is not None:
             return float(self.price)
         return float(self.prior if self.prior is not None else 0.5)
+
+
+class EconomyEvent(BaseModel):
+    """Turn on everyday activity from today (people act on news as they look at their accounts, every country's
+    own stock market, saving and cashing out, moods moved by job losses and conversation).  Created by `jahan
+    economy on` for worlds made before it existed (new worlds have it from the start), never by a free-text
+    prompt.  ``cfg`` is the world's own copy of the settings, built from the data files by the command, so the
+    event alone replays the same world; undo it with `jahan reset --before-prompt`."""
+
+    model_config = ConfigDict(extra="forbid")
+    type: Literal["economy"] = "economy"
+    version: int = 1
+    cfg: dict[str, Any]
 
 
 class SocialPostEvent(BaseModel):
@@ -377,6 +403,7 @@ AnyEvent = Annotated[
     | SocialPostEvent
     | SocialDigest
     | QuestionEvent
+    | EconomyEvent
     | Control
     | Message
     | Post

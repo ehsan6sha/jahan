@@ -16,7 +16,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from jahan.actors import engine
-from jahan.model.enums import CHANNEL_KIND_NAMES, EventKind, OriginKind, Topic
+from jahan.model.enums import CHANNEL_KIND_NAMES, EmpStatus, EventKind, OriginKind, Topic
 from jahan.model.world import World
 from jahan.scenario.inject import create_item, retire_item, start_news, start_social, start_statement
 from jahan.scenario.spec import NewsEvent, SocialPostEvent, Statement
@@ -135,6 +135,15 @@ def apply_macro(world: World, e: dict, log: EventLog) -> None:
         after = world.macro["us_stocks_index"]
         log.add(world.day, EventKind.MACRO_UPDATE, -1, -1, -1, after, -1, "us_stocks_index")
         stocks_headline(world, before, after, log, targets, e.get("auto_news", True))
+    elif var in ("job_loss_rate", "job_find_rate"):
+        # created on first use, so worlds that never script the labour market keep their fingerprints
+        lab = world.macro.setdefault(
+            "labour", {"job_loss_mult": [1.0] * world.n_countries, "job_find_mult": [1.0] * world.n_countries}
+        )
+        key = "job_loss_mult" if var == "job_loss_rate" else "job_find_mult"
+        for c in targets:
+            lab[key][c] = max(0.0, float(lab[key][c]) * (1.0 + pct / 100.0))
+            log.add(world.day, EventKind.MACRO_UPDATE, -1, c, -1, lab[key][c], c, var)
     elif var == "sentiment":
         pop = world.pop
         for c in targets:
@@ -151,24 +160,28 @@ def stocks_headline(
     log: EventLog,
     targets: list[int] | None = None,
     auto_news: bool = True,
+    key: str = "us_stocks",
+    label: str | None = None,
 ) -> None:
     """A "US stocks rise/fall X%" story once the cumulative move since the last one reaches 1%.
 
-    Shared by scripted moves and people's trading (sim/market.py), so the story covers both."""
+    Shared by scripted moves and people's trading (sim/market.py, sim/economy.py), so the story covers both.
+    Other countries' markets use their own ``key`` ("stocks:DEU") and ``label`` ("German stocks")."""
     if not auto_news:
         return
     where = _targets(world, "us_stocks", None) if targets is None else targets
-    cum = _newsworthy(world, "us_stocks", before, after, STOCKS_NEWS_MIN_PCT)
+    cum = _newsworthy(world, key, before, after, STOCKS_NEWS_MIN_PCT)
+    name = label or "US stocks"
     if cum is not None and where:
         # a rising market reads as good news, a falling one as bad (HEURISTIC sign and weight)
         _auto_news(
             world,
-            ("us_stocks", -1),
+            (key, -1),
             where,
             valence=float(np.sign(cum)) * min(1.0, 0.3 + abs(cum) / 10),
             pct=cum,
             weight=0.5,
-            headline=lambda p: f"US stocks {'rise' if p > 0 else 'fall'} {abs(p):.1f}%",
+            headline=lambda p: f"{name} {'rise' if p > 0 else 'fall'} {abs(p):.1f}%",
             log=log,
         )
 
@@ -272,12 +285,45 @@ def news_mood(world: World) -> NDArray[np.float64]:
     return np.asarray(np.tanh(((belief - 0.5) * 2.0 * aware) @ w), dtype=np.float64)
 
 
-def update_sentiment(world: World, params: SimParams) -> None:
-    """Mood drifts toward how good the agent's known news is (weighted, squashed to [-1, 1])."""
+def update_sentiment(
+    world: World, params: SimParams, contacted: NDArray[np.bool_] | None = None
+) -> NDArray[np.float64]:
+    """Mood drifts toward how good the agent's known news is (weighted, squashed to [-1, 1]).  Returns the news
+    mood (what people's trading responds to).
+
+    With everyday activity (``macro["economy"]``), two more things move mood every day:
+    - **life events**: while unemployed, a person's mood drifts toward a lower level (Kuchler and Zafar 2019:
+      becoming unemployed raises the stated chance that national unemployment rises by 4-5 points; mapped onto
+      mood as 1 - 2p, a stated bridge), and back when they find a job;
+    - **conversation**: people pull toward the average mood of those they met today (a HEURISTIC rate, as a
+      convex mix with their own target, so moods neither collapse to one value nor split apart).
+    Neither moves stock trading (Kuchler and Zafar find no effect of personal experience on stock-price
+    expectations); news still spreads by word of mouth and does."""
     pop = world.pop
     news = news_mood(world)
     s = pop["sentiment"].astype(np.float64)
-    pop["sentiment"] = ((1 - params.sentiment_rate) * s + params.sentiment_rate * news).astype(np.float32)
+    economy = world.macro.get("economy")
+    if economy is None:
+        pop["sentiment"] = ((1 - params.sentiment_rate) * s + params.sentiment_rate * news).astype(np.float32)
+        return news
+    mood = economy["cfg"]["mood"]
+    target = news
+    if params.mood_life is None or params.mood_life:
+        life = np.where(pop["emp_status"] == EmpStatus.UNEMPLOYED, float(mood["unemployed_shift"]), 0.0)
+        target = np.clip(news + life, -1.0, 1.0)
+    out = s + params.sentiment_rate * (target - s)
+    mu = float(mood["contagion"]) if params.mood_contagion is None else float(params.mood_contagion)
+    if mu > 0 and contacted is not None and contacted.any():
+        e = world.edges
+        src = e["src"][contacted].astype(np.int64)
+        dst = e["dst"][contacted].astype(np.int64)
+        n = pop.n
+        cnt = np.bincount(dst, minlength=n)[:n]
+        tot = np.bincount(dst, weights=s[src], minlength=n)[:n]
+        met = cnt > 0
+        out[met] += mu * (tot[met] / cnt[met] - s[met])
+    pop["sentiment"] = np.clip(out, -1.0, 1.0).astype(np.float32)
+    return news
 
 
 def propagate_entity_claims(world: World, params: SimParams) -> int:

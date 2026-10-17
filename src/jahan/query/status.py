@@ -163,6 +163,12 @@ def social_status(world: World) -> dict[str, Any]:
     }
 
 
+def llm_ready() -> bool:
+    """Claude can be called: the SDK is installed, a key is set and offline mode is off."""
+    sdk = importlib.util.find_spec("anthropic") is not None
+    return sdk and bool(os.environ.get("ANTHROPIC_API_KEY")) and not os.environ.get("JAHAN_OFFLINE")
+
+
 def world_status(rd: RunDir, world: World) -> dict[str, Any]:
     pop = world.pop
     real_today = dt.datetime.now(dt.UTC).date()
@@ -273,7 +279,7 @@ def world_status(rd: RunDir, world: World) -> dict[str, Any]:
         "llm": {
             "sdk_installed": sdk,
             "api_key_set": key,
-            "ready": sdk and key and not os.environ.get("JAHAN_OFFLINE"),
+            "ready": llm_ready(),
             "models": cfg.models,
             "spent_in_this_world": _llm_spend(rd),
         },
@@ -305,6 +311,15 @@ def status_text(st: dict[str, Any]) -> str:
         f"; euros per dollar {mk['dollar']['eur_per_usd']:.4f}" if mk["dollar"] else ""
     )
     lines.append(market + " (100 = the world's start)")
+    ev = mk.get("everyday")
+    if ev is None:
+        lines.append("Everyday activity: off (this world was made before it existed; `jahan economy on`)")
+    else:
+        local = [f"{v['label']} {v['index']:.2f}" for iso, v in ev["markets"].items() if iso != "USA"]
+        lines.append(
+            f"Everyday activity: on since day {ev['since_day']}"
+            + (f"; local markets (100 = that day): {', '.join(local)}" if local else "")
+        )
     if st["watch"]:
         lines.append("Watching: " + ", ".join(st["watch"]) + " (see `jahan watch show`)")
     if st["products"]:

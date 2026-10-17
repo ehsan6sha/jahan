@@ -23,6 +23,9 @@ class RunConfig(BaseModel):
     max_slots: int = 128  # concurrently tracked info items
     diaspora_file: str | None = "generated/migration/stock_2024.yaml"  # relative to the data dir; None disables
     notables: bool = True  # insert public figures from data/notables (real names by default)
+    # everyday activity from day 0 (sim/economy.py); older worlds get it with `jahan economy on`.  Read only when a
+    # world is generated; afterwards the world's own copy (macro["economy"]) decides
+    economy: bool = True
     params: SimParams = Field(default_factory=SimParams)
 
     @classmethod

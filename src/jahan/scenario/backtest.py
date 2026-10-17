@@ -154,6 +154,9 @@ def _config(base: RunConfig, date: dt.date, seed_offset: int, kappa: float | Non
     cfg = base.model_copy(deep=True)
     cfg.start_date = date - dt.timedelta(days=1)
     cfg.seed = base.seed + seed_offset
+    # the published benchmark and kappa were made with people trading on the day they learn news; everyday
+    # activity's backtest (late reactions, rule v2) is a separate, pre-registered run
+    cfg.economy = False
     if kappa is not None:
         cfg.params.market_kappa = kappa
     return cfg

@@ -203,6 +203,7 @@ def _give_birth(world: World, mother: int, log: EventLog) -> int:
     )
     world.beliefs.ensure_rows(world.pop.n)
     world.ptrust.ensure_rows(world.pop.n)
+    world.pstate.ensure_rows(world.pop.n)
     pop = world.pop  # same object; refresh views after a possible reallocation
     pop["last_birth_day"][mother] = world.day
     for p_ in parents:
@@ -438,6 +439,15 @@ def _draw_job(world: World, agent: int) -> None:
         pop["income_month"][agent] = float(math.exp(math.log(row.median) + row.sigma * rng.standard_normal()))
 
 
+def labour_multipliers(world: World, c: int) -> tuple[float, float]:
+    """Scripted changes to job-loss and job-finding rates in country ``c`` (what-ifs such as "layoffs double");
+    1 when there are none (worlds without the key are unchanged)."""
+    lab = world.macro.get("labour")
+    if lab is None:
+        return 1.0, 1.0
+    return float(lab["job_loss_mult"][c]), float(lab["job_find_mult"][c])
+
+
 def labour(world: World, log: EventLog) -> int:
     pop = world.pop
     day = world.day
@@ -452,13 +462,18 @@ def labour(world: World, log: EventLog) -> int:
         u2 = u01(world.sim_seed, Stream.JOB, day, pop["id"], k=1)
         employed = in_c & (pop["emp_status"] == EmpStatus.EMPLOYED)
         unemployed = in_c & (pop["emp_status"] == EmpStatus.UNEMPLOYED)
-        p_loss = 1 - (1 - v.job_loss_per_month) ** (12 / DAYS_PER_YEAR)
-        p_find = 1 - (1 - v.job_find_per_month) ** (12 / DAYS_PER_YEAR)
+        loss_mult, find_mult = labour_multipliers(world, c)
+        p_loss = 1 - (1 - min(1.0, v.job_loss_per_month * loss_mult)) ** (12 / DAYS_PER_YEAR)
+        p_find = 1 - (1 - min(1.0, v.job_find_per_month * find_mult)) ** (12 / DAYS_PER_YEAR)
         p_change = _daily(v.job_change_per_year)
         lose = np.flatnonzero(employed & (u < p_loss))
         change = np.flatnonzero(employed & (u >= p_loss) & (u2 < p_change))
         find = np.flatnonzero(unemployed & (u < p_find))
         ref = float(np.median([r.median for r in spec.income.by_occupation.values()]))
+        if lose.size:
+            from jahan.sim.economy import note_job_losses  # deferred: economy builds on world events
+
+            note_job_losses(world, c, lose.astype(np.int64))  # their cash-outs reach the market tomorrow
         for a in lose:
             _leave_workplace(world, int(a))
             pop["emp_status"][a] = EmpStatus.UNEMPLOYED

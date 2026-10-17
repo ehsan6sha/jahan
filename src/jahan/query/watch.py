@@ -6,8 +6,10 @@ metrics (``runs/<name>/metrics/metrics_*.parquet``).  A reset deletes the metric
 so history always matches the world on disk.
 
 Series ids:
-  market:us_stocks        US stock index (S&P 500), 100 = the world's start; two parts: announcements and
-                          scripted paths, and the simulated holders' trading
+  market:us_stocks        US stock index (S&P 500), 100 = the world's start; parts: announcements and
+                          scripted paths, and the simulated holders' trading (with everyday activity: their
+                          news reactions, and saving and cashing out); also market:stocks:USA
+  market:stocks:<ISO3>    another country's stock index moved by its residents (worlds with everyday activity)
   market:us_tech_stocks   US tech stocks (Nasdaq-100), derived: beta x each day's US stock move
   market:gold             gold index, 100 = the world's start
   market:dollar           euros per US dollar (worlds with Germany)
@@ -38,6 +40,15 @@ DISCLAIMER = (
     "trading; event odds are the average belief of simulated traders."
 )
 WATCH_FILE = "watch.json"
+ALIASES = {"market:stocks:USA": "market:us_stocks"}
+COMPONENTS = {  # part -> what it means (shown on the Watch page)
+    "people": "people's trading",
+    "news": "news reactions",
+    "savings": "saving and cashing out",
+    "scripted": "announcements and scripted",
+    "time": "time passing (heuristic)",
+    "talk": "traders talking (heuristic)",
+}
 
 
 @dataclass
@@ -49,7 +60,7 @@ class SeriesSpec:
     country: int = -1
     item: int = -1
     unit: str = "index"  # index | rate | mood | probability
-    components: bool = False  # US stocks: people's part and the announcements' part
+    components: tuple[str, ...] = ()  # the parts of a market's daily move (see COMPONENTS)
     derived_beta: float | None = None  # derived from US stocks
     note: str = ""
     extra: dict[str, Any] = field(default_factory=dict)
@@ -91,16 +102,23 @@ def odds_specs(world: World) -> list[SeriesSpec]:
 
 def catalog(world: World) -> list[SeriesSpec]:
     codes = [c.iso3 for c in world.countries]
+    economy = world.macro.get("economy")
+    us_parts = _us_parts(world)
     out = [
         SeriesSpec(
             "market:us_stocks",
             "market",
             "US stocks (S&P 500)",
             "us_stocks_index",
-            components="market" in world.macro,
-            note="announcements and scripted moves, plus the simulated holders' trading"
-            if "market" in world.macro
-            else "announcements and scripted moves (this world was made before people traded)",
+            components=us_parts,
+            note=(
+                "announcements and scripted moves, plus the simulated holders' news reactions (as they look at "
+                "their accounts) and cash-outs that differ from normal"
+                if economy is not None
+                else "announcements and scripted moves, plus the simulated holders' trading"
+                if "market" in world.macro
+                else "announcements and scripted moves (this world was made before people traded)"
+            ),
         )
     ]
     beta = _tech_beta(world)
@@ -112,8 +130,24 @@ def catalog(world: World) -> list[SeriesSpec]:
                 "US tech stocks (Nasdaq-100, derived)",
                 "us_stocks_index",
                 derived_beta=beta,
-                components="market" in world.macro,
+                components=us_parts,
                 note=f"derived: {beta:g} x each day's US stock move, not modelled on its own",
+            )
+        )
+    for iso, mk in (economy or {}).get("markets", {}).items():
+        if iso == "USA" or iso not in codes:
+            continue
+        mc = mk["cfg"]
+        out.append(
+            SeriesSpec(
+                f"market:stocks:{iso}",
+                "market",
+                f"{mc['label']} ({mc['name']})",
+                "stocks_index",
+                country=codes.index(iso),
+                components=("news",),
+                note=_local_note(mc, mk["last"]),
+                extra={"illustrative": bool(mc.get("illustrative")) or bool(mk["last"].get("few_holders"))},
             )
         )
     out.append(SeriesSpec("market:gold", "market", "Gold", "gold_index"))
@@ -157,7 +191,26 @@ def catalog(world: World) -> list[SeriesSpec]:
     return out + odds_specs(world)
 
 
+def _us_parts(world: World) -> tuple[str, ...]:
+    if "economy" in world.macro and "USA" in world.macro["economy"]["markets"]:
+        return ("news", "savings", "scripted")
+    return ("people", "scripted") if "market" in world.macro else ()
+
+
+def _local_note(mc: dict[str, Any], last: dict[str, Any]) -> str:
+    parts = [f"moved by its residents' trading, 100 = the day everyday activity started; {mc['currency']}, nominal"]
+    if mc.get("borrowed"):
+        parts.append("borrowed from the US: " + ", ".join(mc["borrowed"]))
+    reasons = list(mc.get("reasons", []))
+    if last.get("few_holders"):
+        reasons.append(f"only {last['holders']} simulated holders: a few people carry it (a bigger world helps)")
+    if reasons:
+        parts.append("illustrative: " + "; ".join(reasons))
+    return "; ".join(parts)
+
+
 def resolve(world: World, series_id: str) -> SeriesSpec:
+    series_id = ALIASES.get(series_id, series_id)
     cat = catalog(world)
     for s in cat:
         if s.id == series_id:
@@ -179,6 +232,9 @@ def current_value(world: World, spec: SeriesSpec) -> float:
         return float("nan")  # derived from the history (see show)
     if spec.metric == "gold_index":
         return float(m.get("gold_index", 100.0))
+    if spec.metric == "stocks_index":
+        iso = world.countries[spec.country].iso3
+        return float(m["economy"]["markets"][iso]["index"])
     if spec.metric == "fx_local_per_usd":
         return float(m["fx"][spec.country])
     if spec.metric == "sentiment":
@@ -207,10 +263,29 @@ def read_metric_series(
     return out
 
 
-def _keys(spec: SeriesSpec) -> set[tuple[str, int, int]]:
+def _part_keys(world: World, spec: SeriesSpec) -> dict[str, list[tuple[str, int, int]]]:
+    """Metric rows behind each part, in order of preference (the first one recorded on a day is used: days
+    before everyday activity started have only the older engine's people's part)."""
+    if spec.metric == "stocks_index":
+        return {"news": [("stocks_news_pct", spec.country, -1)], "savings": [("stocks_savings_pct", spec.country, -1)]}
+    if spec.kind == "odds":  # changes in probability points, one row per part and day
+        qid = spec.metric[len("odds.") :]
+        return {p: [(f"odds_{p}.{qid}", -1, spec.item)] for p in ("time", "news", "talk")}
+    codes = [c.iso3 for c in world.countries]
+    us = codes.index("USA") if "USA" in codes else -1
+    return {
+        "people": [("us_stocks_people_pct", -1, -1)],
+        "news": [("stocks_news_pct", us, -1), ("us_stocks_people_pct", -1, -1)],
+        "savings": [("stocks_savings_pct", us, -1)],
+        "scripted": [("us_stocks_scripted_pct", -1, -1)],
+    }
+
+
+def _keys(world: World, spec: SeriesSpec) -> set[tuple[str, int, int]]:
     keys = {(spec.metric, spec.country, spec.item)}
-    if spec.components:
-        keys |= {("us_stocks_people_pct", -1, -1), ("us_stocks_scripted_pct", -1, -1)}
+    parts = _part_keys(world, spec)
+    for name in spec.components:
+        keys |= set(parts[name])
     return keys
 
 
@@ -218,8 +293,7 @@ def _history(world: World, spec: SeriesSpec, data: dict[tuple[str, int, int], di
     """Every recorded day of a series (day, date, value and, for US stocks, the day's two parts)."""
     vals = data[(spec.metric, spec.country, spec.item)]
     days = sorted(vals)
-    people = data.get(("us_stocks_people_pct", -1, -1), {})
-    scripted = data.get(("us_stocks_scripted_pct", -1, -1), {})
+    parts = _part_keys(world, spec)
     if spec.derived_beta is not None:
         prev, total = 100.0, []
         for d in days:
@@ -232,10 +306,11 @@ def _history(world: World, spec: SeriesSpec, data: dict[tuple[str, int, int], di
     rows = []
     for d in days:
         row: dict[str, Any] = {"day": d, "date": world.date(d).isoformat(), "value": series[d]}
-        if spec.components and d in people:
-            b = spec.derived_beta or 1.0
-            row["people_pct"] = b * people[d]
-            row["scripted_pct"] = b * scripted.get(d, 0.0)
+        b = spec.derived_beta or 1.0
+        for name in spec.components:
+            got = next((data[k][d] for k in parts[name] if d in data.get(k, {})), None)
+            if got is not None:
+                row[f"{name}_{'pts' if spec.kind == 'odds' else 'pct'}"] = b * got
         rows.append(row)
     return rows
 
@@ -267,8 +342,98 @@ def _compound(pcts: list[float]) -> float:
     return 100.0 * (level - 1.0)
 
 
-def show(rd: RunDir, world: World, days: int = 60, only: list[str] | None = None) -> dict[str, Any]:
-    """The watch list with each series' recent history, its change since it was watched, and the parts."""
+QUIET = {"index": 0.005, "rate": 0.005, "mood": 0.0005, "probability": 0.0005}  # below this a move is "none"
+ACTIVITY_STATS = ("media_exposures", "wom_aware", "shares", "reposts", "actions_delivered", "odds_beliefs_moved")
+
+
+def _moved(s: dict[str, Any], value_then: float) -> bool:
+    now = s["now"]
+    if value_then != value_then or now != now:  # NaN
+        return False
+    if s["unit"] in ("mood", "probability"):
+        return abs(now - value_then) >= QUIET[s["unit"]]
+    return value_then != 0 and abs(100.0 * (now / value_then - 1.0)) >= QUIET[s["unit"]]
+
+
+def quiet_explanation(
+    rd: RunDir, world: World, series: list[dict[str, Any]], from_day: int, llm_ready: bool
+) -> dict[str, Any]:
+    """Why nothing watched moved between ``from_day`` and today, in plain sentences (empty when something moved).
+
+    ``series`` are the rows of :func:`show`; a series counts as moved when it changed by more than ``QUIET``
+    from the end of the day before ``from_day``."""
+    to_day = world.day
+    out: dict[str, Any] = {"from_day": from_day, "to_day": to_day, "quiet": False, "sentences": []}
+    if not series or from_day >= to_day:
+        return out
+    for s in series:
+        before = [r for r in s["history"] if r["day"] < from_day]
+        then = float(before[-1]["value"]) if before else float(s["since_value"])
+        if _moved(s, then):
+            return out
+    out["quiet"] = True
+    say: list[str] = out["sentences"]
+    span = f"between day {from_day} and day {to_day}"
+    added = [e for e in rd.ledger() if from_day <= int(e["day"]) < to_day]
+    act = read_metric_series(rd, {(k, -1, -1) for k in ACTIVITY_STATS}, from_day)
+    heard = sum(v for k in ("media_exposures", "wom_aware") for d, v in act[(k, -1, -1)].items() if d < to_day)
+    if not added:
+        say.append(f"Nothing was added {span}: no what-if, news or question.")
+    if heard == 0:
+        say.append("Nobody heard any news in these days: no story was being reported or passed on.")
+    else:
+        say.append(f"Stories still reached people about {int(heard):,} times, but none moved what you watch.")
+    ids = [str(s["id"]) for s in series]
+    everyday = "economy" in world.macro
+    stocks = any(i in ("market:us_stocks", "market:us_tech_stocks") or i.startswith("market:stocks:") for i in ids)
+    if stocks and everyday:
+        say.append(
+            "People act on news as they look at their accounts; with no news nobody's view changes, so only "
+            "cash-outs that differ from normal (US) move stocks, and those are rare on any one day."
+        )
+    elif stocks:
+        if "market" not in world.macro:
+            say.append(
+                "This world was made before people's trading existed, so its US stocks move only on "
+                "announcements and what-ifs."
+            )
+        else:
+            say.append("People here buy and sell stocks only when news reaches them; with no news, nobody trades.")
+        say.append("This world was made before everyday activity: turn it on with `jahan economy on`.")
+    if any(i in ("market:gold", "market:dollar") or i.startswith("market:fx:") for i in ids):
+        say.append("Gold and currencies move only when a what-if or an announcement moves them.")
+    if any(i.startswith("mood:") for i in ids):
+        say.append(
+            "Without news, moods move only a little: with job losses and new jobs, and as people talk."
+            if everyday
+            else "Moods change only with the news people hear."
+        )
+    if any(i.startswith("odds:") for i in ids):
+        say.append("No story bore on the watched questions.")
+        if not llm_ready:
+            say.append(
+                "Claude is not set up, so new headlines are not rated against your questions; only what-ifs "
+                "that name a question move it."
+            )
+    if not llm_ready:
+        say.append("Claude is not set up, so public figures did not act on their own (see `jahan doctor`).")
+    say.append("To see movement, add a what-if (for example a news story or a market move), then move time forward.")
+    return out
+
+
+def show(
+    rd: RunDir,
+    world: World,
+    days: int = 60,
+    only: list[str] | None = None,
+    since_day: int | None = None,
+    llm_ready: bool = True,
+) -> dict[str, Any]:
+    """The watch list with each series' recent history, its change since it was watched, and the parts.
+
+    With ``since_day``, also why nothing moved from that day to today (``explanation``), e.g. the day before the
+    last time step."""
+    explain_from = since_day
     watched = load_list(rd)
     cat = catalog(world)
     by_id = {s.id: s for s in cat}
@@ -281,7 +446,7 @@ def show(rd: RunDir, world: World, days: int = 60, only: list[str] | None = None
     specs = [by_id[i] for i in ids]
     keys: set[tuple[str, int, int]] = set()
     for s in specs:
-        keys |= _keys(s)
+        keys |= _keys(world, s)
     data = read_metric_series(rd, keys, 0)
     first_shown = max(0, world.day - days)
     qrows: dict[str, Any] = {}
@@ -302,11 +467,13 @@ def show(rd: RunDir, world: World, days: int = 60, only: list[str] | None = None
         since_value = _value_before(world, s, hist, since_day, now, None if stored is None else float(stored))
         after = [r for r in hist if r["day"] >= since_day]
         comp = None
-        if s.components:
-            comp = {
-                "people_pct": _compound([r.get("people_pct", 0.0) for r in after]),
-                "scripted_pct": _compound([r.get("scripted_pct", 0.0) for r in after]),
-            }
+        parts = [{"name": n, "label": COMPONENTS[n]} for n in s.components]
+        if s.components and s.kind == "odds":  # probability points add up; the rest is word of mouth and turnover
+            comp = {f"{n}_pts": float(sum(r.get(f"{n}_pts", 0.0) for r in after)) for n in s.components}
+            comp["other_pts"] = (now - since_value) - sum(comp.values())
+            parts.append({"name": "other", "label": "word of mouth and other"})
+        elif s.components:
+            comp = {f"{name}_pct": _compound([r.get(f"{name}_pct", 0.0) for r in after]) for name in s.components}
         pct = None if s.unit in ("mood", "probability") or not since_value else 100.0 * (now / since_value - 1.0)
         series.append(
             {
@@ -323,6 +490,8 @@ def show(rd: RunDir, world: World, days: int = 60, only: list[str] | None = None
                 "since_watched_pct": pct,
                 "since_watched_abs": now - since_value,
                 "components": comp,
+                "parts": parts,
+                "illustrative": bool(s.extra.get("illustrative")),
                 "question": qrows.get(s.id),
                 "history": [r for r in hist if r["day"] >= first_shown],
             }
@@ -339,12 +508,13 @@ def show(rd: RunDir, world: World, days: int = 60, only: list[str] | None = None
                 "kind": s.kind,
                 "unit": s.unit,
                 "watched": s.id in watched,
-                "components": s.components,
+                "components": list(s.components),
                 "note": s.note,
             }
             for s in cat
         ],
         "series": series,
+        "explanation": None if explain_from is None else quiet_explanation(rd, world, series, explain_from, llm_ready),
     }
 
 
@@ -353,7 +523,7 @@ def add(rd: RunDir, world: World, ids: list[str], since_values: dict[str, float]
     watched = load_list(rd)
     added = []
     for i in ids:
-        resolve(world, i)
+        i = resolve(world, i).id
         if i not in watched or watched[i].get("since_day", -1) > world.day:
             entry: dict[str, Any] = {"since_day": world.day, "added": dt.date.today().isoformat()}
             if since_values and i in since_values:
@@ -396,4 +566,20 @@ def market_levels(world: World) -> dict[str, Any]:
     beta = _tech_beta(world)
     if beta is not None:
         out["us_tech_stocks"] = {"beta": beta, "derived": True}
+    economy = m.get("economy")
+    out["everyday"] = None
+    if economy is not None:
+        out["everyday"] = {
+            "since_day": int(economy["since_day"]),
+            "markets": {
+                iso: {
+                    "label": mk["cfg"]["label"],
+                    "name": mk["cfg"]["name"],
+                    "index": float(m["us_stocks_index"]) if iso == "USA" else float(mk["index"]),
+                    "illustrative": bool(mk["cfg"].get("illustrative")),
+                    "last": {k: v for k, v in mk["last"].items() if k != "saving"},
+                }
+                for iso, mk in economy["markets"].items()
+            },
+        }
     return out

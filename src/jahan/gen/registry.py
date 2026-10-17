@@ -144,6 +144,84 @@ def _investors_problems(data_dir: Path, reg: dict[str, RegistryEntry], strict: b
     return out
 
 
+def _economy_problems(data_dir: Path, countries: list[str], reg: dict[str, RegistryEntry], strict: bool) -> list[str]:
+    """data/global/everyday.yaml and investors_by_country.yaml: sources in the registry, borrowing one hop from a
+    sourced value, shares in range, currencies matching the country files, nothing left PENDING; strict mode
+    lists every HEURISTIC and borrowed value."""
+    from jahan.model.economy import Provenance, adult_share, load_by_country, load_everyday
+
+    out: list[str] = []
+    try:
+        everyday = load_everyday(data_dir)
+        by = load_by_country(data_dir)
+    except Exception as e:  # noqa: BLE001 - reported as a data problem
+        return [f"global/everyday.yaml or investors_by_country.yaml: {e}"]
+
+    def check(where: str, v: Provenance, sourced: dict[str, Provenance] | None = None, field: str = "") -> None:
+        text = f"{v.note} {getattr(v, 'definition', '')}"
+        if "PENDING" in text:
+            out.append(f"{where}: still marked PENDING ({text.strip()[:80]})")
+        if v.source is not None:
+            entry = reg.get(v.source)
+            if entry is None:
+                out.append(f"{where}: source id '{v.source}' not in registry")
+            elif strict and entry.confidence in WEAK:
+                out.append(f"{where}: source '{v.source}' is {entry.confidence} (strict mode)")
+        elif strict:
+            out.append(f"{where}: {v.label()} ({v.note[:80]}) (strict mode)")
+        if v.borrowed_from is not None and sourced is not None:
+            lender = sourced.get(v.borrowed_from)
+            if lender is None or lender.source is None:
+                out.append(f"{where}: borrowed from {v.borrowed_from}, whose {field or 'value'} is not itself sourced")
+
+    if everyday is not None:
+        a = everyday.attention
+        if a.source not in reg:
+            out.append(f"global/everyday.yaml: attention source id '{a.source}' not in registry")
+        if abs(a.mean_days() - a.published_mean) > 0.1 * a.published_mean:
+            out.append("global/everyday.yaml: attention knots imply a mean far from the published one")
+        for name in ("down_day_factor", "weekend_factor"):
+            check(f"global/everyday.yaml: attention.{name}", getattr(a, name))
+        check("global/everyday.yaml: mood.unemployed_shift", everyday.mood.unemployed_shift)
+        check("global/everyday.yaml: mood.contagion", everyday.mood.contagion)
+        check("global/everyday.yaml: min_holders", everyday.min_holders)
+        for name in everyday.saving.model_fields:
+            if name != "countries":
+                check(f"global/everyday.yaml: saving.{name}", getattr(everyday.saving, name))
+    if by is not None:
+        try:
+            specs = {iso: load_country(data_dir, iso) for iso in countries}
+        except DataError:
+            specs = {}  # reported above
+        for field in ("holdings", "attention_scale", "multiplier", "kappa", "gradient"):
+            lenders: dict[str, Provenance] = {}
+            for iso, ci in by.countries.items():
+                v = getattr(ci, field)
+                lenders[iso] = v if v is not None else Provenance(source="investors.scf2022")
+            for iso, ci in by.countries.items():
+                v = getattr(ci, field)
+                if v is not None:
+                    check(f"global/investors_by_country.yaml: {iso}.{field}", v, lenders, field)
+        for iso, ci in by.countries.items():
+            where = f"global/investors_by_country.yaml: {iso}"
+            check(f"{where}.ownership", ci.ownership)
+            check(f"{where}.index.weekdays", ci.index.weekdays_source)
+            check(f"{where}.index.max_daily_pct", ci.index.max_daily_pct)
+            if ci.ownership.adults_source is not None and ci.ownership.adults_source not in reg:
+                out.append(f"{where}: adults source id '{ci.ownership.adults_source}' not in registry")
+            share = adult_share(ci.ownership)
+            if share is not None and not 0 < share < 100:
+                out.append(f"{where}: {share:.1f}% of adults own stock: duplicates or accounts not removed?")
+            if iso in specs and specs[iso].currency != ci.index.currency:
+                out.append(f"{where}: index currency {ci.index.currency} differs from {specs[iso].currency}")
+            if not ci.index.weekdays or any(not 0 <= d <= 6 for d in ci.index.weekdays):
+                out.append(f"{where}: trading weekdays must be 0 (Monday) to 6")
+            for chk in ci.cross_checks:
+                if chk.get("source") not in reg:
+                    out.append(f"{where}: cross-check source id '{chk.get('source')}' not in registry")
+    return out
+
+
 def validate_data(
     data_dir: Path, countries: list[str], strict: bool = False, start_date: dt.date | None = None
 ) -> list[str]:
@@ -173,6 +251,7 @@ def validate_data(
     problems += _social_problems(data_dir, countries, reg, strict)
     problems += _markets_problems(data_dir, reg, strict)
     problems += _investors_problems(data_dir, reg, strict)
+    problems += _economy_problems(data_dir, countries, reg, strict)
     problems += odds_problems(data_dir, reg)
     if strict:
         try:

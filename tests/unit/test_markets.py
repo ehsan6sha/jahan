@@ -30,7 +30,7 @@ def _world(countries=("USA", "DEU"), n=1500):
     # people's trading off: these tests pin the published estimates alone (tests/unit/test_market_people.py)
     params = SimParams(market_people=False)
     return generate_world(
-        RunConfig(n_agents=n, countries=list(countries), seed=5, start_date="2026-09-15", params=params)
+        RunConfig(n_agents=n, countries=list(countries), seed=5, start_date="2026-09-15", economy=False, params=params)
     )
 
 

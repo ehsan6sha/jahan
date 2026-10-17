@@ -83,7 +83,14 @@ def test_every_path_option_of_an_allowed_command_is_confined():
     import typer.main  # class names, not imports: recent Typer bundles its own copy of click
 
     from jahan.cli import app
-    from jahan.ui.server import GLOBAL_COMMANDS, PATH_OPTIONS, SESSION_SUBCOMMANDS, WATCH_SUBCOMMANDS, WORLD_COMMANDS
+    from jahan.ui.server import (
+        ECONOMY_SUBCOMMANDS,
+        GLOBAL_COMMANDS,
+        PATH_OPTIONS,
+        SESSION_SUBCOMMANDS,
+        WATCH_SUBCOMMANDS,
+        WORLD_COMMANDS,
+    )
 
     def walk(cmd, name):
         if hasattr(cmd, "commands"):
@@ -93,9 +100,10 @@ def test_every_path_option_of_an_allowed_command_is_confined():
             yield name, cmd
 
     allowed = (
-        (WORLD_COMMANDS | GLOBAL_COMMANDS) - {"session", "watch"}
+        (WORLD_COMMANDS | GLOBAL_COMMANDS) - {"session", "watch", "economy"}
         | {f"session {s}" for s in SESSION_SUBCOMMANDS}
         | {f"watch {s}" for s in WATCH_SUBCOMMANDS}
+        | {f"economy {s}" for s in ECONOMY_SUBCOMMANDS}
     )
     seen = set()
     for name, cmd in walk(typer.main.get_command(app), ""):

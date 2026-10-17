@@ -10,7 +10,7 @@ calibration against real launch and diffusion data is an M2 task.
 
 from __future__ import annotations
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class SimParams(BaseModel):
@@ -80,12 +80,26 @@ class SimParams(BaseModel):
     market_multiplier: float | None = None  # price impact of net flows (Gabaix and Koijen 2021: about 5)
     market_requires_internet: bool | None = None  # HEURISTIC: only holders with internet trade daily
 
+    # everyday activity (sim/economy.py, worlds with macro["economy"]); the values live in each world's copy of
+    # data/global/investors.yaml; these switch parts off or override them (for tests and the benchmark)
+    market_attention: bool = True  # False: holders act on news the day they learn it (the older engine)
+    market_savings: bool = True  # False: cash-outs and hardship withdrawals do not move prices
+    market_shadow: bool = False  # True: flows are computed and recorded but no index moves (the kappa fit)
+    mood_life: bool | None = None  # False: being unemployed does not lower mood
+    mood_contagion: float | None = None  # HEURISTIC daily pull toward the mood of people met that day
+
     # event odds (sim/questions.py; all HEURISTIC, unsourced)
     # log-odds shift per unit of a story's direction for someone who knows the question: a story rated +1
     # multiplies their odds of Yes by e (about 2.7)
     k_odds: float = 1.0
     odds_initial_sd: float = 0.5  # spread of traders' starting beliefs around the market price, on log-odds
     odds_partisan_shift: float = 1.0  # log-odds offset per unit of political lean x a question's partisanship
+    # traders who meet talk about a watched question (worlds with everyday activity; HEURISTIC, unsourced): the
+    # chance a meeting pair discusses it, how far each moves toward the other on the log-odds scale (split over
+    # their partners that day), and how far apart they may be and still listen
+    odds_talk_p: float = 0.1
+    odds_talk_rate: float = Field(0.1, ge=0.0, le=0.5)
+    odds_talk_window: float = 2.0
 
     # decisions
     adopt_b0: float = -8.6
