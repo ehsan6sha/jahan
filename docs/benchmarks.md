@@ -26,7 +26,7 @@ under the rules in `data/backtests/benchmarks.yaml` (version 2) and `data/global
 
 Other results to read with care: B4's login check fails (simulated US holders log in on 97 days a year on
 average against 85.2 published: the interpolated spread itself implies 90.4, the rest is sampling of 512
-simulated holders), and B6 shows that job losses alone barely move the national mood (about 150 times less
+simulated holders; since rule v3 this affects only each holder's displayed position, not prices), and B6 shows that job losses alone barely move the national mood (about 150 times less
 than real sentiment moves with unemployment, which also reacts to news about jobs that a world without news
 lacks). Both are reported, not tuned.
 

@@ -392,7 +392,7 @@ numbers that may be tuned and the split between fitting and testing were committ
 | B1 on the 8 events of 2026 (seen before, exploratory) | 0.886 with, 0.869 without: worse | not used to choose |
 | B2: size of a multi-week move | the Iran example: worst day -0.54%; after the real March 2026 strikes the S&P 500 fell 1.74% on its worst day and 7.45% within 20 trading days | yes |
 | B3: a quiet year | news reactions exactly flat; saving steps without trend (yearly spread 0.31% at 3,000 people, 0.008% at 10,000); moods steady | yes |
-| B4: who invests and how often they look | every country's share of adults owning stock within 5 points of its source; logins too frequent (mean 97 days in two years against 85 published) | no: reported, not tuned |
+| B4: who invests and how often they look | every country's share of adults owning stock within 5 points of its source; logins too frequent (mean 97 days in two years against 85 published), which now affects only how much of each holder's change is shown as still to come, not prices | no: reported, not tuned |
 | B5: event odds over quiet stretches (285 real Polymarket questions) | time passing misses the real price by 8.3 points against 10.7 for a flat price (79 questions closing before July 2026), and 12.1 against 15.7 on 206 later ones | yes |
 | B6: mood and unemployment (exploratory) | per point of unemployment, simulated mood moves 0.02% of its scale and real sentiment 3.3% of its range: job losses alone barely move the national mood | reported only |
 | B7, B8 | no benchmark exists outside the US; trading volume is not modelled | stated |
