@@ -266,10 +266,11 @@ def test_posts_classify_without_a_model_by_their_topic_search():
 
 def test_cli_ingests_social_posts_offline_and_shows_the_feed(tmp_path):
     run = tmp_path / "run"
-    today = dt.datetime.now(dt.UTC).date().isoformat()
+    today = DAY  # a fixed fetch day: the canned posts are dated, and the lookback window follows the fetch day
     cli("gen", "--run", str(run), "--agents", "1500", "--countries", "USA", "--start-date", today)
     collect_social(paths.data_dir(), ["USA"], Recordings(run / "recordings"), today, fetcher_factory([]))
     args = ["ingest", "--run", str(run), "--replay", "--provider", "none", "--fetch-day", today, "--no-news", "-y"]
+    args.append("--force")  # the world's date is the fixed day, not the real date
     out = cli(*args)
     assert "Prompt 1 injected" in out and "unofficial service" in out and "count towards trending" in out
     ledger = json.loads((run / "prompts.json").read_text(encoding="utf-8"))
