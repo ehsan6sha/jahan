@@ -146,6 +146,25 @@ trading:
           adults: 0.62
           college: 0.84
           hs_or_less: 0.42
+    rule_v2: >-
+      Pre-registered 2026-10-17, before any backtest with everyday activity was run (scores and bounds:
+      data/backtests/benchmarks.yaml, B1 and B2). Worlds with everyday activity: every day each holder closes
+      the share of the gap between their position and kappa x their view of the news equal to their login rate;
+      saving and cash-outs off (market_savings false: their realised part does not depend on kappa). kappa
+      minimises the B1 five-day score over every forecast event in data/backtests/events_2023_2025.yaml with a
+      real US stock move, m1 config at 10,000 people, multiplier 5. Basis pass at kappa = 1 in shadow mode
+      (flows recorded, no index moves, so the people's part is exactly linear in kappa while |kappa x view| stays
+      below 1, where positions are capped; grid points beyond are extrapolations, caught by the full-run check),
+      seed offsets 0, 1 and 2 averaged (each seed's optimum reported); grid 0 to 2, step 0.001; ties and the grid edges resolve to the smallest kappa;
+      a boundary optimum is reported and adopted. Constraints: the B1 day-0 score with people no worse than
+      without; the B2 bounds; stability (a scripted -3% day in a 10,000-person world: the people's index stays
+      within 50-200 and by day 60 has recovered at least half of its largest deviation, or never moved by more
+      than 0.1%). If the optimum breaks a constraint, the largest grid kappa below it that meets all of them is
+      used (found by bisection) and the substitution is reported. A full-feedback run at the chosen kappa
+      checks the shadow score; if they differ by more than 0.005, full simulations at the chosen kappa x 0.5,
+      0.6, ..., 1.5 choose among those. 2026 events are reported as seen and exploratory; the clean hold-out is
+      the forecast events from 2026-10-17 on, once 12 exist. If no positive kappa meets the constraints, kappa
+      is 0. Results are published whatever they are.
     superseded:
       - mechanism: people traded on the day's change in their economic mood (a slow moving average of the news)
         date: '2026-10-15'

@@ -65,6 +65,9 @@ class Kappa(BaseModel):
     rule: str
     fitted: dict[str, Any] | None = None
     superseded: list[dict[str, Any]] = Field(default_factory=list)  # earlier fits, kept with the reason
+    # everyday activity (late reactions): its own pre-registered rule and fit (data/backtests/benchmarks.yaml)
+    rule_v2: str | None = None
+    fitted_v2: dict[str, Any] | None = None
 
 
 class Trading(BaseModel):

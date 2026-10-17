@@ -1,0 +1,111 @@
+# Benchmarks of everyday activity against real data (`jahan benchmark`), PRE-REGISTERED.
+#
+# Written and committed on 2026-10-17, before any benchmark or everyday-activity backtest was run. The checks,
+# pass limits, the numbers that may be tuned, their search grids and the fit/hold-out split below must not be
+# changed after seeing results; a change means a new version of this file with the reason, and the old results
+# stay published next to the new ones.
+#
+# The rule for kappa (the one fitted number of people's trading) is in data/global/investors.yaml
+# (trading.kappa.rule_v2); B1 and B2 are its score and its bounds.
+
+version: 1
+registered: '2026-10-17'
+
+split:
+  stocks:
+    fit: forecast events dated 2023-01-01 to 2025-12-31 (data/backtests/events_2023_2025.yaml)
+    seen: >-
+      forecast events dated 2026-01-01 to 2026-10-16 (data/backtests/events_2026.yaml): seen before this
+      registration, reported as exploratory, never used to choose anything
+    holdout: >-
+      forecast events dated 2026-10-17 or later, scored once at least 12 exist; until then results are
+      fit-period only, and the README says so
+  odds:
+    fit: questions whose market closed before 2026-07-01
+    holdout: questions whose market closed on 2026-07-01 or later (or is still open at the run)
+
+checks:
+  B1:
+    what: US stocks on announcement days, release day plus 4 trading days
+    data: FRED SP500 daily closes (moves kept in the events files, as for the release day)
+    score: >-
+      mean over events of the mean over days of |simulated - real| daily percent moves, in units of 0.92 (one
+      typical daily move): day 0 = published estimates plus people's trading, days 1-4 = people's trading only.
+      The days are the release date and the next 4 FRED observation dates after it; the simulated move on each is
+      the people's part compounded over the calendar days since the previous FRED date (weekends and US holidays
+      carry over). A window ends before the next scored event's release date (cut windows reported). Also the
+      day-0 score alone.
+      Bootstrap 95% interval (2,000 resamples of events, seed 0) of the difference with and without people.
+    pass: >-
+      on the fit events, with people's trading the 5-day score and the day-0 score are each no worse than with
+      people's trading off (estimates only); "no change" (every move 0) is reported alongside
+    tune: kappa (rule_v2 in data/global/investors.yaml)
+  B2:
+    what: size of a multi-week move
+    data: >-
+      FRED SP500 daily closes from 2026-02-27 (the last close before the US and Israeli strikes on Iran) to 20
+      trading days after 2026-03-02
+    score: >-
+      in examples/scenarios/iran_us_tension.yaml (10,000 people, USA and IRN, m1 settings, kappa as fitted,
+      saving off): the largest one-day fall of the people's part, and the largest fall of the US index within
+      any 20 trading days of the first 60 days
+    pass: >-
+      the largest one-day fall is no larger than the real S&P 500's largest one-day fall in that period; the
+      largest 20-day fall is no larger than the real S&P 500's largest fall within 20 trading days in that period
+    tune: none (a bound on kappa, applied by rule_v2)
+  B3:
+    what: a quiet year
+    data: none (structural)
+    score: 365 days with no news at 3,000 and 10,000 people (USA, DEU, IRN), seeds 1, 2, 3
+    pass: >-
+      the news part of every market is exactly 0 every day; the saving part has no trend (its mean daily step,
+      pooled over seeds, lies within 2 standard errors of 0); every country's mood stays within 0.05 of its
+      level on day 30. The saving part's yearly wander (standard deviation of the end level) at both sizes is
+      reported
+    tune: none (a failure is a bug)
+  B4:
+    what: who invests and how often they look
+    data: data/global/investors_by_country.yaml (sourced ownership), investors.sicherman2016 (logins)
+    score: simulated adult ownership share per country (10,000 people, all eight countries); simulated login percentiles
+    pass: >-
+      each country's simulated share of adults owning stock is within 5 points of its source (USA: the SCF
+      bands' 57.7% and Gallup's 62% reported); the median and mean days logged in are within 10% of 36 and 85.2
+    tune: none (a miss is fixed in the draw, never by tuning)
+  B5:
+    what: event odds over quiet stretches
+    data: >-
+      Polymarket daily prices (CLOB prices-history, interval max, fidelity 1440; recorded under
+      runs/_benchmark/recordings, git-ignored) of binary markets found by the
+      Gamma API search for each of: Iran, Israel, Russia Ukraine ceasefire, China Taiwan, recession, government
+      shutdown, Fed (closed and open markets with an end date from 2025-01-01 to 2026-12-31), whose wording rule
+      gives by_date or holds_through, with at least 30 daily prices. Fetched at the run and recorded locally
+      (git-ignored); only market slugs and scores are committed (check Polymarket's terms of use)
+    score: >-
+      for each question, a small world (3,000 people, USA and the question's countries, no public figures,
+      dated the first price's day) seeded at the first price, with no news, run for up to 60 days, stopping the
+      day before the price first passes 0.97 or 0.03 or the market's end date; mean absolute difference in
+      probability points between the simulated odds and the real price. Markets whose first price is already
+      outside 0.03-0.97 are skipped. Baseline: the price stays where it started. Questions counted, bootstrap
+      interval (2,000 resamples of questions, seed 0)
+    pass: on the fit questions, time passing is no worse than the baseline, overall and for each kind
+    tune: none (time passing has no free number); traders talking is reported with and without, never tuned
+  B6:
+    what: mood and unemployment (exploratory)
+    data: FRED UNRATE and UMCSENT, monthly, 1978-2025 (only the fitted coefficient is kept)
+    score: >-
+      real: the change in sentiment (standard deviations) per 1-point rise in unemployment over 12 months
+      (OLS of 12-month changes); simulated: a layoffs what-if raising US unemployment by about 1 point, no news,
+      the change in US mood in standard deviations of its daily changes
+    pass: reported only; a gap above 3 times is flagged to the user (real sentiment also moves with news)
+    tune: none
+  B7:
+    what: markets outside the US
+    pass: 'stated: "No benchmark exists outside the US; every non-US size is an untested illustration using borrowed kappa and multiplier."'
+  B8:
+    what: trading volume
+    pass: stated as not modelled (Jahan models each holder's whole stock position, not stock picking)
+
+if_nothing_passes: >-
+  decided before any run: if no kappa passes B1 and B2, kappa is 0 (people's news reactions off; saving and
+  cash-outs stay); if time passing fails B5, new questions get no time effect by default. The user is told,
+  with the numbers, and can turn either back on.
