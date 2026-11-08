@@ -125,14 +125,23 @@ def test_feed_bytes_and_dates_are_stable(tmp_path):
 def test_classification_with_llm(tmp_path):
     rec = Recordings(tmp_path / "rec")
     heads, _ = collect(paths.data_dir(), ["USA"], rec, fetcher=fixture_fetcher)
-    labels_json = json.dumps(
-        [{"i": i, "topic": "economy", "valence": -0.5, "salience": 0.9 - 0.1 * i} for i in range(len(heads))]
-    )
+    rows = [{"i": i, "topic": "economy", "valence": -0.5, "salience": 0.9 - 0.1 * i} for i in range(len(heads))]
+    rows[0].update(market_valence=-0.7, sectors="tech")  # the others leave both out
+    labels_json = json.dumps(rows)
     client = LLMClient(ScriptedProvider(lambda s, m: labels_json), rec, Budget())
     labels = classify(heads, client, 0)
-    assert labels[0] == {"topic": "economy", "valence": -0.5, "salience": 0.9}
+    assert labels[0] == {
+        "topic": "economy",
+        "valence": -0.5,
+        "salience": 0.9,
+        "market_valence": -0.7,
+        "sectors": "tech",
+    }
+    assert labels[1]["market_valence"] is None and labels[1]["sectors"] == "broad"
     sc = to_scenario(heads, labels, per_country=1)
-    assert sc.events[0].headline.startswith("Top story") and sc.events[0].valence == -0.5
+    ev = sc.events[0]
+    assert ev.headline.startswith("Top story") and ev.valence == -0.5
+    assert ev.market_valence == -0.7 and ev.sectors == "tech"
     # malformed model output falls back to neutral labels instead of failing the ingest
     bad = LLMClient(ScriptedProvider(lambda s, m: "not json"), Recordings(tmp_path / "rec2"), Budget())
     assert all(lab["valence"] == 0.0 for lab in classify(heads, bad, 0))

@@ -249,11 +249,29 @@ def start_news(world: World, ev: NewsEvent, log: EventLog, prompt_id: int) -> in
     if item_id < 0:
         return 0
     record_bearings(world, item_id, ev.bears_on, log)
+    _record_story(world, item_id, ev, prompt_id, countries)
     kinds = {int(CHANNEL_KIND_NAMES[k]) for k in ev.channel_kinds}
     lang = world.lang_id(ev.language) if ev.language else None
     if lang is not None:
         world.items["lang"][item_id] = lang
     return _push(world, item_id, countries, kinds, world.day, ev.duration_days, ev.intensity, lang)
+
+
+def _record_story(world: World, item_id: int, ev: NewsEvent, prompt_id: int, countries: list[int]) -> None:
+    """With everyday activity version 2, what markets need to know about a story: which cluster it belongs to
+    (headlines of one event from one prompt are priced once), its market rating and part, and whether it is US
+    news.  Older worlds keep nothing (they price every story on its own, as before)."""
+    eco = world.macro.get("economy")
+    if eco is None or int(eco.get("version", 1)) < 2:
+        return
+    us = [i for i, c in enumerate(world.countries) if c.iso3 == "USA"]
+    key = f"{prompt_id}:{ev.story}" if ev.story and prompt_id >= 0 else f"i{item_id}"
+    eco.setdefault("stories", {})[str(item_id)] = {
+        "story": key,
+        "mv": ev.market_valence,
+        "sector": ev.sectors,
+        "us": bool(us) and us[0] in countries,
+    }
 
 
 def notable_by_key(world: World, key: str) -> dict:
@@ -533,7 +551,7 @@ def _news(world: World, ev: NewsEvent, log: EventLog, prompt_id: int, stats: dic
     if ev.start_day_offset == 0:
         stats["pushes"] += start_news(world, ev, log, prompt_id)
     else:
-        spec: dict[str, Any] = ev.model_dump(mode="json")
+        spec: dict[str, Any] = ev.dump()
         world.scheduled.append(
             {"day": world.day + ev.start_day_offset, "kind": "news", "prompt_id": prompt_id, "spec": spec}
         )
@@ -579,10 +597,11 @@ def check_scenario(world: World, scenario: Scenario) -> None:
                 _country_index(world, c)
             open_ids.add(ev.id)
         elif isinstance(ev, EconomyEvent):
-            if "economy" in world.macro:
-                raise InjectError(f"everyday activity is already on (since day {world.macro['economy']['since_day']})")
-            if ev.version != 1:
+            if ev.version not in (1, 2):
                 raise InjectError(f"unknown everyday-activity version {ev.version}")
+            eco = world.macro.get("economy")
+            if eco is not None and int(eco.get("version", 1)) >= ev.version:
+                raise InjectError(f"everyday activity is already on (since day {eco['since_day']})")
             codes = {c.iso3 for c in world.countries}
             if not any(iso in codes for iso in ev.cfg.get("markets", {})):
                 raise InjectError("no stock market data for any country in this world")
@@ -737,7 +756,10 @@ def apply_scenario(world: World, scenario: Scenario, log: EventLog, prompt_id: i
         elif isinstance(ev, EconomyEvent):
             from jahan.sim import economy  # deferred: the economy builds on world events and this module
 
-            economy.switch_on(world, ev.cfg, log, prompt_id)
+            if "economy" in world.macro:  # an older version: upgrade in place from today
+                economy.upgrade(world, {**ev.cfg, "version": ev.version}, log, prompt_id)
+            else:
+                economy.switch_on(world, {**ev.cfg, "version": ev.version}, log, prompt_id)
         elif isinstance(ev, QuestionEvent):
             start_question(world, ev, log, prompt_id)
             stats["questions"] = stats.get("questions", 0) + 1

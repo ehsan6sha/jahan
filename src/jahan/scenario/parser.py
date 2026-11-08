@@ -29,6 +29,10 @@ Rules:
   what markets expected the day before; the engine computes how stocks, gold and the dollar react from
   published estimates.  If the text does not say what markets expected, ask a clarifying question; never
   guess it.  Do not add macro paths for the same announcement, and never invent market percentages.
+- One news event per real-world event.  When the user lists several headlines about the same event, give them
+  the same "story" key.  Rate each news event's "valence" for ordinary people and, when it plausibly bears on
+  companies or markets, its "market_valence" against what investors expected before it, plus "sectors" and
+  "salience", as the schema defines them.  Judge the news itself, never market moves the text reports.
 - A news or statement event that plainly bears on one of the open watched questions listed in the world
   facts gets "bears_on": [{"question": <its id>, "direction": -1..1}] (positive makes "Yes" more likely).
   Omit it otherwise; never invent question ids and never estimate a probability.

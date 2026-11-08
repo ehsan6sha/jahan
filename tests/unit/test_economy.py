@@ -141,6 +141,68 @@ def test_switch_for_an_old_world():
         apply_scenario(w, Scenario(prompt="again", events=[EconomyEvent(cfg=cfg)]), EventLog(), 3)
 
 
+def _headlines(w, n, story=None, mv=None, pid=1):
+    evs = [
+        NewsEvent(
+            headline=f"Lawmakers call for a moratorium on new data centers ({i})",
+            topic="economy",
+            valence=-0.8,
+            market_valence=mv,
+            salience=0.9,
+            countries=["USA"],
+            duration_days=7,
+            story=story,
+        )
+        for i in range(n)
+    ]
+    apply_scenario(w, Scenario(prompt="moratorium", events=evs), EventLog(), pid)
+
+
+def test_headlines_of_one_event_are_priced_once():
+    """Version 2: three headlines sharing a story key move the market about as much as one; without the key
+    they add up (as every story did before)."""
+    moves = []
+    for n, story in ((1, "m"), (3, "m"), (3, None)):
+        w = _world(n=1500, market_kappa=0.05, market_savings=False)
+        assert w.macro["economy"]["version"] == 2
+        _headlines(w, n, story)
+        rec = run_in_memory(w, 3)
+        usa = [c.iso3 for c in w.countries].index("USA")
+        moves.append(min(_series(rec, "stocks_news_pct", usa).values()))
+    one, clustered, split = moves
+    assert one < 0 and clustered == pytest.approx(one, rel=0.35)
+    assert split < 1.5 * one  # more negative: three separate stories
+    stories = w.macro["economy"]["stories"]
+    assert len({e["story"] for e in stories.values()}) == 3 and all(e["us"] for e in stories.values())
+
+
+def test_market_fields_are_stored_only_when_given():
+    ev = NewsEvent(headline="h", valence=0.1)
+    assert set(ev.dump()) == set(ev.model_dump()) - {"market_valence", "sectors", "story"}
+    full = NewsEvent(headline="h", valence=0.1, market_valence=-0.4, sectors="tech", story="k").dump()
+    assert (full["market_valence"], full["sectors"], full["story"]) == (-0.4, "tech", "k")
+
+
+def test_version_1_world_upgrades_in_place():
+    w = _world(n=1200, economy_on=False)
+    cfg = economy_cfg(paths.data_dir(), ["USA"])
+    apply_scenario(w, Scenario(prompt="on", events=[EconomyEvent(version=1, cfg=cfg)]), EventLog(), 1)
+    _news(w)
+    run_in_memory(w, 2)
+    priced = dict(w.macro["economy"]["markets"]["USA"]["priced"])
+    assert "stories" not in w.macro["economy"] and priced  # version 1 prices every story on its own
+    log = EventLog()
+    apply_scenario(w, Scenario(prompt="up", events=[EconomyEvent(version=2, cfg=cfg)]), log, 2)
+    eco = w.macro["economy"]
+    assert eco["version"] == 2 and eco["upgraded"]["day"] == 2 and eco["stories"] == {} and "others" in eco
+    assert eco["markets"]["USA"]["priced"] == priced  # what was priced stays
+    _headlines(w, 2, story="m", pid=3)
+    run_in_memory(w, 2)
+    assert "c:3:m" in eco["markets"]["USA"]["priced"]
+    with pytest.raises(InjectError, match="already on"):
+        apply_scenario(w, Scenario(prompt="again", events=[EconomyEvent(version=2, cfg=cfg)]), EventLog(), 3)
+
+
 def test_unemployed_people_are_gloomier():
     w = _world(n=1500, mood_contagion=0.0)
     run_in_memory(w, 60)

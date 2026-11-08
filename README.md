@@ -716,6 +716,10 @@ Several numbers for player actions and public-figure autonomy are heuristics, no
   figure is published, post reach from followers and engagement, and every repost coefficient;
 - the salience of an announcement's headline (0.9), the 1% move that makes US stocks news, and the tone
   and weight of stock headlines in people's mood;
+- how much a story of each topic moves mood and the households' trading view (economy 1.0, world 0.8,
+  politics 0.6, every other topic 0.2), and the anchors Claude rates salience against (1.0 the day's top
+  story everywhere, 0.7 a leading story in most national outlets, 0.5 carried by most outlets, 0.2 niche;
+  salience enters the chance of hearing a story cubed);
 - in everyday activity: that only holders with internet trade, the 10% cap on a day's move, no market
   holidays, the pull toward the moods of people met (0.05 a day), weekends counting like weekdays for
   logins, the 30-holder line below which a market is labelled illustrative, the mapping of Kuchler and

@@ -2,7 +2,7 @@
 
 The checks, their pass limits, what may be tuned and the fit / hold-out split were registered in
 ``data/backtests/benchmarks.yaml`` before any run; the rule for kappa under late reactions is
-``data/global/investors.yaml`` ``trading.kappa.rule_v2``.  Real data: ``data/backtests/benchmark_actuals.yaml``
+``data/global/investors.yaml`` ``trading.kappa.rule_v3`` (after rule_v2).  Real data: ``data/backtests/benchmark_actuals.yaml``
 (written by scripts/benchmark_actuals.py from FRED) and, for B5, Polymarket daily prices fetched at run time and
 recorded under ``runs/_benchmark/recordings`` (git-ignored).  Deterministic given those inputs; no LLM.
 
@@ -317,7 +317,7 @@ def fit_kappa(
     seeds: tuple[int, ...] = (0, 1, 2),
     progress: Progress = None,
 ) -> FitResult:
-    """Choose kappa for everyday activity under rule v2 (data/global/investors.yaml)."""
+    """Choose kappa for everyday activity under rule v3 (data/global/investors.yaml; scores and bounds as in v2)."""
     events = b1_events(file)
     win = _windows(events, actuals)
     fit_ev = [e for e in events if e.date.year in FIT_YEARS]

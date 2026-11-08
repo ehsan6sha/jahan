@@ -31,7 +31,12 @@ real people), and they never count toward the automatic "stocks fall 1%" headlin
 
 The move is 100 x multiplier x net flow / holdings of all holders (Gabaix and Koijen 2021 for the US; borrowed
 elsewhere), traded on the market's trading days (weekend flow carries over), capped per day with the excess
-carried.  Institutions are not modelled; there is no random noise.
+carried.
+
+**Version 2** (new worlds; older ones upgrade with `jahan economy on`): headlines about one event from one prompt
+share a story key and are priced once (the largest of them), and the US market gets a third part, other
+investors (funds, pensions, insurers, foreign investors: not simulated one by one), see ``others_news`` below.
+Version 1 worlds keep everything above unchanged.
 """
 
 from __future__ import annotations
@@ -50,7 +55,7 @@ from jahan.sim.params import SimParams
 from jahan.sim.world_events import news_mood, stocks_headline
 from jahan.store.eventlog import EventLog
 
-VERSION = 1
+VERSION = 2
 POS = "mkt_pos"
 DAYS_PER_YEAR = 365.25
 LOG_MIN_PCT = 0.01  # moves smaller than this are not logged as events (metrics keep them)
@@ -62,6 +67,11 @@ def enabled(world: World) -> bool:
 
 def state(world: World) -> dict[str, Any]:
     return world.macro["economy"]
+
+
+def version(world: World) -> int:
+    eco = world.macro.get("economy")
+    return 0 if eco is None else int(eco.get("version", 1))
 
 
 def _country(world: World, iso3: str) -> int:
@@ -90,7 +100,7 @@ def switch_on(world: World, cfg: dict[str, Any], log: EventLog, prompt_id: int |
     if "market" in m:
         m["market"]["pending_pct"] = 0.0
     m["economy"] = {
-        "version": int(cfg.get("version", VERSION)),
+        "version": int(cfg.get("version", 1)),
         "since_day": world.day,
         "prompt_id": prompt_id,
         "cfg": cfg["everyday"],
@@ -111,12 +121,51 @@ def switch_on(world: World, cfg: dict[str, Any], log: EventLog, prompt_id: int |
             for iso, mk in markets.items()
         },
     }
+    if m["economy"]["version"] >= 2:
+        _start_v2(world, cfg)
     pos = world.pstate.create(POS, "f8", float("nan"), world.pop.capacity)
     view = news_mood(world) + _shift(world)
     for mk in m["economy"]["markets"].values():
         inv = _investors(world, mk["cfg"], None)
         pos[: world.pop.n][inv.holds] = _target(view, _kappa(world, mk, world.config.params))[inv.holds]
-    log.add(world.day, EventKind.ECONOMY_STARTED, -1, -1, -1, float(VERSION), -1, ",".join(sorted(markets)))
+    log.add(
+        world.day,
+        EventKind.ECONOMY_STARTED,
+        -1,
+        -1,
+        -1,
+        float(m["economy"]["version"]),
+        -1,
+        ",".join(sorted(markets)),
+    )
+
+
+def _start_v2(world: World, cfg: dict[str, Any]) -> None:
+    """Version 2's own state: the story clusters and, with a US market, the other investors' part.  Stories
+    known before today stay as they are (no cluster, no other-investor reaction)."""
+    eco = world.macro["economy"]
+    eco["stories"] = {}
+    if "USA" in eco["markets"] and cfg.get("others") is not None:
+        eco["others"] = {
+            "cfg": dict(cfg["others"]),
+            "priced": {},  # story cluster -> its move, kept for the cluster's life (never given back)
+            "news_index": 100.0,
+            "quiet_index": 100.0,
+            "tech_index": 100.0,  # the tech line's own part (tech stories), on top of beta x the S&P move
+            "pending": {"news": 0.0, "tech": 0.0},
+            "quiet": {"h": None},
+            "last": {},
+        }
+
+
+def upgrade(world: World, cfg: dict[str, Any], log: EventLog, prompt_id: int | None) -> None:
+    """Move a version 1 world to version 2 from today (recorded as a prompt, undone by resetting before it).
+    Markets keep their levels and everything priced so far."""
+    eco = world.macro["economy"]
+    eco["version"] = int(cfg["version"])
+    eco["upgraded"] = {"day": world.day, "prompt_id": prompt_id}
+    _start_v2(world, cfg)
+    log.add(world.day, EventKind.ECONOMY_STARTED, -1, -1, -1, float(eco["version"]), -1, "upgrade")
 
 
 # ------------------------------------------------------------------------------------------------- helpers
@@ -291,6 +340,13 @@ def _news_sums(world: World) -> tuple[NDArray[np.float64], dict[int, NDArray[np.
     return total, parts
 
 
+def _cluster(stories: dict[str, Any], item: int) -> str:
+    """The key a story is priced under: its cluster (version 2: headlines of one event from one prompt), or the
+    item itself (stories known before version 2, and every story in a version 1 world)."""
+    e = stories.get(str(item))
+    return str(item) if e is None else f"c:{e['story']}"
+
+
 def priced_news_flow(
     world: World, mk: dict[str, Any], inv: Investors, kappa: float, c: int, sums: tuple[NDArray[np.float64], dict]
 ) -> float:
@@ -299,20 +355,36 @@ def priced_news_flow(
     w = world.pop["pop_weight"].astype(np.float64)
     total, parts = sums
     priced: dict[str, float] = mk.setdefault("priced", {})
+    stories = state(world).get("stories", {})
     who = inv.trades & inv.holds
     base = w * inv.holdings * kappa
     flow = 0.0
-    for item, part in parts.items():
-        key = str(item)
-        if key in priced:
-            continue
-        knows = who & (part != 0.0)
-        if not knows.any():
-            continue
-        dv = np.tanh(total[knows]) - np.tanh(total[knows] - part[knows])  # the view this story adds
-        priced[key] = float((base[knows] * dv).sum())
+    groups: dict[str, list[int]] = {}  # clusters not priced yet -> their stories
+    for item in parts:
+        key = _cluster(stories, item)
+        if key not in priced:
+            groups.setdefault(key, []).append(item)
+    for key, items in groups.items():
+        if len(items) == 1:
+            part = parts[items[0]]
+            knows = who & (part != 0.0)
+            if not knows.any():
+                continue
+            dv = np.tanh(total[knows]) - np.tanh(total[knows] - part[knows])  # the view this story adds
+            priced[key] = float((base[knows] * dv).sum())
+        else:  # one event told in several headlines: priced as its strongest-rated headline alone (its own
+            # reach, the event's other headlines left out), so extra headlines add neither reach nor size
+            rating = world.items["valence"].astype(np.float64) * world.items["sentiment_weight"].astype(np.float64)
+            top = max(items, key=lambda i: abs(float(rating[i])))  # ties: the first headline
+            knows = who & (parts[top] != 0.0)
+            if not knows.any():
+                continue
+            rest = total - np.sum([parts[i] for i in items], axis=0)
+            dv = np.tanh(rest[knows] + parts[top][knows]) - np.tanh(rest[knows])
+            priced[key] = float((base[knows] * dv).sum())
         flow += priced[key]
-    for key in [k for k in priced if int(world.items["slot"][int(k)]) < 0]:  # no longer tracked
+    live = {_cluster(stories, int(i)) for i in world.beliefs.slot_item if i >= 0}
+    for key in [k for k in priced if k not in live]:  # no longer tracked
         flow -= priced.pop(key)
     shift = list(world.macro.get("sentiment_shift", []))
     seen = float(mk.get("shift_seen", shift[c] if c < len(shift) else 0.0))
@@ -451,6 +523,10 @@ def close_day(
             }
             stats["market_holders"] = int(inv.holds.sum())
             stats["market_traders"] = int(inv.trades.sum())
+    if "stories" in st:  # forget stories nobody tracks any more (their clusters were reversed or kept above)
+        slot = world.items["slot"]
+        for k in [k for k in st["stories"] if int(slot[int(k)]) < 0]:
+            del st["stories"][k]
     return stats
 
 

@@ -1086,11 +1086,11 @@ def bench(
 def benchmark(
     only: Annotated[str | None, typer.Option(help="Checks to run, e.g. B1,B3 (default: all)")] = None,
     tune: Annotated[
-        bool, typer.Option(help="Choose kappa under rule v2 (B1 with its B2 and stability bounds)")
+        bool, typer.Option(help="Choose kappa under rule v3 (B1 with its B2 and stability bounds)")
     ] = False,
     config: Annotated[Path | None, typer.Option(help="RunConfig YAML (default configs/m1.yaml)")] = None,
     agents_n: Annotated[int | None, typer.Option("--agents", help="Override the number of agents (tests only)")] = None,
-    seeds: Annotated[int, typer.Option(help="Seed offsets for the kappa fit (rule v2: 3)")] = 3,
+    seeds: Annotated[int, typer.Option(help="Seed offsets for the kappa fit (rule v3: 3)")] = 3,
     replay: Annotated[bool, typer.Option(help="B5: recorded Polymarket answers only, no network")] = False,
     fetch_day: Annotated[str | None, typer.Option(help="B5: the real date of the recordings to use")] = None,
     allow_unregistered: Annotated[
@@ -1249,7 +1249,8 @@ def economy_on(
     run_dir: RunOpt,
     yes: Annotated[bool, typer.Option("--yes", "-y", help="Skip confirmation")] = False,
 ) -> None:
-    """Turn on everyday activity from today in a world made before it existed (new worlds have it).
+    """Turn on everyday activity from today in a world made before it existed (new worlds have it), or bring a
+    world made with version 1 up to version 2 (other investors react to market news at once; ordinary days move).
 
     Recorded as a prompt with a snapshot before it, so `jahan reset --before-prompt N` undoes it; days already
     simulated stay as they were."""
@@ -1258,17 +1259,32 @@ def economy_on(
 
     rd = RunDir(run_dir)
     world = _load_head(rd)
-    if "economy" in world.macro:
-        typer.echo(f"Everyday activity is already on in this world (since day {world.macro['economy']['since_day']}).")
-        return
     cfg = economy_cfg(paths.data_dir(), [c.iso3 for c in world.countries])
     if cfg is None or not cfg["markets"]:
         raise typer.BadParameter("no everyday-activity data for the countries of this world (data/global)")
+    eco = world.macro.get("economy")
+    if eco is not None and int(eco.get("version", 1)) >= int(cfg["version"]):
+        typer.echo(f"Everyday activity is already on in this world (since day {eco['since_day']}).")
+        return
+    if eco is not None:
+        spec = Scenario(prompt="Upgrade everyday activity", events=[EconomyEvent(version=int(cfg["version"]), cfg=cfg)])
+        pid = _inject_spec(rd, world, spec, yes, source="economy", quiet=True)
+        oth = cfg.get("others") or {}
+        what = ["headlines about one event are priced once"]
+        if oth.get("s"):
+            what.append("other investors react to market news at once")
+        if oth.get("quiet"):
+            what.append("ordinary days move like real ones")
+        typer.echo(
+            f"Everyday activity is upgraded to version {cfg['version']} from day {world.day} (prompt {pid}): "
+            f"{', '.join(what)}. Undo with `jahan reset --run {run_dir} --before-prompt {pid}`."
+        )
+        return
     from jahan.model.questions import classify_kind
     from jahan.scenario.spec import QuestionEvent
     from jahan.sim.questions import open_questions
 
-    events: list = [EconomyEvent(cfg=cfg)]
+    events: list = [EconomyEvent(version=int(cfg["version"]), cfg=cfg)]
     for qid, q in open_questions(world):  # questions watched before kinds existed: time passes for them too
         kind, words = classify_kind(q["question"])
         if q.get("kind_by") is None and kind != "other" and q.get("resolves_by"):

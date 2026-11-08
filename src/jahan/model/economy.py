@@ -370,4 +370,26 @@ def economy_cfg(data_dir: Path, countries: list[str]) -> dict[str, Any] | None:
     if us is None or everyday is None or by is None:
         return None
     markets = {iso: market_cfg(iso, by.countries[iso], us, everyday) for iso in countries if iso in by.countries}
-    return {"version": 1, "everyday": everyday_cfg(everyday), "markets": markets}
+    return {"version": 2, "everyday": everyday_cfg(everyday), "markets": markets, "others": others_cfg(us)}
+
+
+CLOSE_UTC_HOUR = 21  # HEURISTIC: news released at or after 21:00 UTC is traded the next day (the New York close is
+# 21:00 UTC in winter and 20:00 in summer; daylight saving is not modelled)
+
+
+def others_cfg(us: InvestorsConfig) -> dict[str, Any] | None:
+    """Other investors' settings for the US market (investors.yaml ``other_investors``): the fitted s (0 until
+    fitted: no reaction), information technology's index weight, the display split and the ordinary-day model."""
+    oi = us.other_investors
+    if oi is None:
+        return None
+    tech = us.derived.get("us_tech_stocks")
+    return {
+        "s": float(oi.s or 0.0),
+        "fitted": oi.s is not None,
+        "it_weight": None if oi.it_weight is None else float(oi.it_weight["value"]),
+        "tech_beta": None if tech is None else tech.beta,
+        "household_share": None if oi.household_share is None else float(oi.household_share["value"]),
+        "close_utc_hour": CLOSE_UTC_HOUR,
+        "quiet": None if oi.quiet is None else dict(oi.quiet),
+    }

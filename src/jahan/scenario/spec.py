@@ -69,7 +69,11 @@ class ProductLaunch(BaseModel):
         return v
 
 
+# HEURISTIC (no source): how much a story of each topic moves economic mood (other topics 0.2). Also the weight of a
+# story in the households' trading view; the other investors' part (everyday activity version 2) uses each story's
+# market_valence instead.
 DEFAULT_SENTIMENT_WEIGHT = {"economy": 1.0, "world": 0.8, "politics": 0.6}
+NEWS_V2_FIELDS = {"market_valence": None, "sectors": "broad", "story": None}  # left out of dumps at their defaults
 
 
 class Bearing(BaseModel):
@@ -84,19 +88,53 @@ class Bearing(BaseModel):
 class NewsEvent(BaseModel):
     """A story pushed through media channels (and then word of mouth).
 
-    ``valence`` says how good the story makes things look (-1 bad .. +1 good).  ``accuracy`` is how
-    true it is: the engine's notion of reality for the story is 0.5 + 0.5 * valence * accuracy, so
-    discerning agents drift toward it.  ``about_product`` links a claim to a launched product (e.g. a
-    safety rumour); then reality is the product's true quality and agents' views of the product move.
+    ``valence`` says how good the story is for ordinary people (-1 bad .. +1 good); ``market_valence`` how it
+    bears on companies and share prices.  ``accuracy`` is how true it is: the engine's notion of reality for the
+    story is 0.5 + 0.5 * valence * accuracy, so discerning agents drift toward it.  ``about_product`` links a
+    claim to a launched product (e.g. a safety rumour); then reality is the product's true quality and agents'
+    views of the product move.  One news event per real-world event: several headlines about the same event
+    share a ``story`` key and are priced by markets once.
     """
 
     model_config = ConfigDict(extra="forbid")
     type: Literal["news"] = "news"
     headline: str
     topic: str = "world"
-    valence: float = Field(ge=-1, le=1)
+    valence: float = Field(
+        ge=-1,
+        le=1,
+        description="How good the story is for ordinary people in the countries that hear it: -1 very bad .. +1 "
+        "very good. It moves people's moods.",
+    )
+    market_valence: float | None = Field(
+        None,
+        ge=-1,
+        le=1,
+        description="How the story bears on company profits and share prices where it is news, compared with "
+        "what investors expected before it: -1 much worse .. +1 much better; news that was widely expected rates "
+        "near 0. Give it for every story with a plausible bearing on companies or markets; leave it out "
+        "otherwise. Judge the news, never a market move it caused.",
+    )
+    sectors: Literal["broad", "tech"] = Field(
+        "broad",
+        description="'tech' when the story is mainly about technology companies (chips, AI, software, data "
+        "centers, internet platforms); otherwise 'broad'.",
+    )
+    story: str | None = Field(
+        None,
+        max_length=60,
+        description="A short key shared by all headlines in this prompt about the same real-world event (e.g. "
+        "'midterms'); leave it out when the event has one headline.",
+    )
     accuracy: float = Field(1.0, ge=0, le=1)
-    salience: float = Field(0.7, ge=0, le=1)
+    salience: float = Field(
+        0.7,
+        ge=0,
+        le=1,
+        description="How widely the story is covered (HEURISTIC anchors): 1.0 the day's top story everywhere "
+        "(an election result, a war breaking out); 0.7 a leading story in most national outlets; 0.5 carried by "
+        "most outlets but not leading; 0.2 niche.",
+    )
     countries: list[str] | None = None  # None = every country in the world
     channel_kinds: list[str] = Field(default_factory=lambda: ["tv", "online", "social", "radio", "newspaper"])
     start_day_offset: int = Field(0, ge=0)
@@ -132,6 +170,15 @@ class NewsEvent(BaseModel):
             if self.sentiment_weight is not None
             else DEFAULT_SENTIMENT_WEIGHT.get(self.topic, 0.2)
         )
+
+    def dump(self) -> dict[str, Any]:
+        """JSON-able form; the market fields are left out at their defaults, so stories without them are stored
+        exactly as before they existed."""
+        d = self.model_dump(mode="json")
+        for k, default in NEWS_V2_FIELDS.items():
+            if d.get(k) == default:
+                d.pop(k, None)
+        return d
 
 
 class MacroStep(BaseModel):
@@ -330,7 +377,7 @@ class EconomyEvent(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
     type: Literal["economy"] = "economy"
-    version: int = 1
+    version: int = 1  # 2: other investors and ordinary days (an older world at version 1 can be upgraded)
     cfg: dict[str, Any]
 
 

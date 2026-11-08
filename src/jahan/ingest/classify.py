@@ -21,8 +21,13 @@ from jahan.scenario.spec import NewsEvent, Scenario, ScenarioEvent
 CLASSIFY_SYSTEM = """Classify news headlines for a society simulator.  For each headline return
 {"i": index, "topic": one of [politics, economy, tech, health, sports, entertainment, science, religion,
 family, local, world, lifestyle], "valence": number from -1 (bad news for ordinary people in that country)
-to 1 (good news), "salience": number from 0 (minor) to 1 (everyone is talking about it)}.
-Answer with a JSON list only.  Judge only from the headline text."""
+to 1 (good news), "salience": number from 0 to 1 (1 the day's top story everywhere, such as an election result
+or a war breaking out; 0.7 a leading story in most national outlets; 0.5 carried by most outlets but not
+leading; 0.2 niche), "market_valence": number from -1 to 1 for how the news bears on company profits and share
+prices in that country compared with what investors expected before it (widely expected news near 0), or null
+when it has no plausible bearing on companies or markets, "sectors": "tech" when it is mainly about technology
+companies (chips, AI, software, data centers, internet platforms), otherwise "broad"}.
+Answer with a JSON list only.  Judge only from the headline text, never from market moves it reports."""
 
 CLASSIFY_POSTS_SYSTEM = """Classify social-media posts for a society simulator.  For each post return
 {"i": index, "topic": one of [politics, economy, tech, health, sports, entertainment, science, religion,
@@ -86,8 +91,21 @@ def classify(
             except (TypeError, ValueError):  # e.g. "positive" instead of a number
                 out.append(_fallback(h, kind))
                 continue
-            out.append({"topic": r["topic"], "valence": valence, "salience": salience})
+            label = {"topic": r["topic"], "valence": valence, "salience": salience}
+            if kind != "posts":  # market ratings for headlines only (posts are not market news)
+                label.update(_market_label(r))
+            out.append(label)
     return out
+
+
+def _market_label(r: dict) -> dict:
+    """market_valence (None when absent or unreadable) and sectors from one classifier row."""
+    mv = r.get("market_valence")
+    try:
+        market = None if mv is None else float(max(-1.0, min(1.0, float(mv))))
+    except (TypeError, ValueError):
+        market = None
+    return {"market_valence": market, "sectors": "tech" if r.get("sectors") == "tech" else "broad"}
 
 
 def to_scenario(
@@ -118,6 +136,8 @@ def to_scenario(
                     headline=h.title[:300],
                     topic=lab["topic"],
                     valence=lab["valence"],
+                    market_valence=lab.get("market_valence"),
+                    sectors=lab.get("sectors", "broad"),
                     accuracy=1.0,
                     salience=lab["salience"],
                     countries=[iso],
