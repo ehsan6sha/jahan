@@ -97,13 +97,17 @@ def parse_prompt(
     answers: dict[str, str] | None = None,
     first_future_offset: int | None = None,
     purpose_tag: str = "",
+    rating_notes: str = "",
 ) -> ParseResult:
     """Free text to a Scenario.  ``first_future_offset``: days from now to the first day without real news.
-    ``purpose_tag`` makes a second, independent recorded answer to the same prompt (the benchmark's retest)."""
+    ``purpose_tag`` makes a second, independent recorded answer to the same prompt (the benchmark's retest).
+    ``rating_notes``: extra text for the world facts (what investors already knew; how to rate; check B11)."""
     tag = f":{purpose_tag}" if purpose_tag else ""
     # The model sees (and must satisfy) the world-event schema only; actor events cannot come from a prompt.
     schema = json.dumps(PromptScenario.model_json_schema(), separators=(",", ":"))
     facts = world_facts(world)
+    if rating_notes:
+        facts += "\n" + rating_notes
     if first_future_offset is not None:
         first = world.date() + dt.timedelta(days=first_future_offset)
         facts += (

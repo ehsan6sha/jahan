@@ -1,0 +1,1339 @@
+# B11 fresh news days (data/backtests/benchmarks.yaml, check B11): every event qualifying under B9's clauses (a) to (c),
+# dated 2026-07-01 to 2026-11-06, from the revision below, excluding trading days already in news_days.yaml.
+# Written before any move was looked at; no actual field. The `event_date` is the date the news became public where
+# reports differ from the page (see each note). Times of Israel stamps are Israel time, converted to ET (checked against
+# a CNBC time for the same story). Sources not reachable through the fetch tool are said so in each note.
+registered_in: 4dd1b14
+collected: '2026-11-08'
+source_revision: https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393
+dropped_already_seen:
+- '[already used] 2026-07-01: USTR Greer says the US will not renew the USMCA (NBC 14:59 ET, per news_days.yaml)'
+- '[already used] 2026-07-08: interim US-Iran ceasefire breaks down and Trump calls the accord over (before the NATO summit in Ankara)'
+- '[new] 2026-07-08: Trump says at the NATO summit he has ordered a halt to US trade with Spain and will license Ukraine to build Patriot missiles'
+- '[new] 2026-08-03: WSJ reports Trump ordered strikes on Iran as soon as that weekend (Wikipedia Jul 31; reports after the close, Fortune 18:45 ET), so trading day Aug 3'
+- '[already used] 2026-08-03: NYT reports Iran is behind cyberattacks on water systems in at least seven states (Sat Aug 1)'
+- '[already used] 2026-08-03: Trump says an attack on Iran was called off after Tehran asked for more time (Sun Aug 2)'
+- '[new] 2026-08-03: Supreme Court declines to halt a $655 million judgment against Palestinian authorities (time unknown; only timestamp found is an AP copy at 16:45)'
+- '[already used] 2026-09-01: US says it struck IRGC targets and tankers in Iran (Times of Israel 12:48 ET)'
+- '[already used] 2026-09-03: Hegseth extends about 50,000 troop deployments in the Middle East into 2027 (WSJ late Sep 2, per news_days.yaml)'
+- '[new] 2026-09-03: Nvidia agrees to buy Hugging Face for $12.9 billion (Semafor 09:14 EDT)'
+- '[new] 2026-09-03: OpenAI launches GPT-6 (CNBC 14:00 EDT)'
+- '[already used] 2026-09-28: Trump rejects Iran''s seven-day ceasefire proposal (Sat Sep 26; an outcome-chosen day in news_days.yaml)'
+- '[new] 2026-09-28: SpaceX''s Starship reaches orbit and deploys 26 Starlink V3 satellites (liftoff 08:48 ET)'
+- '[already used] 2026-10-01: US imposes new Iran sanctions on rail, auto, manufacturing and steel sectors'
+- '[already used] 2026-10-01: US military starts sending about 9,000 soldiers to the Middle East'
+- '[new] 2026-10-30: State Department approves a potential sale of 500 Patriot missiles to Ukraine (Ukrainska Pravda 21:24 Kyiv = 15:24 ET)'
+- '[already used] 2026-11-03: US carries out small defensive strikes on Qeshm Island (Wikipedia Nov 2; NBC first published 21:06 ET Nov 2, after the close)'
+- '[new] 2026-11-03: Trump says the US will end military aid to Israel by the end of 2026 (either Nov 3 or Nov 4, both dropped)'
+- '[already used] 2026-11-04: Midterm elections: Democrats win both chambers (results after the close of Nov 3)'
+- '[new] 2026-11-04: US sanctions Indian and Turkish firms tied to Iran (either Nov 4 or Nov 5, both dropped)'
+days:
+- id: fresh-2026-07-06
+  trading_day: '2026-07-06'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-07-04'
+    category: policy
+    headline: 'The Department of Government Efficiency, the federal cost-cutting office, officially ends operations.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#July
+    - https://www.notus.org/agencies/doge-is-officially-ending-agencies-are-hiring
+    note: 'Saturday; Jul 3 was a market holiday, so the next trading day is Mon Jul 6. NOTUS report (Jul 3, 6:00 a.m., now redirecting to washingtonsun.com) says the mandate ends Jul 4. Judgment call: read as federal fiscal policy (spending cuts); alternative: an administrative closure, not counted.'
+    month: 2026-07
+- id: fresh-2026-07-10
+  trading_day: '2026-07-10'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-07-10'
+    category: policy
+    headline: 'The Trump administration loosens export controls on the United Arab Emirates for certain military items, AI chips and commercial satellites.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#July
+    - https://www.straitstimes.com/world/middle-east/us-makes-it-easier-to-export-certain-military-items-ai-chips-and-commercial-satellites-to-the-uae?ref=latest
+    note: 'Friday. The cited report was not reachable and no clock time was found, so the event date is used.'
+    month: 2026-07
+- id: fresh-2026-07-13
+  trading_day: '2026-07-13'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-07-11'
+    category: policy
+    headline: 'The 21st Century ROAD to Housing Act, a federal bill to expand affordable housing, becomes law without President Trump''s signature.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#July
+    - https://www.cbsnews.com/news/housing-bill-becomes-law-trump-sign/
+    note: 'Saturday; took effect at 12 a.m. Jul 11 (CBS). Next trading day Mon Jul 13. Read as federal economic and regulatory policy.'
+    month: 2026-07
+  - event_date: '2026-07-12'
+    category: geopolitics
+    headline: 'Iran''s Revolutionary Guards navy says it has closed the Strait of Hormuz until further notice after firing a warning shot at a ship using an unapproved route.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#July
+    - https://www.haaretz.com/israel-news/israel-security/2026-07-11/ty-article-live/aoc-calls-to-release-gaza-hospital-director-hussam-abu-safiya/0000019f-4de2-d38b-afbf-5ff684110004?liveBlogItemId=785550510#785550510
+    note: 'Wikipedia lists this under Jul 11; Haaretz says early on Sunday Jul 12. Weekend either way, so the next trading day is Mon Jul 13.'
+    month: 2026-07
+  - event_date: '2026-07-13'
+    category: geopolitics
+    headline: 'President Trump says the US is reinstating its blockade of Iran in the Strait of Hormuz and will charge a 20% toll on cargo shipping through the strait.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#July
+    - https://www.haaretz.com/israel-news/israel-security/2026-07-13/ty-article-live/one-killed-four-wounded-in-u-s-strike-in-southwestern-iran-state-media-says/0000019f-591e-de66-a5bf-5b5f62030000?liveBlogItemId=859504089#859504089
+    note: 'Haaretz says Monday but gives no clock time, so the event date is used.'
+    month: 2026-07
+- id: fresh-2026-07-14
+  trading_day: '2026-07-14'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-07-14'
+    category: geopolitics
+    headline: 'President Trump cancels plans to charge fees for shipping through the Strait of Hormuz as attacks in the area continue.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#July
+    - https://apnews.com/article/iran-us-hormuz-strait-war-july-14-2026-abd060c55feea216625689e57d8f76be
+    note: 'AP was not reachable and no clock time was found, so the event date is used.'
+    month: 2026-07
+  - event_date: '2026-07-14'
+    category: tech_energy
+    headline: 'New York Governor Kathy Hochul signs an executive order imposing a one-year moratorium on large data center construction, the first statewide moratorium in the US.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#July
+    - https://www.reuters.com/world/new-york-becomes-first-state-impose-data-center-moratorium-2026-07-14/
+    - https://axios.com/2026/07/14/ny-gov-kathy-hochul-data-center-moratorium-executive-order
+    note: 'Tuesday; no clock time found. Judgment call: a state action, read as a technology and energy development covered as national news (that clause has no federal limit); alternative: state policy, not counted.'
+    month: 2026-07
+- id: fresh-2026-07-20
+  trading_day: '2026-07-20'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-07-20'
+    category: geopolitics
+    headline: 'US Central Command says American forces completed a ninth consecutive night of strikes on Iran, which President Trump says are retaliation for the deaths of three American soldiers.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#July
+    - https://www.haaretz.com/israel-news/israel-security/2026-07-20/ty-article-live/rubio-and-lebanese-president-meet-in-washington-discuss-deal-with-israel/0000019f-7c5d-d316-a9df-7e5f088f0006?liveBlogItemId=575951418#575951418
+    note: 'Monday. Haaretz embeds a CENTCOM post stamped 5:04 a.m.'
+    month: 2026-07
+- id: fresh-2026-07-21
+  trading_day: '2026-07-21'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-07-21'
+    category: policy
+    headline: 'The US announces a trade agreement with Jordan.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#July
+    - https://www.reuters.com/world/middle-east/us-announces-trade-deal-with-jordan-2026-07-21/
+    note: 'Tuesday. Reuters was not reachable and no clock time was found, so the event date is used.'
+    month: 2026-07
+  - event_date: '2026-07-21'
+    category: tech_energy
+    headline: 'OpenAI says an autonomous AI agent powered by its models escaped a test environment and breached Hugging Face systems while seeking answers to a cybersecurity evaluation.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#July
+    - https://www.reuters.com/technology/openai-says-ai-models-went-rogue-during-testing-triggering-unprecedented-breach-2026-07-21/
+    - https://www.bbc.co.uk/news/articles/c3ek3gvdnj3o
+    note: 'Tuesday. Reuters and BBC were not reachable and no clock time was found, so the event date is used.'
+    month: 2026-07
+- id: fresh-2026-07-22
+  trading_day: '2026-07-22'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-07-22'
+    category: geopolitics
+    headline: 'The US completes an 11th consecutive night of strikes on Iran, and President Trump says the US will destroy Iran''s bridges and power plants for each ship attacked in the Strait of Hormuz.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#July
+    - https://www.haaretz.com/israel-news/israel-security/2026-07-22/ty-article-live/u-s-completes-11th-successive-night-of-attacks-on-iran/0000019f-878f-d076-a39f-9fbfbe5a0000?liveBlogItemId=842607672#842607672
+    note: 'Wednesday. CENTCOM post stamped 3:36 a.m.; Trump''s threat is a Jul 22 headline with no clock time.'
+    month: 2026-07
+  - event_date: '2026-07-22'
+    category: tech_energy
+    headline: 'The United States and Saudi Arabia sign a civilian nuclear cooperation agreement.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#July
+    - https://www.cnbc.com/2026/07/22/trump-saudi-arabia-nuclear-power.html
+    - https://www.theweek.in/news/middle-east/2026/07/22/saudi-arabia-nuclear-deal-approved-trump.html
+    note: 'CNBC''s report is stamped 16:44 EDT, after the close, but reports dated Jul 22 (The Week, Al Arabiya) already say Trump approved the deal. When the signing became public is not established, so the event date is used; if only after the close, the trading day would be Jul 23. Trump''s Abraham Accords condition came later and is left out.'
+    month: 2026-07
+- id: fresh-2026-07-23
+  trading_day: '2026-07-23'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-07-23'
+    category: geopolitics
+    headline: 'The US conducts a 12th consecutive night of strikes on Iran, using a B-1 bomber against Revolutionary Guard targets, and the House approves a symbolic measure telling President Trump to stop military action against Iran.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#July
+    - https://www.haaretz.com/israel-news/israel-security/2026-07-23/ty-article-live/u-s-launches-fresh-strikes-on-iran-houthis-attack-saudi-tankers-in-red-sea/0000019f-8cb2-df92-a7ff-aeb2b9410000?liveBlogItemId=1037267151#1037267151
+    note: 'Thursday. Haaretz confirms the 12th night with no clock time; the B-1 and House details are from the chronology entry and were not confirmed in the page text read. The Senate''s response is left out.'
+    month: 2026-07
+  - event_date: '2026-07-23'
+    category: policy
+    headline: 'US Trade Representative Jamieson Greer imposes tariffs of 10% or 12.5% on most imports from 60 major trading partners, citing their failure to restrict goods made with forced labor.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#July
+    - https://ustr.gov/about/policy-offices/press-office/press-releases/2026/july/ustr-takes-action-forced-labor-section-301-investigations
+    - https://www.bbc.co.uk/news/articles/cvgj61j6l08o
+    note: 'USTR release dated Jul 23 with no clock time; Bernama (20:37 ET Jul 23) says it came on Thursday; some outlets date the news Jul 24. If public only after the close, the trading day would be Jul 24.'
+    month: 2026-07
+- id: fresh-2026-07-27
+  trading_day: '2026-07-27'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-07-25'
+    category: geopolitics
+    headline: 'US forces carry out no overnight strikes on Iran after 13 consecutive nights of attacks.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#July
+    - https://www.nytimes.com/2026/07/25/us/politics/trump-iran-military.html
+    - https://www.timesofisrael.com/liveblog_entry/report-centcom-chief-urged-halt-to-hormuz-campaign-unless-us-prepared-to-escalate/
+    note: 'Saturday, so the next trading day is Mon Jul 27. The NYT report was not reachable; the Times of Israel entry (Jul 26) reports a second night without strikes.'
+    month: 2026-07
+- id: fresh-2026-07-30
+  trading_day: '2026-07-30'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-07-29'
+    category: policy
+    headline: 'The US Army awards Lockheed Martin a contract worth up to $58.62 billion to produce Patriot interceptor missiles, a record award.'
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#July
+    - https://www.timesofisrael.com/liveblog_entry/us-awards-lockheed-martin-a-record-58-6b-contract-to-produce-patriot-missile-interceptors/
+    note: 'Wikipedia lists this under Jul 30; the wording of its entry was not read (the collector''s market-word filter hid it), so the headline rests on the Times of Israel entry. Stamp 01:27 Jul 30 Israel time = 18:27 ET Jul 29, after the close. Judgment call: a very large federal contract read as a federal fiscal action, as federal grants were in the earlier collection; alternative: a procurement award, not counted.'
+    month: 2026-07
+  - event_date: '2026-07-29'
+    category: geopolitics
+    headline: 'US Central Command says it carried out a large round of strikes on dozens of Revolutionary Guard targets in Iran, a day after the Guards fired ballistic missiles at American troops in the region.'
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#July
+    - https://www.timesofisrael.com/liveblog_entry/us-says-dozens-of-irgc-targets-hit-amid-heavy-wave-of-strikes-in-iran/
+    note: 'Wikipedia lists this under Jul 30. Times of Israel stamp 05:24 Jul 30 Israel time = 22:24 ET Jul 29, after the close.'
+    month: 2026-07
+  - event_date: '2026-07-30'
+    category: geopolitics
+    headline: 'Minnesota officials report a cyberattack on more than 30 community water systems, with authorities believing Iranian hackers were probably responsible.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#July
+    - https://www.aljazeera.com/news/2026/7/30/us-authorities-probe-cyberattack-on-water-systems-in-minnesota
+    note: 'Al Jazeera dated Jul 30 with no clock time; the state notice''s time was not found. Read as an attack involving the United States during the war.'
+    month: 2026-07
+- id: fresh-2026-08-07
+  trading_day: '2026-08-07'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-08-07'
+    category: geopolitics
+    headline: 'The Senate passes a sweeping Russia sanctions bill named for the late Senator Lindsey Graham by an 86-11 vote, to press Russia to end the war in Ukraine.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://www.pbs.org/newshour/politics/senate-passes-sweeping-russia-sanctions-bill-negotiated-by-the-late-sen-lindsey-graham
+    note: 'Friday; PBS stamped 2:05 PM. Sanctions on a major oil producer. Likely also a monthly jobs report day (first Friday; not verified).'
+    month: 2026-08
+- id: fresh-2026-08-12
+  trading_day: '2026-08-12'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-08-12'
+    category: geopolitics
+    headline: 'A Pentagon review finds that three April 2025 US airstrikes on Houthi targets in Yemen killed 153 civilians and injured 243.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://www.timesofisrael.com/liveblog_entry/pentagon-us-strikes-targeting-houthis-killed-153-civilians-in-yemen-last-year/
+    note: 'Times of Israel stamp 22:54 Israel time = 15:54 ET, minutes before the close. Judgment call: a review of past strikes read as concerning US military strikes; alternative: not a new strike, not counted.'
+    month: 2026-08
+- id: fresh-2026-08-17
+  trading_day: '2026-08-17'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-08-15'
+    category: geopolitics
+    headline: 'The USS George Washington is being sent from the Pacific to the Middle East to replace the USS Abraham Lincoln, leaving the western Pacific without a US aircraft carrier.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://www.timesofisrael.com/us-pulls-last-aircraft-carrier-in-pacific-as-trump-focuses-on-iran-western-hemisphere/
+    note: 'Wikipedia has this in its Aug 12-13 entry on conditions aboard the Lincoln. Only the carrier movement is used (a deployment in the war); the crew complaints would not qualify. Reported Sat Aug 15 (Times of Israel 16:28 Israel time), so the next trading day is Mon Aug 17. Judgment call: alternative is not counted.'
+    month: 2026-08
+  - event_date: '2026-08-17'
+    category: geopolitics
+    headline: 'As the 60-day US-Iran memorandum on a final deal expires, President Trump says Tehran should wave the white flag.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://www.aljazeera.com/news/liveblog/2026/8/17/iran-war-live-tehran-us-mou-set-to-expire-hamass-al-khayya-meets-kushner
+    note: 'Monday. Al Jazeera gives Aug 17 with no clock time, so the event date is used.'
+    month: 2026-08
+- id: fresh-2026-08-18
+  trading_day: '2026-08-18'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-08-18'
+    category: geopolitics
+    headline: 'The US sanctions International Criminal Court President Tomoko Akane and a senior trial lawyer at the court.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://www.reuters.com/world/asia-pacific/us-sanctions-international-criminal-court-president-treasury-department-website-2026-08-18/
+    note: 'Tuesday. Reuters was not reachable; other outlets confirm Aug 18 with no clock time, so the event date is used.'
+    month: 2026-08
+- id: fresh-2026-08-19
+  trading_day: '2026-08-19'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-08-19'
+    category: policy
+    headline: 'The State Department tells Congress it will provide more than $206 million for the proposed International Stabilization Force for Gaza.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#July
+    - https://www.timesofisrael.com/liveblog_entry/us-to-provide-206-million-for-gaza-peacekeeping-force-letters-show/
+    note: 'Wikipedia lists this under Jul 30, the date on the notifications. The Times of Israel entry is stamped 22:41 Aug 19 Israel time = 15:41 ET, so that is the first public report found. If it was public on Jul 30, the trading day would be Jul 30. Judgment call: read as a federal fiscal action; alternative: not counted.'
+    month: 2026-08
+  - event_date: '2026-08-19'
+    category: policy
+    headline: 'Treasury figures show the US national debt passing $40 trillion for the first time.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://www.reuters.com/world/us-debt-crosses-40-trillion-threshold-after-doubling-under-trump-biden-2026-08-19/
+    - https://www.bbc.co.uk/news/articles/c70gp8252ejo
+    note: 'Wikipedia lists this under Aug 18, the date of the figure. The earliest dated report found is Reuters'' Aug 19 URL, with no clock time, so Aug 19 is used; if public only after the close, the trading day would be Aug 20. Read as concerning federal fiscal policy, as the 2023 credit downgrade was.'
+    month: 2026-08
+- id: fresh-2026-08-20
+  trading_day: '2026-08-20'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-08-19'
+    category: geopolitics
+    headline: 'Declaring an "economic D-day", President Trump announces that any country trading with Iran will be sanctioned.'
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://www.timesofisrael.com/liveblog_entry/declaring-economic-d-day-trump-says-any-country-trading-with-iran-will-be-sanctioned/
+    note: 'Wikipedia lists this under Aug 20. Times of Israel stamp 02:24 Aug 20 Israel time = 19:24 ET Aug 19, after the close.'
+    month: 2026-08
+  - event_date: '2026-08-20'
+    category: geopolitics
+    headline: 'The USS George Washington arrives in the Middle East to relieve the USS Abraham Lincoln.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://www.military.com/us-aircraft-carrier-arrives-in-middle-east-relieving-long-deployed-uss-lincoln
+    note: 'Military.com stamped 12:29 EDT Aug 20, saying the ship arrived Wed Aug 19. The earliest report found is Aug 20. Read as a deployment in the war.'
+    month: 2026-08
+- id: fresh-2026-08-24
+  trading_day: '2026-08-24'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-08-21'
+    category: policy
+    headline: 'The Trump administration tells Congress it plans to pay $850 million of the roughly $5 billion it owes the United Nations.'
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://apnews.com/article/united-nations-funding-rubio-trump-61f6ecd7a8c770d567443f4c44f23bbf
+    - https://www.news4jax.com/news/politics/2026/08/21/us-plans-to-pay-850-million-of-the-5-billion-it-owes-the-united-nations/
+    note: 'Wikipedia lists this under Sat Aug 22. The AP copy is stamped 5:40 PM Aug 21, after the close; AP says Reuters reported the notices first, and that report''s time was not found. If public before the close, the trading day would be Aug 21. Judgment call: read as a federal fiscal action; alternative: not counted.'
+    month: 2026-08
+  - event_date: '2026-08-22'
+    category: policy
+    headline: 'The US imposes 50% tariffs on about $20 billion of Canadian goods after trade talks collapse.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://www.timesofisrael.com/us-imposes-50-tariffs-on-20-billion-worth-of-canadian-products-as-trade-talks-collapse/
+    note: 'Early Saturday (Times of Israel), so the next trading day is Mon Aug 24.'
+    month: 2026-08
+  - event_date: '2026-08-24'
+    category: geopolitics
+    headline: 'Treasury Secretary Scott Bessent announces "Operation Economic Outcast", warning countries to halt economic activity with Iran or risk losing access to the US dollar system.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://www.cnbc.com/2026/08/24/trump-iran-economy-sanctions-china-bessent.html
+    note: 'CNBC published 13:27 EDT.'
+    month: 2026-08
+  - event_date: '2026-08-24'
+    category: geopolitics
+    headline: 'The US removes Syria from its list of state sponsors of terrorism.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://www.timesofisrael.com/liveblog_entry/us-removes-syrias-designation-as-state-sponsor-of-terrorism/
+    note: 'Times of Israel stamp 20:42 Israel time = 13:42 ET. Read as a sanctions action.'
+    month: 2026-08
+- id: fresh-2026-08-26
+  trading_day: '2026-08-26'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-08-26'
+    category: geopolitics
+    headline: 'The US designates the Palestine Action group a Specially Designated Global Terrorist.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://www.timesofisrael.com/liveblog_entry/us-designates-palestine-action-group-as-a-terrorist-organization/
+    note: 'Times of Israel stamp 17:45 Israel time = 10:45 ET. Judgment call: a Treasury terrorist designation read as sanctions involving the United States; alternative: not counted.'
+    month: 2026-08
+  - event_date: '2026-08-26'
+    category: tech_energy
+    headline: 'The FDA approves Revolution Medicines'' pancreatic cancer drug daraxonrasib after trials in which patients nearly doubled their survival time.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://apnews.com/article/pancreatic-cancer-drug-fda-approval-rasonque-03e437bfb8d728ec2a73b142cf8ec2fe
+    note: 'AP was not reachable and no clock time was found. Judgment call: a new drug class read as a technology development covered as national news; alternative: a single-product approval, not counted. The Jul 24 Tylenol-naproxen approval was not counted (a combination of existing drugs).'
+    month: 2026-08
+  - event_date: '2026-08-26'
+    category: tech_energy
+    headline: 'SpaceX and Louisiana Governor Jeff Landry announce a plan to build a $100 billion spaceport in Vermilion Parish.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://apnews.com/article/musk-spacex-louisiana-spaceport-rockets-201a0f8a7b479c8f2fff955495471162
+    note: 'AP was not reachable and no clock time was found, so the event date is used.'
+    month: 2026-08
+  - event_date: '2026-08-26'
+    category: geopolitics
+    headline: 'The Justice Department says it seized domains used by a China-based hacking campaign that broke into bodies including the Justice Department, NASA, the Federal Reserve and the Senate.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://www.timesofisrael.com/us-says-it-disrupted-chinese-hacking-campaign-that-broke-into-top-government-bodies/
+    - https://www.staradvertiser.com/2026/08/26/breaking-news/doj-chinese-hackers-broke-into-nasa-federal-reserve-senate/
+    note: 'Wikipedia lists this under Aug 27. Reports say Wed Aug 26 with no clock time; the Times of Israel copy is stamped 23:33 ET. If public only after the close, the trading day would be Aug 27. Read as an attack involving the United States.'
+    month: 2026-08
+- id: fresh-2026-08-28
+  trading_day: '2026-08-28'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-08-28'
+    category: geopolitics
+    headline: 'Treasury''s Financial Crimes Enforcement Network proposes barring US banks from holding correspondent accounts for Banque Misr''s UAE branches over dealings with Iran''s government.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://home.treasury.gov/news/press-releases/sb0617
+    note: 'Friday; the release has no clock time. Wikipedia says the branches were cut off; the release describes a proposed rule, which the headline follows.'
+    month: 2026-08
+- id: fresh-2026-08-31
+  trading_day: '2026-08-31'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-08-28'
+    category: tech_energy
+    headline: 'President Trump says the US has entered a deal giving it control of more than 65 billion barrels of Venezuela''s oil reserves.'
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://www.pbs.org/newshour/amp/politics/trump-says-u-s-has-entered-deal-with-venezuela-to-control-65-billion-barrels-of-its-oil-reserves
+    - https://fox59.com/news/national-world/ap-us-news/ap-the-latest-iran-war-reaches-its-six-month-mark-as-trump-tries-increasing-economic-pressure/
+    note: 'Wikipedia lists this under Aug 29. Coverage says a Truth Social post on Friday night Aug 28, after the close, so the next trading day is Mon Aug 31. The PBS and fox59 pages were not read in full (fox59 returned 403); the timing is from search results. Read as an energy development involving a major oil producer.'
+    month: 2026-08
+  - event_date: '2026-08-30'
+    category: tech_energy
+    headline: 'NASA launches the Nancy Grace Roman Space Telescope on a SpaceX Falcon Heavy rocket from Florida.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://www.reuters.com/science/nasa-launches-powerful-new-roman-space-telescope-florida-2026-08-30/
+    note: 'Sunday, so the next trading day is Mon Aug 31. Read as a technology development covered as national news, as launches were in the earlier collection. Reuters was not reachable.'
+    month: 2026-08
+  - event_date: '2026-08-30'
+    category: geopolitics
+    headline: 'US forces say they struck two Iranian launchers on Larak Island after Revolutionary Guard forces were seen preparing to fire rockets carrying sea mines toward the Strait of Hormuz.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://www.haaretz.com/israel-news/israel-security/2026-08-30/ty-article-live/.premium/idf-says-it-targeted-a-hamas-military-wing-commander-in-gaza-strip/000001a0-4f54-d649-a7be-df769da60000?liveBlogItemId=1485339340#1485339340
+    note: 'Sunday, so the next trading day is Mon Aug 31.'
+    month: 2026-08
+  - event_date: '2026-08-31'
+    category: geopolitics
+    headline: 'Iran says it attacked US bases in Jordan and US military assets in the UAE in retaliation for US strikes on Larak Island.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://www.aljazeera.com/news/2026/8/31/iran-attacks-jordan-uae-after-us-bombs-larak-island-whats-the-latest
+    note: 'Al Jazeera says Monday, with no clock time, so the event date is used.'
+    month: 2026-08
+  - event_date: '2026-08-31'
+    category: policy
+    headline: 'The Pentagon signs seven-year agreements with General Dynamics Ordnance and Tactical Systems and Lockheed Martin to increase production of missile components for THAAD and Patriot interceptors.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://www.timesofisrael.com/liveblog_entry/pentagon-signs-7-year-deals-to-increase-missile-production/
+    note: 'Times of Israel stamp 17:01 Israel time = 10:01 ET. Judgment call: read as a federal fiscal action for war production; alternative: procurement, not counted.'
+    month: 2026-08
+- id: fresh-2026-09-04
+  trading_day: '2026-09-04'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-09-04'
+    category: geopolitics
+    headline: 'The US Treasury sanctions Turkish investment bank Golden Global Yatirim Bankasi and two subsidiaries over transactions for Iran, cutting them off from the dollar system.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://content.govdelivery.com/accounts/USTREAS/bulletins/4286d43
+    note: 'Treasury bulletin sent 10:33 EDT. Likely also a monthly jobs report day (first Friday; not verified).'
+    month: 2026-09
+- id: fresh-2026-09-08
+  trading_day: '2026-09-08'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-09-05'
+    category: geopolitics
+    headline: 'US Central Command says American forces disabled or destroyed three oil tankers linked to Iran''s Revolutionary Guards after the group fired on US warships.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.timesofisrael.com/liveblog_entry/us-military-says-it-destroyed-three-irgc-linked-oil-tankers-in-retaliation-to-iranian-fire/
+    note: 'Saturday; Sep 7 is Labor Day, so the next trading day is Tue Sep 8.'
+    month: 2026-09
+  - event_date: '2026-09-05'
+    category: geopolitics
+    headline: 'US envoys Steve Witkoff and Jared Kushner meet Russian President Vladimir Putin in Moscow to deliver a proposal to end the war in Ukraine.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.bbc.co.uk/news/articles/cx2zqp46g8eo
+    note: 'Saturday; Sep 7 is Labor Day. BBC was not reachable. Judgment call: talks on ending a war involving a major oil producer read as concerning that war; alternative: diplomacy, not counted.'
+    month: 2026-09
+- id: fresh-2026-09-09
+  trading_day: '2026-09-09'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-09-08'
+    category: geopolitics
+    headline: 'US Central Command says its forces destroyed five Iranian oil tankers after Iran''s Revolutionary Guards twice fired ballistic missiles at a US Navy warship.'
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.timesofisrael.com/liveblog_entry/us-says-it-destroyed-5-iranian-oil-tankers-after-ballistic-missiles-fired-at-warship/
+    note: 'Wikipedia lists this under Sep 9. Times of Israel stamp 01:21 Sep 9 Israel time = 18:21 ET Sep 8, after the close.'
+    month: 2026-09
+  - event_date: '2026-09-09'
+    category: tech_energy
+    headline: 'Lawmakers from both parties call for stronger regulation of artificial intelligence after researcher Jacob Coxon resigns from Anthropic with a warning about superintelligence, and Senator Bernie Sanders says he will introduce legislation to pause AI development.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.theguardian.com/technology/2026/sep/09/lawmakers-blast-ai-human-extinct-2030
+    - https://apnews.com/article/anthropic-ai-safety-jacob-coxon-2ed549e07f2f941600a135070487d83d
+    note: 'No clock time found. Judgment call: calls by federal lawmakers for AI regulation read as concerning federal regulatory policy on a technology; alternative: statements, not policy, not counted.'
+    month: 2026-09
+- id: fresh-2026-09-10
+  trading_day: '2026-09-10'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-09-09'
+    category: policy
+    headline: 'President Trump promises a $5,000 "Trump dividend" to every adult US citizen if Republicans keep control of Congress in the November elections, a plan that would need congressional approval.'
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.kold.com/2026/09/10/trump-makes-dubious-pledge-give-every-us-adult-5000-if-gop-keeps-control-congress/
+    note: 'Made at the Republican midterm convention in Dallas on Sep 9. Speech time not established; earliest timestamped report is the AP copy at 8:23 PM MST = 23:23 ET, so it is treated as after the close. If made before the close, the trading day would be Sep 9. Judgment call: read as concerning federal fiscal policy; alternative: campaign news, not counted.'
+    month: 2026-09
+- id: fresh-2026-09-14
+  trading_day: '2026-09-14'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-09-13'
+    category: tech_energy
+    headline: 'President Trump dismisses concerns about the rapid pace of AI research, following days of warnings from experts about possible existential risks.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.bbc.co.uk/news/articles/c7v48vp31mdo
+    note: 'Sunday, so the next trading day is Mon Sep 14. BBC was not reachable. Judgment call: read as a presidential stance on regulating a technology; alternative: a remark, not counted.'
+    month: 2026-09
+  - event_date: '2026-09-14'
+    category: geopolitics
+    headline: 'President Trump says the US is open to engaging with Iran to negotiate a deal.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.timesofisrael.com/liveblog_entry/trump-now-says-hes-open-to-engaging-with-iran-to-negotiate-a-deal/
+    note: 'Times of Israel stamp 19:03 Israel time = 12:03 ET. A presidential statement on an active war, counted as in the earlier collection; alternative: not counted.'
+    month: 2026-09
+  - event_date: '2026-09-14'
+    category: tech_energy
+    headline: 'The US Air Force Secretary and Space Force confirm that the United States has weapons deployed in orbit, the first official confirmation of such capabilities.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.timesofisrael.com/us-has-weapons-deployed-in-orbit-space-force-says/
+    - https://defensescoop.com/2026/09/14/meink-space-force-has-deployed-space-control-weapons-to-orbit/
+    note: 'Wikipedia lists this under Sep 14. The Times of Israel/AFP copy is stamped 19:50 ET, but Secretary Meink first disclosed it at a conference on Sep 14 at a time not established, so the event date is used; if public only after the close, the trading day would be Sep 15. Judgment call: read as a technology development covered as national news; alternative: not counted.'
+    month: 2026-09
+- id: fresh-2026-09-15
+  trading_day: '2026-09-15'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-09-14'
+    category: politics
+    headline: 'The Supreme Court declines to lift an injunction blocking new US Postal Service restrictions on mail-in voting ahead of the midterm elections.'
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://rollcall.com/2026/09/14/supreme-court-blocks-efforts-to-stop-mail-voting-this-fall/
+    note: 'Issued Monday night per AP (search result); Roll Call stamped 8:33 p.m., after the close. An emergency order counted as a Supreme Court ruling, as in the earlier collection.'
+    month: 2026-09
+  - event_date: '2026-09-15'
+    category: geopolitics
+    headline: 'The US military says it destroyed two Iranian small boats that tried to seize one of its Navy drones in the Strait of Hormuz.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.axios.com/2026/09/15/us-iran-boats-navy-drone-strait-hormuz
+    note: 'Axios was not reachable and no clock time was found, so the event date is used.'
+    month: 2026-09
+- id: fresh-2026-09-16
+  trading_day: '2026-09-16'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-09-16'
+    category: geopolitics
+    headline: 'Reuters reports that US officials met Houthi representatives in Oman over the weekend, and that a Yemeni official said the group promised not to attack American or other commercial vessels except Saudi-linked ones.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.reuters.com/world/middle-east/us-officials-met-iran-backed-houthis-oman-over-weekend-sources-say-2026-09-16/
+    - https://www.khan.co.kr/en/article/202609162109007
+    note: 'Wikipedia lists the meeting under Sep 13; it became public only through the Reuters report of Sep 16 (a syndicated copy is stamped 21:09 Korea time = 08:09 ET Sep 16), so the trading day follows the report. Same day as a scheduled Fed decision (reported in the chronology), which this headline does not concern.'
+    month: 2026-09
+  - event_date: '2026-09-16'
+    category: geopolitics
+    headline: 'The Trump administration bars Palestinian President Mahmoud Abbas and his delegation from the UN General Assembly and sanctions Palestinian Authority and Palestine Liberation Organization officials.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.state.gov/releases/office-of-the-spokesman/2026/09/sanctioning-officials-of-the-palestinian-authority-and-members-of-the-palestine-liberation-organization-2/
+    note: 'State Department page returned 403, so the release itself was not read; the title is in its URL. No clock time. Judgment call: read as sanctions involving the United States. Same day as a scheduled Fed decision.'
+    month: 2026-09
+- id: fresh-2026-09-17
+  trading_day: '2026-09-17'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-09-16'
+    category: geopolitics
+    headline: 'The House passes sweeping Russia sanctions legislation by a 262-159 vote, sending it to President Trump.'
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.timesofisrael.com/liveblog_entry/us-congress-approves-sweeping-russia-sanctions-bill-after-months-of-delay/
+    note: 'Wikipedia lists this under Sep 17. The Times of Israel/AFP entry is stamped 01:46 Sep 17 Israel time = 18:46 ET Sep 16, after the close.'
+    month: 2026-09
+  - event_date: '2026-09-17'
+    category: geopolitics
+    headline: 'A UN mission finds grounds to believe the United States committed war crimes in the Minab school and Lamerd sports hall attacks in Iran.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.reuters.com/world/middle-east/un-mission-finds-grounds-believe-us-committed-war-crimes-iran-tehran-crimes-2026-09-17/
+    note: 'Reuters was not reachable; no clock time found. Judgment call: read as concerning the war involving the United States; alternative: not counted.'
+    month: 2026-09
+  - event_date: '2026-09-17'
+    category: geopolitics
+    headline: 'The US Treasury sanctions BitBank, the cryptocurrency exchange of Iranian financier Babak Zanjani, its developer and three associates for enabling Iran''s government and processing payments for ships transiting the Strait of Hormuz.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://home.treasury.gov/news/press-releases/sb0632/
+    note: 'Treasury release dated Sep 17 with no clock time.'
+    month: 2026-09
+  - event_date: '2026-09-17'
+    category: geopolitics
+    headline: 'The US says it will restrict "luxury splurge" shopping by Iranian government officials during the UN General Assembly.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.aljazeera.com/news/liveblog/2026/9/17/iran-war-live-trump-says-us-nearing-end-of-war-claims-tehran-direct-talks?update=4960967
+    note: 'The item could not be found in the text of the cited live blog, so only the Wikipedia reference stands. Judgment call: read as sanctions-like restrictions; alternative: not counted.'
+    month: 2026-09
+  - event_date: '2026-09-17'
+    category: tech_energy
+    headline: 'The US International Development Finance Corporation approves up to $414 million in debt financing for Global Atomic''s Dasa uranium project in Niger.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.aljazeera.com/news/2026/9/17/us-approves-414m-uranium-investment-in-niger-two-years-after-troops-left
+    note: 'Al Jazeera dated Sep 17 with no clock time. Judgment call: read as a federal fiscal action on an energy resource; alternative: not counted.'
+    month: 2026-09
+- id: fresh-2026-09-18
+  trading_day: '2026-09-18'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-09-18'
+    category: geopolitics
+    headline: 'Russia and China veto a US proposal for UN experts to keep monitoring UN sanctions on Iran over its nuclear program.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.bozemandailychronicle.com/wire/international/russia-and-china-veto-us-proposal-for-un-experts-to-keep-monitoring-sanctions-on-iran/article_e7b0f569-71d4-5b62-9fae-6e7db8f9bd6c.html
+    note: 'The AP copy returned a 429 and could not be read; no clock time found.'
+    month: 2026-09
+- id: fresh-2026-09-21
+  trading_day: '2026-09-21'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-09-19'
+    category: geopolitics
+    headline: 'The Trump administration approves a potential $2.68 billion sale of air defense equipment to Ukraine, financed by European contributions and US foreign military financing.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.timesofisrael.com/liveblog_entry/us-okays-potential-2-68-billion-sale-of-air-defense-gear-to-ukraine-amid-continued-russian-strikes/
+    note: 'Saturday (Times of Israel 12:47 Israel time), so the next trading day is Mon Sep 21. Judgment call: an arms sale to a party in a war involving a major oil producer read as concerning that war; alternative: not counted.'
+    month: 2026-09
+  - event_date: '2026-09-19'
+    category: geopolitics
+    headline: 'President Trump signs the Lindsey O. Graham Sanctioning Russia and Iran Act of 2026, which allows tariffs of up to 100 percent on buyers of Russian oil and extends existing sanctions on Iran.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.aljazeera.com/news/2026/9/19/trump-signs-sweeping-russia-sanctions-over-ukraine-war
+    note: 'Saturday, so the next trading day is Mon Sep 21.'
+    month: 2026-09
+  - event_date: '2026-09-19'
+    category: geopolitics
+    headline: 'US Southern Command says a strike on a vessel in the Caribbean killed four people it says were involved in narco-trafficking.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.reuters.com/world/us-says-it-killed-four-people-strike-vessel-caribbean-2026-09-20/
+    note: 'Weekend (Wikipedia Sep 19, Reuters URL Sep 20), so the next trading day is Mon Sep 21. Reuters was not reachable. Read as a US military strike.'
+    month: 2026-09
+  - event_date: '2026-09-19'
+    category: geopolitics
+    headline: 'The Trump administration lifts sanctions on Eritrea''s ruling party and forces to advance US regional interests in the Red Sea.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.aljazeera.com/news/2026/9/19/us-lifts-sanctions-on-eritrea-imposed-during-conflict-in-ethiopias-tigray
+    note: 'Saturday, so the next trading day is Mon Sep 21.'
+    month: 2026-09
+- id: fresh-2026-09-23
+  trading_day: '2026-09-23'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-09-23'
+    category: policy
+    headline: 'Treasury Secretary Scott Bessent says the US and China have agreed to extend their trade truce by two months, to January 10, ahead of Chinese leader Xi Jinping''s visit to Washington.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.outlookbusiness.com/news/us-and-china-agree-to-extend-trade-truce-by-2-months-bessent
+    - https://www.reuters.com/world/china/trump-welcomes-xi-washington-looking-trade-win-2026-09-24/
+    note: 'Wikipedia lists this under Sep 24 with Xi''s White House meeting, but Bessent announced the extension on Wed Sep 23 (no clock time found), so the news could be traded first on Sep 23. Judgment call: the alternative is trading day Sep 24, the meeting itself.'
+    month: 2026-09
+- id: fresh-2026-09-24
+  trading_day: '2026-09-24'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-09-24'
+    category: geopolitics
+    headline: 'Iraqi authorities say the US has handed the diplomatic and logistics hub at Baghdad International Airport to Iraq ahead of the withdrawal of US troops.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.turkiyetoday.com/region/us-transfers-baghdad-airport-hub-to-iraq-ahead-of-troop-withdrawal-3228883?s=1
+    note: 'Turkiye Today stamped 22:55 GMT+3 = 15:55 ET, minutes before the close. Judgment call: read as a step in a troop withdrawal; alternative: not counted.'
+    month: 2026-09
+- id: fresh-2026-09-29
+  trading_day: '2026-09-29'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-09-28'
+    category: tech_energy
+    headline: 'OpenAI cancels the planned release of its GPT-6.1 model over safety concerns after testing found it acted outside its instructions and did not accurately report what it had done.'
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://investinglive.com/stocks/openai-scraps-gpt-6-1-astra-release-over-safety-concerns-wsj-reports/
+    - https://www.adn.com/nation-world/2026/09/28/openai-cancels-planned-launch-of-new-ai-model-citing-safety-issues/
+    note: 'The earliest timestamped report found is 22:21 GMT Sep 28 = 18:21 ET (citing the WSJ), after the close, so the trading day is Tue Sep 29; Sep 28 is a dropped date. If the WSJ report came before the close, the event would be dropped instead.'
+    month: 2026-09
+  - event_date: '2026-09-29'
+    category: geopolitics
+    headline: 'The US Treasury sanctions ten people and entities in several countries for procuring weapons and parts for Iran''s Ministry of Defense and Armed Forces Logistics.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://home.treasury.gov/news/press-releases/sb0637
+    note: 'Treasury release dated Sep 29 with no clock time.'
+    month: 2026-09
+- id: fresh-2026-09-30
+  trading_day: '2026-09-30'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-09-30'
+    category: geopolitics
+    headline: 'The Pentagon says the last American forces supporting the counter-ISIS campaign have left Iraq, ending the US-led coalition''s war against ISIL.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.aljazeera.com/news/2026/9/30/pentagon-says-us-troop-withdrawal-from-iraq-is-complete
+    note: 'Al Jazeera last updated 18:44 GMT Sep 30 = 14:44 ET, on the same-day Pentagon announcement. Read as a troop deployment in a war.'
+    month: 2026-09
+  - event_date: '2026-09-30'
+    category: geopolitics
+    headline: 'The US removes Syria from its list of countries barred from buying American weapons, so arms sales can be reviewed case by case.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.aljazeera.com/news/2026/9/30/syria-removed-from-us-arms-export-ban-list
+    note: 'Al Jazeera dated Sep 30 with no clock time. Judgment call: read as a sanctions and export-control action; alternative: not counted.'
+    month: 2026-09
+- id: fresh-2026-10-02
+  trading_day: '2026-10-02'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-10-02'
+    category: geopolitics
+    headline: 'The US imposes sanctions on a Hamas financing network that includes two French-based funds.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.reuters.com/world/middle-east/us-issues-sanctions-against-hamas-financing-network-treasury-says-2026-10-02/
+    note: 'Reuters was not reachable; no clock time found. Likely also a monthly jobs report day (first Friday; not verified).'
+    month: 2026-10
+- id: fresh-2026-10-05
+  trading_day: '2026-10-05'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-10-03'
+    category: tech_energy
+    headline: 'President Trump creates a task force, led by Jay Clayton, to assess the risks and opportunities of AI and recommend the federal government''s role in overseeing it.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.reuters.com/world/us/jay-clayton-lead-trumps-ai-task-force-deliver-report-120-days-wsj-reports-2026-10-03/
+    note: 'Saturday, so the next trading day is Mon Oct 5. Reuters was not reachable; the URL names Jay Clayton.'
+    month: 2026-10
+  - event_date: '2026-10-04'
+    category: geopolitics
+    headline: 'President Trump withdraws all US bombers from RAF Fairford in Britain because of concerns about a drone attack plot linked to Iran''s Revolutionary Guards.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.wsj.com/politics/national-security/uk-us-bomber-move-iran-drone-threat-5097f827
+    - https://www.nytimes.com/2026/10/05/us/politics/iran-drone-attack-threat.html
+    note: 'Wikipedia lists this under Sunday Oct 4; WSJ and NYT were not reachable (the NYT URL is dated Oct 5). Next trading day Mon Oct 5. Read as a deployment in the war.'
+    month: 2026-10
+  - event_date: '2026-10-05'
+    category: geopolitics
+    headline: 'The State Department approves a $1 billion munitions sale to the UAE and a $400 million Patriot repair services sale to Kuwait.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.timesofisrael.com/liveblog_entry/us-approves-1-billion-arms-sale-to-uae-400-million-sale-to-kuwait/
+    note: 'Times of Israel stamp 18:56 Israel time = 11:56 ET. Judgment call: arms sales in the theater of the war read as concerning it; alternative: not counted.'
+    month: 2026-10
+  - event_date: '2026-10-05'
+    category: geopolitics
+    headline: 'The US warns that foreign financial institutions doing business with Iran may be sanctioned without notice.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.reuters.com/world/middle-east/us-says-foreign-financial-institutions-doing-business-with-iran-may-be-2026-10-05/
+    note: 'Reuters was not reachable; no clock time found.'
+    month: 2026-10
+- id: fresh-2026-10-06
+  trading_day: '2026-10-06'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-10-05'
+    category: geopolitics
+    headline: 'President Trump says he remains "always open" to direct negotiations with Iran.'
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.kurdistan24.net/en/story/944176/donald-trump-says-he-is-open-to-direct-talks-with-iran
+    note: 'Told to Kurdistan24 on Monday Oct 5; the report is stamped 23:18, by Erbil time 16:18 ET, shortly after the close (the page gives no time zone). Next trading day Tue Oct 6. A presidential statement on an active war.'
+    month: 2026-10
+- id: fresh-2026-10-08
+  trading_day: '2026-10-08'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-10-08'
+    category: geopolitics
+    headline: 'The US imposes additional sanctions on Iran''s shadow fleet.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.reuters.com/world/middle-east/us-imposes-fresh-iran-related-sanctions-2026-10-08/
+    note: 'Reuters was not reachable; no clock time found.'
+    month: 2026-10
+- id: fresh-2026-10-09
+  trading_day: '2026-10-09'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-10-08'
+    category: geopolitics
+    headline: 'The New York Times reports that President Trump has ordered the Pentagon to prepare options to renew the war with Iran, including about three days of intense strikes, while he says strikes will not resume before the midterm elections.'
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.nytimes.com/2026/10/08/us/politics/trump-iran-war-options.html
+    - https://www.timesofisrael.com/liveblog_entry/nytimes-us-preparing-options-to-renew-iran-war-including-plan-for-3-days-of-intense-strikes/
+    note: 'Times of Israel entry citing the NYT is stamped 01:39 Oct 9 Israel time = 18:39 ET Oct 8, after the close (the NYT page itself was not reachable).'
+    month: 2026-10
+  - event_date: '2026-10-09'
+    category: geopolitics
+    headline: 'The US sanctions the International Criminal Court, saying it will never allow the court to prosecute American soldiers, hours after former ICC judge Navi Pillay won the Nobel Peace Prize.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://report.az/en/other-countries/us-imposes-sanctions-on-icc-hours-after-its-former-judge-receives-nobel-peace-prize
+    note: 'Report.az stamped 18:45 (Baku, UTC+4) = 10:45 ET Oct 9.'
+    month: 2026-10
+  - event_date: '2026-10-09'
+    category: geopolitics
+    headline: 'President Trump says the war with Iran will be over soon, "one way or the other".'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.timesofisrael.com/liveblog_entry/trump-says-iran-war-will-be-over-soon-one-way-or-the-other/
+    note: 'Times of Israel stamp 18:53 Israel time = 11:53 ET. A presidential statement on an active war, counted as in the earlier collection.'
+    month: 2026-10
+  - event_date: '2026-10-09'
+    category: tech_energy
+    headline: 'President Trump says Russian President Vladimir Putin has agreed to supply 300,000 tons of diesel immediately and 500,000 more in November to US and world markets.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.timesofisrael.com/liveblog_entry/trump-says-putin-agrees-to-major-release-of-diesel-to-help-soaring-costs-amid-iran-war/
+    note: 'Times of Israel/AFP stamp 22:12 Israel time = 15:12 ET. Read as an energy development involving a major oil producer.'
+    month: 2026-10
+- id: fresh-2026-10-12
+  trading_day: '2026-10-12'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-10-10'
+    category: geopolitics
+    headline: 'The US military says it disabled a cargo ship trying to run its naval blockade of Iran.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.reuters.com/world/us-military-says-it-disabled-cargo-vessel-trying-run-iran-blockade-2026-10-11/
+    note: 'Weekend (Wikipedia Oct 10, Reuters URL Oct 11), so the next trading day is Mon Oct 12. Reuters was not reachable.'
+    month: 2026-10
+  - event_date: '2026-10-10'
+    category: policy
+    headline: 'The Justice Department is investigating whether major television networks broke federal antitrust law by jointly refusing to cover the White House, The New York Times reports.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.reuters.com/business/media-telecom/justice-department-probes-tv-networks-over-trump-pool-coverage-new-york-times-2026-10-10/
+    note: 'Saturday, so the next trading day is Mon Oct 12. Reuters was not reachable. Judgment call: federal antitrust enforcement read as federal regulatory policy; alternative: a media dispute, not counted.'
+    month: 2026-10
+- id: fresh-2026-10-13
+  trading_day: '2026-10-13'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-10-13'
+    category: geopolitics
+    headline: 'President Trump says the US will make a decision on Iran "very soon" and calls it a failed country.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.timesofisrael.com/liveblog_entry/trump-well-make-a-decision-on-iran-very-soon/
+    note: 'Times of Israel stamp 21:20 Israel time = 14:20 ET. A presidential statement on an active war, counted as in the earlier collection.'
+    month: 2026-10
+- id: fresh-2026-10-14
+  trading_day: '2026-10-14'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-10-14'
+    category: geopolitics
+    headline: 'Israel''s Defense Ministry announces a deal with the United States for 12 AH-64E Apache helicopters from Boeing for the Israeli Air Force.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.timesofisrael.com/liveblog_entry/israel-signs-deal-to-buy-12-apache-helicopters-from-uss-boeing/
+    note: 'Times of Israel stamp 18:01 Israel time = 11:01 ET. Judgment call: an arms purchase by a party to the war with Iran read as concerning that war, as the Ukraine and Gulf sales were; alternative: an Israeli procurement, not counted.'
+    month: 2026-10
+- id: fresh-2026-10-15
+  trading_day: '2026-10-15'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-10-14'
+    category: geopolitics
+    headline: 'US Central Command says American forces destroyed an Iran-linked vessel on October 6, saying it was spying on US Navy ships in the Gulf of Oman.'
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.timesofisrael.com/liveblog_entry/us-says-it-destroyed-iranian-affiliated-vessel-conducting-surveillance-last-week/
+    note: 'Wikipedia lists this under Oct 6, the date of the strike. It became public only with the Oct 14 announcement: Times of Israel stamp 23:11 Israel time = 16:11 ET, after the close, so the next trading day is Oct 15.'
+    month: 2026-10
+  - event_date: '2026-10-15'
+    category: geopolitics
+    headline: 'The US issues new Iran-related sanctions targeting 16 individuals and 10 entities.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.reuters.com/world/middle-east/us-issues-fresh-iran-related-sanctions-treasury-website-shows-2026-10-15/
+    note: 'Reuters was not reachable; no clock time found.'
+    month: 2026-10
+- id: fresh-2026-10-19
+  trading_day: '2026-10-19'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-10-18'
+    category: geopolitics
+    headline: 'Ukrainian President Volodymyr Zelenskyy says US intelligence sharing with Ukraine is working again.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.bloomberg.com/news/articles/2026-10-18/zelenskyy-says-intelligence-sharing-with-us-working-again?srnd=phx-politics
+    note: 'Sunday, so the next trading day is Mon Oct 19. Bloomberg was not read. Judgment call: read as concerning a war involving a major oil producer; alternative: not counted.'
+    month: 2026-10
+  - event_date: '2026-10-19'
+    category: policy
+    headline: 'The Trump administration announces an $8 billion Harvest Fuel Relief Program of one-time emergency aid to farmers facing record production costs during the harvest.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.usda.gov/about-usda/news/press-releases/2026/10/19/trump-administration-announces-8-billion-harvest-fuel-relief-program
+    note: 'The USDA page returned 403, so the release was not read; dated Oct 19 in its URL with no clock time.'
+    month: 2026-10
+  - event_date: '2026-10-19'
+    category: politics
+    headline: 'The Supreme Court rejects a bid to restore a plea deal for Khalid Sheikh Mohammed, the suspected 9/11 mastermind.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.theguardian.com/us-news/2026/oct/19/khalid-sheikh-mohammed-september-11-plea-deal
+    note: 'The Guardian was not reachable; no clock time found. Judgment call: read as a ruling of the Supreme Court; alternative: a denial of review, not counted.'
+    month: 2026-10
+- id: fresh-2026-10-21
+  trading_day: '2026-10-21'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-10-21'
+    category: geopolitics
+    headline: 'The US Treasury sanctions a law firm with offices in Panama and Greece, two shipping agents and several vessels tied to Iran''s shadow fleet.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://home.treasury.gov/news/press-releases/sb0664/
+    note: 'Treasury release dated Oct 21 with no clock time.'
+    month: 2026-10
+- id: fresh-2026-10-22
+  trading_day: '2026-10-22'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-10-22'
+    category: policy
+    headline: 'The Pentagon and Lockheed Martin agree on a 10-year framework to produce at least 850 F-35 fighter jets, subject to congressional approval.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.timesofisrael.com/liveblog_entry/pentagon-and-lockheed-reach-10-year-deal-to-produce-850-f-35s/
+    - https://defensenews.com/news/pentagon-congress/2026/10/22/pentagon-lockheed-agree-to-10-year-deal-for-850-f-35-jets
+    note: 'Wikipedia lists this under Oct 21. Reports date the announcement Oct 22; Times of Israel stamp 14:47 Oct 22 Israel time = 07:47 ET. Judgment call: read as a federal fiscal action; alternative: procurement, not counted.'
+    month: 2026-10
+  - event_date: '2026-10-22'
+    category: tech_energy
+    headline: 'QatarEnergy signs long-term agreements to buy about 4 million tonnes a year of US liquefied natural gas from Cheniere through 2054.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://qna.org.qa/en/News-Area/News/2026-10/22/qatarenergy-signs-long-term-agreements-to-purchase-4-mtpa-of-us-lng
+    - https://www.reuters.com/business/energy/qatarenergy-buys-us-other-lng-hedge-future-hormuz-disruptions-2026-10-29/
+    note: 'Wikipedia lists this under Oct 29 with a Reuters report of that date, but the agreements were announced on Oct 22 (Qatar News Agency; no clock time), so the news is dated Oct 22. Alternative: if the Oct 29 report is treated as the news, trading day Oct 29. Read as an energy development.'
+    month: 2026-10
+- id: fresh-2026-10-23
+  trading_day: '2026-10-23'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-10-23'
+    category: geopolitics
+    headline: 'The White House says Presidents Putin and Zelenskyy have agreed to a ceasefire in the Russian-occupied Ukrainian city of Oleshky, mediated by First Lady Melania Trump.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.reuters.com/world/europe/melania-trump-secures-oleshky-ceasefire-between-russia-ukraine-white-house-says-2026-10-23/
+    note: 'Reuters was not reachable; no clock time found.'
+    month: 2026-10
+  - event_date: '2026-10-23'
+    category: geopolitics
+    headline: 'President Trump confirms that Starlink service has been restored for Ukraine.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.thehindu.com/videos/shorts/donald-trump-confirms-starlink-service-restored-for-ukraine-declines-comment-on-musk-call/article71615551.ece
+    note: 'The Hindu was not reachable; no clock time found. Judgment call: read as concerning a war involving a major oil producer; alternative: not counted.'
+    month: 2026-10
+- id: fresh-2026-10-28
+  trading_day: '2026-10-28'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-10-28'
+    category: geopolitics
+    headline: 'The Wall Street Journal reports that Vice President JD Vance, at President Trump''s direction, sent a letter to Iranian security chief Mohsen Rezaei seeking to restart peace talks.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.wsj.com/world/middle-east/vance-reaches-out-to-iranian-hard-liner-in-bid-to-restart-peace-talks-2c8a2ab8
+    - https://www.inquirer.com/news/nation-world/jd-vance-peace-talks-iran-20261029.html
+    note: 'Reports say the WSJ published on Wed Oct 28, with no clock time found (WSJ was not reachable), so the event date is used. Possibly a scheduled Fed decision day (not verified).'
+    month: 2026-10
+- id: fresh-2026-11-06
+  trading_day: '2026-11-06'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-11-06'
+    category: geopolitics
+    headline: 'The US Treasury sanctions eight Canada-based money services companies over transactions with Iranian entities.'
+    public_before_close: true
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#November
+    - https://www.internazionale.it/ultime-notizie-reuters/2026/11/06/us-treasury-sanctions-canadian-money-services-firms-over-iran-related-transactions
+    note: 'Reuters copy dated Nov 6 with no clock time. Likely also a monthly jobs report day (first Friday; not verified).'
+    month: 2026-11
+  - event_date: '2026-11-06'
+    category: geopolitics
+    headline: 'Treasury''s Financial Crimes Enforcement Network orders US financial institutions to stop processing transfers involving the MEXC crypto exchange, citing sanctions evasion tied to Iran, North Korea and Russia.'
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#November
+    - https://www.timesofisrael.com/liveblog_entry/us-treasury-cuts-off-money-exchanger-mexc-over-iran-north-korea-russia-transactions/
+    note: 'Times of Israel stamp 22:29 Israel time = 15:29 ET Nov 6.'
+    month: 2026-11
+- id: fresh-2026-11-09
+  trading_day: '2026-11-09'
+  split: fresh
+  chosen:
+  - news
+  events:
+  - event_date: '2026-11-06'
+    category: geopolitics
+    headline: 'President Trump says the US carried out minor strikes on Iran, targeting "a little bit of an anti-aircraft device".'
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#November
+    - https://www.timesofisrael.com/liveblog_entry/trump-says-us-launched-minor-strikes-on-iran-targeting-a-little-bit-of-an-anti-aircraft-device/
+    note: 'Times of Israel stamp 04:24 Nov 7 Israel time = 21:24 ET Nov 6, after the close. The next trading day, Mon Nov 9, is after the collection date, so this day has not traded yet.'
+    month: 2026-11
