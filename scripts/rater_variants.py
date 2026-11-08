@@ -234,20 +234,21 @@ def choose(client: LLMClient) -> None:
     out: dict[str, Any] = {}
     oa = np.array([others_at_s1(a_ratings[d.id]) for d in days])
     score_a, s_a, by = lopo(days, p, oa)
-    out["A_current"] = {"lopo": round(score_a, 4), "s_all": s_a, **by, **describe(days, oa, a_ratings)}
+    out["A_current"] = {"lopo": score_a, "s_all": s_a, **by, **describe(days, oa, a_ratings)}
     for v in VARIANTS:
         r = save_ratings(v, rate_all(client, days, v, all_days, ts, cl))
         o = np.array([others_at_s1(r[d.id]) for d in days])
         score, s_all, by = lopo(days, p, o)
-        out[v] = {"lopo": round(score, 4), "s_all": s_all, **by, **describe(days, o, r)}
+        out[v] = {"lopo": score, "s_all": s_all, **by, **describe(days, o, r)}
         print(v, json.dumps(out[v]), flush=True)
     y = np.array([d.real[0] for d in days])
     out["no_change_all"] = round(float(np.mean(np.abs(y)) / SD), 4)
     out["people_only_all"] = round(float(np.mean(np.abs(p - y)) / SD), 4)
     best = min(VARIANTS, key=lambda v: out[v]["lopo"])
     out["chosen"] = best if out[best]["lopo"] <= out["A_current"]["lopo"] - 0.01 else "A_current"
-    (BENCH / "b11_choose.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
-    print(json.dumps(out, indent=1))
+    text = json.dumps(rounded(out, 4), indent=1)
+    (BENCH / "b11_choose.json").write_text(text, encoding="utf-8")
+    print(text)
     print("cost:", round(client.budget.used_usd, 3))
 
 
@@ -281,8 +282,19 @@ def row(variant: str, d: bn.NewsDay) -> bn.DayBasis:
     return bn.DayBasis(d, v["people"], v["others"], v["tech"])
 
 
+def rounded(x: Any, digits: int) -> Any:
+    """For the saved record only: every decision compares the unrounded scores."""
+    if isinstance(x, float):
+        return round(x, digits)
+    if isinstance(x, dict):
+        return {k: rounded(v, digits) for k, v in x.items()}
+    if isinstance(x, list):
+        return [rounded(v, digits) for v in x]
+    return x
+
+
 def l1(sim: np.ndarray, y: np.ndarray) -> float:
-    return round(float(np.mean(np.abs(sim - y)) / SD), 3)
+    return float(np.mean(np.abs(sim - y)) / SD)
 
 
 def boot_diff(a: np.ndarray, b: np.ndarray, y: np.ndarray) -> list[float]:
@@ -422,8 +434,9 @@ def clean(client: LLMClient, chosen: str) -> None:
         else:
             verdict = "the current engine stays"
     res["verdict"] = verdict
-    (BENCH / "b11_result.json").write_text(json.dumps(res, indent=1), encoding="utf-8")
-    print(json.dumps(res, indent=1))
+    text = json.dumps(rounded(res, 3), indent=1)
+    (BENCH / "b11_result.json").write_text(text, encoding="utf-8")
+    print(text)
     print("cost:", round(client.budget.used_usd, 3))
 
 

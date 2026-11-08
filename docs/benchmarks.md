@@ -27,7 +27,9 @@ data, with the decision written down in advance.
 July to 6 November 2026 from the same Wikipedia revision, collected and written as neutral headlines without
 looking at markets, plus B9's 8 hold-out days: 57 clean days. One further collected day (9 November) has no close
 yet. Some fresh days coincide with a Fed decision or a jobs report, as some B9 days do; the rule excludes those
-events, not the days. The selection counts every US sanctions action, so many days carry minor news. Ratings cost
+events, not the days (16 September is a Fed day, 28 October possibly; 7 August, 4 September, 2 October and 6 November are
+probably jobs days). Of the 99 headlines, 42 have no known publication time (counted as public before the close, as the rule
+says) and 34 rest on a report the collector could not open. The selection counts every US sanctions action, so many days carry minor news. Ratings cost
 $9.01 in all (75 earlier days with four variants $4.58; the clean days $4.43).
 
 | Choosing one, on 75 days from 2023 to June 2026 (leave-one-period-out) | Miss | Direction on rated days |

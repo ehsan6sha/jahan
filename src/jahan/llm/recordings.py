@@ -35,13 +35,14 @@ class Recordings:
         self._index: dict[str, dict[str, Any]] | None = None
 
     def _load(self) -> dict[str, dict[str, Any]]:
-        if self._index is None:
-            self._index = {}
+        if self._index is None:  # built aside and assigned whole: another thread must never see it half-filled
+            index: dict[str, dict[str, Any]] = {}
             if self.manifest.exists():
                 for line in self.manifest.read_text(encoding="utf-8").splitlines():
                     if line.strip():
                         row = json.loads(line)
-                        self._index[row["request_key"]] = row
+                        index[row["request_key"]] = row
+            self._index = index
         return self._index
 
     def get(self, request: dict[str, Any]) -> Any | None:

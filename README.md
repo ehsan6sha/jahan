@@ -354,7 +354,7 @@ launch as prompt 1, run some days, inject the dollar rise as prompt 2, and run t
   - **What it can and cannot do.** With no news at all, US stocks, gold and the euro still move on weekdays
     by chance (version 2), moods move a little with job losses and new jobs, and event odds move with time;
     other countries' markets move only with news and cash-outs. The example Iran-US tension story takes US
-    stocks down about 0.5% the day it breaks; after the real US and
+    stocks down by under 1% the day it breaks; after the real US and
     Israeli strikes on Iran in March 2026 the S&P 500 fell 1.74% on its worst day and 7.45% within 20 trading
     days, so the simulated size is small next to a real crisis. The people's part is given back on the
     day a story stops being tracked (how the news feels, not a lasting change in what companies are worth),
