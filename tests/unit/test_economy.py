@@ -295,6 +295,18 @@ def test_ordinary_days_move_like_markets_do():
     assert set(_series(rec3, "us_stocks_quiet_pct").values()) == {0.0} and w3.macro["gold_index"] == 100.0
 
 
+def test_ordinary_days_do_not_count_toward_a_scripted_gold_headline():
+    w = _world(n=600, market_kappa=0.0, market_savings=False, countries=("USA", "DEU"))
+    w.macro["economy"]["others"]["cfg"]["quiet"] = QUIET
+    step = MacroPath(variable="gold", steps=[MacroStep(days=1, pct_per_day=2.0)], auto_news=True)
+    apply_scenario(w, Scenario(prompt="gold", events=[step]), EventLog(), 1)
+    run_in_memory(w, 1)  # the scripted step makes a headline and sets the reference
+    assert w.macro["news_ref"]["gold"] == pytest.approx(w.macro["gold_index"])
+    run_in_memory(w, 20)  # ordinary days move gold, and its reference with it
+    assert w.macro["gold_index"] != pytest.approx(100.0 * 1.02, abs=0.01)
+    assert w.macro["news_ref"]["gold"] == pytest.approx(w.macro["gold_index"])
+
+
 def test_unemployed_people_are_gloomier():
     w = _world(n=1500, mood_contagion=0.0)
     run_in_memory(w, 60)

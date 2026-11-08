@@ -463,15 +463,21 @@ def quiet_shocks(world: World, oth: dict[str, Any]) -> dict[str, float]:
 
 
 def _apply_quiet_macro(world: World, shocks: dict[str, float]) -> None:
-    """Gold and the euro's dollar rate (euros per dollar move opposite to dollars per euro)."""
+    """Gold and the euro's dollar rate (euros per dollar move opposite to dollars per euro).  Their headline
+    references move along, so ordinary days never count toward a "gold rises" or currency headline."""
     m = world.macro
+    refs = m.get("news_ref", {})
     if "gold_index" in m:
         m["gold_index"] = float(m["gold_index"]) * (1.0 + shocks["gold"] / 100.0)
+        if "gold" in refs:
+            refs["gold"] = float(refs["gold"]) * (1.0 + shocks["gold"] / 100.0)
     fx = m.get("fx")
     if fx:
         for c, spec in enumerate(world.countries):
             if spec.currency == "EUR":
                 fx[c] = float(fx[c]) / (1.0 + shocks["eur"] / 100.0)
+                if f"fx:{c}" in refs:
+                    refs[f"fx:{c}"] = float(refs[f"fx:{c}"]) / (1.0 + shocks["eur"] / 100.0)
 
 
 def close_day(
