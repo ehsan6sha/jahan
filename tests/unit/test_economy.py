@@ -295,6 +295,18 @@ def test_ordinary_days_move_like_markets_do():
     assert set(_series(rec3, "us_stocks_quiet_pct").values()) == {0.0} and w3.macro["gold_index"] == 100.0
 
 
+def test_no_ordinary_movement_on_announcement_days():
+    from jahan.scenario.spec import Announcement
+
+    w = _world(n=600, market_kappa=0.0, market_savings=False, countries=("USA", "DEU"))
+    w.macro["economy"]["others"]["cfg"]["quiet"] = QUIET
+    ann = Announcement(indicator="us_payrolls", actual=165, expected=65, headline="Jobs beat", start_day_offset=1)
+    apply_scenario(w, Scenario(prompt="jobs", events=[ann]), EventLog(), 1)
+    rec = run_in_memory(w, 3)
+    quiet = _series(rec, "us_stocks_quiet_pct")
+    assert quiet[1] == 0.0 and quiet[0] != 0.0 and quiet[2] != 0.0  # Wednesday is the release day
+
+
 def test_ordinary_days_do_not_count_toward_a_scripted_gold_headline():
     w = _world(n=600, market_kappa=0.0, market_savings=False, countries=("USA", "DEU"))
     w.macro["economy"]["others"]["cfg"]["quiet"] = QUIET

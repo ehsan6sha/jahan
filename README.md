@@ -344,7 +344,7 @@ launch as prompt 1, run some days, inject the dollar rise as prompt 2, and run t
       information technology's weight in it (37.9%, a secondary report of S&P Dow Jones Indices' figure, low
       confidence). No reaction to Fed decisions or jobs reports (the published estimates already are the
       whole market's reaction) or to Jahan's own "stocks fall" headlines.
-    - *Ordinary days.* On every weekday US stocks, gold and the euro move by chance with the size, fat tails,
+    - *Ordinary days.* On every weekday without a Fed decision or jobs report, US stocks, gold and the euro move by chance with the size, fat tails,
       calm and stormy stretches and co-movement of real 2023-2025 days without a Fed decision or jobs report
       (a GARCH(1,1) model with Student-t shocks fitted by `scripts/quiet_days_fit.py`; only its coefficients
       are stored; no built-in drift). This is the movement of investors and news Jahan does not simulate: it

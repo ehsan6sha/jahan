@@ -426,8 +426,9 @@ def quiet_explanation(
     stocks = any(i in ("market:us_stocks", "market:us_tech_stocks") or i.startswith("market:stocks:") for i in ids)
     if stocks and everyday and quiet:
         say.append(
-            "US stocks, gold and the euro move on every weekday (ordinary days); other countries' markets move "
-            "only when news reaches their investors, and the days you looked at had none."
+            "US stocks, gold and the euro move on weekdays without a Fed decision or jobs report (ordinary "
+            "days); other countries' markets move only when news reaches their investors, and the days you "
+            "looked at had none."
         )
     elif stocks and everyday:
         say.append(

@@ -502,7 +502,10 @@ def close_day(
     oth_us = st.get("others") if "USA" in st["markets"] and "market" in m else None
     shocks = None
     if oth_us is not None and params.market_quiet and oth_us["cfg"].get("quiet") and world.dow() < 5:
-        shocks = quiet_shocks(world, oth_us)
+        # ordinary days only: the model was fitted to days without a Fed decision or jobs report, whose own
+        # move comes from the published estimates
+        if not any(int(a["day"]) == world.day for a in m.get("announcements", [])):
+            shocks = quiet_shocks(world, oth_us)
     for iso, mk in st["markets"].items():
         c = _country(world, iso)
         if c < 0:
