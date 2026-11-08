@@ -6,7 +6,10 @@ import datetime as dt
 
 import pytest
 
+from jahan import paths
+from jahan.llm.provider import make_client
 from jahan.scenario import benchmark_news as bn
+from jahan.scenario.parser import parse_prompt
 
 
 def test_news_days_follow_the_registered_split():
@@ -19,6 +22,29 @@ def test_news_days_follow_the_registered_split():
     assert all(d.headlines and d.real for d in days)
     nov5 = next(d for d in days if d.day == dt.date(2026, 11, 5))
     assert nov5.split == "outcome" and "Thursday, November 5, 2026" in bn.news_prompt(nov5)
+
+
+def test_b11_decision_is_the_default_and_the_earlier_fit_is_kept():
+    from jahan.model.investors import load_investors
+
+    oi = load_investors(paths.data_dir()).other_investors
+    assert oi.s == 0.0  # benchmarks.yaml B11: s = 0 beat s = 1.43 on the 57 clean days
+    assert oi.fitted_v4["s"] == 1.43 and oi.b11_result["clean_days"] == 57
+
+
+def test_rating_notes_only_add_to_the_world_facts(tmp_path):
+    seen = []
+
+    def answer(_system, messages):
+        seen.append(messages[0]["content"])
+        return '{"scenario": {"prompt": "p", "events": []}}'
+
+    client = make_client(tmp_path, scripted=answer)
+    world = bn._parse_world(dt.date(2026, 9, 1))
+    parse_prompt(client, world, "same prompt")
+    parse_prompt(client, world, "same prompt", purpose_tag="b11", rating_notes="NOTES HERE")
+    assert "NOTES HERE" not in seen[0]
+    assert seen[1] == seen[0].replace("\n\nScenario JSON schema:", "\nNOTES HERE\n\nScenario JSON schema:", 1)
 
 
 def test_parsed_news_lands_on_the_trading_day_before_the_close():

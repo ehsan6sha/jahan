@@ -318,7 +318,9 @@ def status_text(st: dict[str, Any]) -> str:
         local = [f"{v['label']} {v['index']:.2f}" for iso, v in ev["markets"].items() if iso != "USA"]
         oth = ev.get("others")
         version = f"version {ev.get('version', 1)}" + (
-            f" (other investors' reaction s = {oth['s']:g}; ordinary days {'on' if oth['ordinary_days'] else 'off'})"
+            " (other investors' news reaction "
+            + (f"s = {oth['s']:g}" if oth["s"] else "off")
+            + f"; ordinary days {'on' if oth['ordinary_days'] else 'off'})"
             if oth
             else "; `jahan economy on` upgrades it"
             if ev.get("version", 1) < 2

@@ -3,6 +3,72 @@
 Simulated, not a forecast; educational and testing use only. Each run follows rules committed before it:
 `data/backtests/benchmarks.yaml` and `data/global/investors.yaml`.
 
+## Version 4: other ways of rating the news, on days nobody had looked at (2026-11-08)
+
+**Why.** After B9, the diagnosis of its results on saved data, one test at a time:
+
+| Tested | Result | Conclusion |
+|---|---|---|
+| Force the right direction on the fit days, keep the rated size | miss 0.795 falls to 0.621, s rises from 1.43 to 3.94 | direction is the main loss |
+| Direction on rated days | fit 30 of 50, seen 5 of 8, hold-out 4 of 7 | close to chance on ordinary news |
+| Drop the most influential fit days | s = 1.42, 0.89, 0.89 and 0.00 after dropping 1, 2, 3 and 5 | five famous days carried the fit |
+| Does the rater remember? (asked how the S&P 500 closed on each date) | 2023-2025: direction right 84%, 100% on days of 1% or more, correlation of claimed and real move 0.96. From July 2026: never claims to remember. But on the fit days its ratings agree with what it recalls only 54% of the time | it remembers those years, yet its ratings do not replay that memory |
+| Reaction shape (powers 1 to 3, thresholds 0 to 0.5), chosen on 2023-2025 only | best 0.756 against 0.797 for a straight line; none beats "no change" from July 2026 | not the cause |
+| Recent market state (prior 1, 5 and 20-day moves, drawdown, volatility) | correlations with the day's move between -0.12 and +0.15; scaling by volatility is worse later | not the cause |
+| Size limit | broad story at most s x 1 = 1.43%, tech story at most 0.379 x 1.43 = 0.54% of the S&P 500 | a day like -4.36% could not be reached by news even with a perfect rating |
+
+**What was registered first** (commit 4dd1b14, before any call or data for it): B11 in
+`data/backtests/benchmarks.yaml`: four new ways of rating (material: only what changes profits, rates or credit
+for the whole market; context: the previous 30 days' headlines; context and market: also the prior market moves;
+material and context), one chosen on 2023 to June 2026 days only, then scored on days after the rater's training
+data, with the decision written down in advance.
+
+**Data.** 49 fresh days (`data/backtests/news_days_extra.yaml`, commit 8c2d416), every further qualifying event of
+July to 6 November 2026 from the same Wikipedia revision, collected and written as neutral headlines without
+looking at markets, plus B9's 8 hold-out days: 57 clean days. One further collected day (9 November) has no close
+yet. Some fresh days coincide with a Fed decision or a jobs report, as some B9 days do; the rule excludes those
+events, not the days. The selection counts every US sanctions action, so many days carry minor news. Ratings cost
+$9.01 in all (75 earlier days with four variants $4.58; the clean days $4.43).
+
+| Choosing one, on 75 days from 2023 to June 2026 (leave-one-period-out) | Miss | Direction on rated days |
+|---|---|---|
+| Current rater | 0.762 | 35 of 58 |
+| Material | **0.744** (chosen) | 19 of 28 |
+| Context | 0.768 | 36 of 62 |
+| Context and market | 0.757 | 35 of 60 |
+| Material and context | 0.751 | 17 of 28 |
+
+| 57 clean days | All | Fresh 49 | Hold-out 8 |
+|---|---|---|---|
+| Current engine (s = 1.43) | 0.710 | 0.655 | 1.050 |
+| Without other investors (s = 0) | **0.586** | 0.558 | 0.754 |
+| No change | 0.603 | 0.571 | 0.800 |
+| Material rater, s refitted to 3.67 (95% interval 0.73 to 8.43) | 0.766 | 0.722 | 1.032 |
+
+The current engine is worse than s = 0 by 0.125 (95% interval 0.048 to 0.202). The people's part alone is not
+distinguishable from no change (difference -0.017, interval -0.071 to 0.033). Direction on rated clean days: 26 of 50
+for the current rater, 19 of 32 for the material one; on the 9 days of 1% or more the current rater was right on 2 and
+wrong on 6. The largest move among the 57 days was only 1.66%, so these days say nothing about crashes.
+
+Exploratory, not used to decide: rating with recent headlines scored 0.638 (context, s = 1.66) and 0.606 (material and
+context, s = 1.58): better than the current engine but not better than s = 0, and direction stayed 28 of 54 and 23 of 39.
+The placebo was not run, because the chosen rater used no context. On the clean days themselves the best s for the
+current rater is 0. One lead for later: when the material rater gave a strong rating (|rating x salience| of 0.3 or more)
+it was right on 6 of 6 days (real moves averaging 0.92%); the current rater was right on 9 of 12. Six days are too few, and
+this was found on these days, so it needs new days to test.
+
+**Decision (registered).** 57 clean days is past the 20 required. The material rater did not beat s = 0, so it is not
+adopted; s = 0 beats s = 1.43, so **other investors' news reaction now defaults to s = 0**. Ordinary-day movement stays.
+Users can turn the reaction back on with `market_others_s`. Worlds already at version 2 keep the s they stored.
+
+**What this does and does not show.** News days from a public chronology, one headline at a time, say almost nothing about
+which way the S&P 500 goes that day. The trade-off is plain: without other investors, a big shock is far too small
+(7 days picked because markets moved: 1.743 against 1.505 with them). The midterm week is still missed. The missing
+channels (oil, interest rates, company results, sectors) are untested.
+
+Reproduce: `uv run python -X utf8 scripts/rater_variants.py choose` and `clean` (replays the recordings in
+`runs/_benchmark`, git-ignored; `--rate` calls Claude for anything not recorded).
+
 ## Version 3: unscheduled news days and ordinary days (2026-11-08)
 
 **Why.** Replaying the midterm week of November 2026 (real S&P 500 +1.58%, -4.36%, +0.3%; Jahan 0.00%, -0.15%,

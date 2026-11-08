@@ -317,7 +317,27 @@ other_investors:
     correlated with the S&P 500's as in the data (one Student-t scale shared, so tails come together); the tech
     line by the derived beta. Only the coefficients are stored. Off in every benchmark and backtest. Checked by
     B10 (reported).
-  s: 1.43  # fitted 2026-11-08 under rule_v4 (fitted_v4 below)
+  # s was 1.43 (fitted_v4 below). Set to 0 on 2026-11-08 by the decision registered in benchmarks.yaml check B11: on
+  # the 57 days after the rating model's training data it did worse than s = 0 (b11_result below). Users can turn the
+  # reaction back on with `market_others_s: <value>` in a run config's params.
+  s: 0.0
+  b11_result:
+    date: '2026-11-08'
+    registered_in: 4dd1b14
+    data_commit: 8c2d416
+    command: uv run python -X utf8 scripts/rater_variants.py clean --rate
+    clean_days: 57  # 8 B9 hold-out days and 49 fresh days, chosen by the news, none looked at before this run
+    release_day_miss_in_units_of_0_92:
+      current_rater_s_1_43: 0.710
+      people_only_s_0: 0.586
+      no_change: 0.603
+      material_rater_s_3_67: 0.766
+    fresh_days_only: {current_rater_s_1_43: 0.655, people_only_s_0: 0.558, no_change: 0.571, material_rater_s_3_67: 0.722}
+    s_1_43_minus_s_0_ci95: [0.048, 0.202]  # positive: s = 1.43 is worse
+    s_0_minus_no_change_ci95: [-0.071, 0.033]  # includes zero: the people's part is not distinguishable from no change
+    chosen_on_earlier_days: B_material  # leave-one-period-out on 2023 to June 2026: 0.744 against 0.762 for the current rater
+    direction_on_rated_clean_days: {current_rater: 26 of 50, material_rater: 19 of 32}
+    verdict: other investors' news reaction defaults to s = 0 (rule in benchmarks.yaml B11); the rater is unchanged
   it_weight:  # information technology's weight in the S&P 500 (moves the S&P 500 on tech stories)
     value: 0.379
     as_of: '2026-08-31'

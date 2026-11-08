@@ -105,6 +105,7 @@ class OtherInvestors(BaseModel):
     household_share: dict[str, Any] | None = None  # display split only, with its source
     quiet: dict[str, Any] | None = None  # fitted ordinary-day coefficients (scripts/quiet_days_fit.py)
     fitted_v4: dict[str, Any] | None = None
+    b11_result: dict[str, Any] | None = None  # the check that set s to 0 (benchmarks.yaml B11)
 
 
 class InvestorsConfig(BaseModel):

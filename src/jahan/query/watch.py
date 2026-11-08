@@ -118,7 +118,8 @@ def catalog(world: World) -> list[SeriesSpec]:
             note=(
                 "announcements and scripted moves, the simulated holders' news reactions (priced when a story "
                 "reaches them) and cash-outs that differ from normal, other investors' reactions to market news "
-                "(at once, kept) and, on ordinary days, the movement of investors and news Jahan does not simulate"
+                "(only when switched on: off by default since check B11) and, on ordinary days, the movement of "
+                "investors and news Jahan does not simulate"
                 if economy is not None and "others" in economy
                 else "announcements and scripted moves, plus the simulated holders' news reactions (priced when a "
                 "story reaches them) and cash-outs that differ from normal"
@@ -140,7 +141,11 @@ def catalog(world: World) -> list[SeriesSpec]:
                 derived_beta=beta,
                 components=us_parts,
                 note=f"derived: {beta:g} x each day's US stock move"
-                + ("; stories about tech companies also move it on their own" if "others" in (economy or {}) else "")
+                + (
+                    "; when other investors' reactions are on, stories about tech companies also move it on their own"
+                    if "others" in (economy or {})
+                    else ""
+                )
                 + ", not modelled otherwise",
             )
         )
@@ -438,7 +443,7 @@ def quiet_explanation(
         if int(world.macro["economy"].get("version", 1)) < 2:
             say.append(
                 "This world uses everyday activity version 1: `jahan economy on` upgrades it (ordinary days move "
-                "like real ones, and other investors react to market news at once)."
+                "like real ones)."
             )
     elif stocks:
         if "market" not in world.macro:

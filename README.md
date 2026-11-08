@@ -333,14 +333,16 @@ launch as prompt 1, run some days, inject the dollar rise as prompt 2, and run t
     several headlines about one event added up, and kappa had been fitted on hand-set ratings.
     - *One event, one price.* Headlines about the same event from one prompt share a story key and are
       priced once, as the strongest of them.
-    - *Other investors.* Funds, pension funds, insurers and foreign investors, who hold most US stock
-      (households hold 42% of US corporate equity directly: Federal Reserve Z.1, 2026 Q2), are not simulated
-      one by one; they appear as one labelled part. A story moves it on the day it comes out (at or after the
-      New York close: the next trading day), by s x its market rating x its salience, once per story, and the
-      move is kept. The market rating comes from Claude: how the story bears on company profits and share
-      prices compared with what investors expected before it (-1 to +1). s = 1.43 is the one number fitted on
-      64 news days of 2023-2025 under a rule registered before the data was collected (B9); the data cannot
-      rule out s = 0. A story about tech companies moves the tech line in full and the S&P 500 by
+    - *Other investors: off by default.* Funds, pension funds, insurers and foreign investors, who hold most
+      US stock (households hold 42% of US corporate equity directly: Federal Reserve Z.1, 2026 Q2), are not
+      simulated one by one; they appear as one labelled part. When switched on (`market_others_s: <value>`), a
+      story moves it on the day it comes out (at or after the New York close: the next trading day), by s x its
+      market rating x its salience, once per story, and the move is kept. The market rating comes from Claude:
+      how the story bears on company profits and share prices compared with what investors expected before it
+      (-1 to +1). s = 1.43 was fitted on 64 news days of 2023-2025 (B9), but five famous days carried that fit
+      and it did worse than s = 0 on the 57 days after the rating model's training data (B11), so the
+      registered decision set the default to s = 0. So news alone moves US stocks only through the simulated
+      households, by a small amount, and a big news day stays far too small. A story about tech companies moves the tech line in full and the S&P 500 by
       information technology's weight in it (37.9%, a secondary report of S&P Dow Jones Indices' figure, low
       confidence). No reaction to Fed decisions or jobs reports (the published estimates already are the
       whole market's reaction) or to Jahan's own "stocks fall" headlines.
@@ -352,20 +354,21 @@ launch as prompt 1, run some days, inject the dollar rise as prompt 2, and run t
   - **What it can and cannot do.** With no news at all, US stocks, gold and the euro still move on weekdays
     by chance (version 2), moods move a little with job losses and new jobs, and event odds move with time;
     other countries' markets move only with news and cash-outs. The example Iran-US tension story takes US
-    stocks down about 1% the day it breaks (people and other investors together); after the real US and
+    stocks down about 0.5% the day it breaks; after the real US and
     Israeli strikes on Iran in March 2026 the S&P 500 fell 1.74% on its worst day and 7.45% within 20 trading
-    days, so the simulated size is still small next to a real crisis. The people's part is given back on the
+    days, so the simulated size is small next to a real crisis. The people's part is given back on the
     day a story stops being tracked (how the news feels, not a lasting change in what companies are worth),
-    which is cruder than real fading; the other investors' part is kept. Replaying the midterm week with
-    version 2 still gives about 0.0%, -0.2% and +0.1%: Claude rates the election result as neutral for
-    markets and the call for a data-center moratorium as a moderate story about tech companies, so the
-    reaction stays small; the fall came from investors repricing AI spending in a market already falling,
-    which Jahan does not model. Simulated households read good economic news as good for stocks; real
+    which is cruder than real fading. **Jahan cannot predict which way the market goes on a news day.** On the
+    57 days after the rating model's training data, Claude's reading of the headlines got the direction of
+    the S&P 500 right on 26 of 50 rated days, about a coin flip, and on the 9 days that moved 1% or more it was
+    right on 2 and wrong on 6. Replaying the midterm week gives about 0.0%, -0.2% and +0.1% against the real
+    +1.6%, -4.4% and +0.3%, and none of the fixes tried changes that. Simulated households read good economic news as good for stocks; real
     markets sometimes take it as bad (when it means higher interest rates), as on both 2026 jobs reports.
   - **Turning parts off** (in the run config's `params`, before `jahan gen`): `market_people: false` (no
     people-driven moves), `market_savings: false`, `market_others: false` (no other investors),
     `market_quiet: false` (no ordinary-day movement), `mood_life: false`, `mood_contagion: 0`,
-    `market_kappa: <value>` or `market_others_s: <value>` to try another reaction size.
+    `market_kappa: <value>` to try another reaction size, or `market_others_s: <value>` to turn other
+    investors' news reaction on (1.43 was the fitted value).
   - **US tech stocks (Nasdaq-100)** are derived, not modelled on their own: each day they move by 1.299
     times the US stock index's move, the slope of the Nasdaq-100's daily changes on the S&P 500's from
     January 2023 to October 2026 (FRED; R² 0.89; only the coefficient is stored); in version 2, stories about
@@ -429,14 +432,15 @@ numbers that may be tuned and the split between fitting and testing were committ
 | B9 on 2026 (seen before) and from July 2026 (after the parser model's training data) | first half of 2026: 0.515 with, 0.476 without (11 days, worse); from July: 1.050 with, 0.754 without (8 days, worse; provisional until 20 days exist) | not used to choose |
 | B9 on days picked because markets moved (7, never fitted) | 1.505 with, 1.743 without; direction right on all 3 big days, size within a factor of 2 on one (Greenland tariffs: -1.1% against -2.1%); 5 November 2026: -0.2% against -4.4% | reported |
 | B10: ordinary days (three quiet years against the 688 real days the model was fitted to) | US stocks' mean daily move 0.66% against 0.63%, 95th percentile 1.75% against 1.68%, typical month 2.65% against 3.22% (the real one includes 2023-2025's rise); gold 0.82% against 0.78%; the euro 0.35% against 0.34% | yes |
+| B11: other ways of rating the news (8 November 2026; 57 days after the rating model's training data, 49 of them collected without looking at markets) | average release-day miss 0.710 with other investors at s = 1.43, 0.586 without them, 0.603 for "no change"; the best rater from the earlier days 0.766. Giving the rater recent headlines did not beat leaving other investors out either | registered decision: s = 0 |
 
-**Why 2026 went the other way (B9).** Claude rated almost every Iran-war escalation of 2026 as bad for
-company profits (-0.3 to -0.6), and so other investors sold; but after March markets mostly shrugged
-escalations off or rose on them (3 November: strikes on Qeshm, simulated -0.9%, real +0.4%). Each day's news is
-rated on its own, without the run-up, so "compared with what investors expected" cannot work when the
-expectation came from earlier news. Claude's ratings are consistent (rated twice, the two market ratings
-correlate 0.99), so the problem is what they measure, not noise. The test from July 2026 has only 8 days so
-far; its verdict waits for 20.
+**Why other investors were switched off (B9, B11).** Most of the loss is direction: on ordinary news days
+Claude's reading of a headline gets the S&P 500's direction right about as often as a coin. The 2023-2025 fit
+looked useful because five famous days carried it (without them the fitted s is 0). Tested and not the cause:
+the shape of the reaction, recent market volatility, and the rating model's memory of those years (it recalls
+nearly every move, but its ratings do not follow what it recalls). Claude's ratings are consistent (rated
+twice, they correlate 0.99), so the limit is what a headline says about that day's index. Many days' moves
+come from things the typed news does not mention. Details: `docs/benchmarks.md`.
 
 The first registered version (late reactions moving prices) chose kappa = 0: 87% of the simulated reaction
 fell on the days after a release, when the real index no longer follows the news. The mechanism was changed

@@ -78,7 +78,7 @@
     watch: "A series you follow while time moves: a market, a currency, a country's mood or the odds of an event. The change is counted from the day you started watching.",
     question: "A yes/no question about the future, such as whether the US-Iran ceasefire holds. Simulated traders (about one in ten adults online) hold a belief about it, starting near the real market price; the simulated odds are their average. News that bears on it moves the beliefs of the traders who hear it.",
     "people's trading": "Simulated adults who hold stock (in each country, the share its own surveys or investor counts report) want to hold more or less as news makes things look better or worse. The market moves when a story first reaches them and gives the move back when the story fades; people who act later trade what the market has already priced. In worlds with everyday activity, US cash-outs by people who lose their jobs also move prices a little. Shown separately from announcements and scripted what-ifs.",
-    "other investors": "Funds, pension funds, insurers and foreign investors, who hold most US stock but are not simulated one by one (everyday activity version 2). They react to a story on the day it comes out, by Claude's rating of how it bears on company profits against what was expected, times its reach, times one number fitted on 64 real news days (2023-2025). The move is kept; it is not given back when the story fades. Stories about tech companies move the tech line in full and the S&P 500 by tech's weight in it.",
+    "other investors": "Funds, pension funds, insurers and foreign investors, who hold most US stock but are not simulated one by one (everyday activity version 2). Their reaction to news is off by default: tested on 57 real news days after the rating model's training data, it made Jahan's results worse than leaving it out (check B11). Switched on (market_others_s in a run's settings), they react to a story on the day it comes out, by Claude's rating of how it bears on company profits against what was expected, times its reach, times one fitted number. The move is kept; it is not given back when the story fades. Stories about tech companies move the tech line in full and the S&P 500 by tech's weight in it.",
     "ordinary days": "On every weekday without a Fed decision or jobs report (those days move by published estimates), US stocks, gold and the euro move by chance, with the size, fat tails and calm and stormy stretches of real days in 2023-2025 that had no Fed decision or jobs report. This is the movement of investors and news Jahan does not simulate: it is not a prediction and never makes headlines.",
   };
   const term = (key, label) => h("span", { class: "term", title: GLOSSARY[key] || "", tabindex: 0 }, label || key);
@@ -1732,7 +1732,7 @@
     if (qs.length) out.append(card(h("span", {}, "Event odds: simulated and real"), "The simulated odds are the average belief of simulated traders. The real price is shown for comparison only and never moves the simulation.",
       ...qs.map(questionRow)));
     out.append(oddsQuestionsCard(st, box));
-    out.append(card("Add to the watch list", "Markets move on announcements, scripted what-ifs and people's trading on the news they hear (every country's own market in worlds with everyday activity); in version 2 worlds other investors react to market news at once, and US stocks, gold and the euro also move by chance on ordinary days. Use What-if to add news or a market move and watch the effect.",
+    out.append(card("Add to the watch list", "Markets move on announcements, scripted what-ifs and people's trading on the news they hear (every country's own market in worlds with everyday activity); in version 2 worlds US stocks, gold and the euro also move by chance on ordinary days. Use What-if to add news or a market move and watch the effect.",
       !d ? loading() : h("div", {}, ...groups.filter(([k]) => cat.some((c) => c.kind === k)).map(([k, label]) => h("div", {},
         h("h4", {}, label),
         h("div", { class: "watch-cat" }, ...cat.filter((c) => c.kind === k).map((c) => h("label", { class: "check", title: c.note || "" },
@@ -1753,7 +1753,7 @@
     const ev = st.markets && st.markets.everyday;
     if (ev && (ev.version || 1) < 2) out.push(h("div", { class: "notice" },
       h("strong", {}, "This world uses everyday activity version 1"),
-      "Version 2 prices several headlines about one event once, lets other investors (funds, pensions, foreign investors) react to market news at once, and moves US stocks, gold and the euro on ordinary days like real markets. It is recorded as a prompt, so Undo (Results) takes the world back to just before it. ",
+      "Version 2 prices several headlines about one event once and moves US stocks, gold and the euro on ordinary days like real markets. It is recorded as a prompt, so Undo (Results) takes the world back to just before it. ",
       h("button", { class: "btn small act", onclick: () => act(box, ["economy", "on", "--run", S.world, "--yes"], { ok: "Everyday activity is upgraded from today.", rerender: true }) }, "Upgrade")));
     if (!st.llm.ready) out.push(h("div", { class: "notice" },
       h("strong", {}, "Claude is not set up, so some things are off"),
