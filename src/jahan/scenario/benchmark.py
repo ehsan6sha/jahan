@@ -231,6 +231,7 @@ def optimum(rows: list[Basis], people_scale: float = 1.0) -> tuple[float, list[f
 def iran_example(base: RunConfig, kappa: float, days: int = 60) -> dict[str, Any]:
     """The Iran example in a 10,000-person USA and Iran world with everyday activity (saving off)."""
     cfg = base.model_copy(deep=True)
+    cfg.params.market_quiet = False  # off in every benchmark
     cfg.countries, cfg.n_agents, cfg.start_date, cfg.economy, cfg.notables = (
         ["USA", "IRN"],
         10000,
@@ -276,6 +277,7 @@ def stability_v2(base: RunConfig, kappa: float, days: int = 60) -> dict[str, Any
     """A scripted -3% day in a 10,000-person world with everyday activity: the people's part stays bounded and
     reverts (rule v2)."""
     cfg = base.model_copy(deep=True)
+    cfg.params.market_quiet = False  # off in every benchmark
     cfg.n_agents, cfg.start_date, cfg.economy = 10000, STABILITY_DATE, True
     cfg.params.market_kappa = kappa
     cfg.params.market_savings = False
@@ -425,6 +427,7 @@ def quiet_year(
         for s in seeds:
             _say(progress, f"quiet year: {n} people, seed {s}")
             cfg = RunConfig(n_agents=n, countries=["USA", "DEU", "IRN"], seed=s, start_date=STABILITY_DATE)
+            cfg.params.market_quiet = False
             world = generate_world(cfg)
             rec = run_in_memory(world, days)
             t = rec.metrics.table().to_pydict()
@@ -472,6 +475,7 @@ def who_invests(n: int = 10000, progress: Progress = None) -> dict[str, Any]:
         seed=20261013,
         start_date=STABILITY_DATE,
     )
+    cfg.params.market_quiet = False
     world = generate_world(cfg)
     w = world.pop["pop_weight"].astype(np.float64)
     rows: dict[str, Any] = {}
@@ -577,6 +581,7 @@ def odds_case_run(case: OddsCase, talk: bool, days: int = 60) -> dict[str, Any] 
     text = case.question.lower()
     countries = ["USA"] + sorted({iso for k, iso in B5_COUNTRIES.items() if k in text} - {"USA"})
     cfg = RunConfig(n_agents=3000, countries=countries, seed=7, start_date=start, notables=False)
+    cfg.params.market_quiet = False
     if not talk:
         cfg.params.odds_talk_p = 0.0
     world = generate_world(cfg)
@@ -663,6 +668,7 @@ def mood_unemployment(actuals: dict[str, Any], days: int = 365, progress: Progre
     for name, mult in (("baseline", 0.0), ("layoffs", 23.1)):  # +23.1% job losses: about +1 point at the steady state
         _say(progress, f"mood and unemployment: {name}")
         cfg = RunConfig(n_agents=10000, countries=["USA"], seed=20261013, start_date=STABILITY_DATE)
+        cfg.params.market_quiet = False
         world = generate_world(cfg)
         if mult:
             lever = MacroPath(variable="job_loss_rate", steps=[MacroStep(days=1, pct_per_day=mult)])

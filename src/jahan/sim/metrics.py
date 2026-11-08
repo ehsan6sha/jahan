@@ -66,6 +66,13 @@ def record(
             if sav["expected"] or sav["realised"] or sav["contributions"]:
                 for part in ("realised", "expected", "contributions", "drawdowns"):
                     out.add(day, c, -1, f"savings_{part}", float(sav[part]))
+        oth = economy.get("others")
+        if oth is not None and oth.get("last"):  # version 2: other investors and ordinary days
+            o = oth["last"]
+            for part in ("others_pct", "quiet_pct", "tech_pct"):
+                out.add(day, -1, -1, f"us_stocks_{part}", float(o.get(part, 0.0)))
+            out.add(day, -1, -1, "gold_quiet_pct", float(o.get("gold_pct", 0.0)))
+            out.add(day, -1, -1, "dollar_quiet_pct", float(o.get("dollar_pct", 0.0)))
     bel = world.beliefs.m
     for c in range(world.n_countries):
         mc = loc == c

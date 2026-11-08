@@ -50,7 +50,7 @@ from numpy.typing import NDArray
 from jahan.model.enums import EmpStatus, EventKind
 from jahan.model.investors import Investors, investor_masks
 from jahan.model.world import World
-from jahan.rng import Stream, u01
+from jahan.rng import Stream, normal, u01
 from jahan.sim.params import SimParams
 from jahan.sim.world_events import news_mood, stocks_headline
 from jahan.store.eventlog import EventLog
@@ -396,6 +396,84 @@ def priced_news_flow(
     return flow
 
 
+# ------------------------------------------------------------------- other investors (version 2, US only)
+
+
+def others_news(world: World, eco: dict[str, Any], oth: dict[str, Any], params: SimParams) -> tuple[float, float]:
+    """Other investors' reaction to news (data/global/investors.yaml other_investors.rule_v4): each US story with
+    a market rating moves the S&P 500 on its first trading day after release (at or after the close: the next
+    day), once per story cluster (its strongest member), permanently.  impact = s x market_valence x salience on
+    the part the story is about: a broad story moves the S&P 500 by impact (the tech line follows by its beta);
+    a tech story moves the tech line by impact and the S&P 500 by information technology's index weight x
+    impact.  Returns today's percent move of the S&P 500 and the tech line's own extra percent move."""
+    cfg = oth["cfg"]
+    s = float(cfg["s"]) if params.market_others_s is None else float(params.market_others_s)
+    stories = eco.get("stories", {})
+    priced: dict[str, Any] = oth["priced"]
+    it = world.items
+    close = int(cfg.get("close_utc_hour", 21))
+    w_it = cfg.get("it_weight")
+    beta = float(cfg.get("tech_beta") or 0.0)
+    best: dict[str, tuple[float, float, float]] = {}  # cluster -> (S&P part, tech extra, impact)
+    for k, e in stories.items():
+        if e.get("mv") is None or not e.get("us") or e["story"] in priced:
+            continue
+        i = int(k)
+        if int(it["slot"][i]) < 0:
+            continue
+        if int(it["created_day"][i]) == world.day and int(it["release_utc_hour"][i]) >= close:
+            continue  # after the close: traded tomorrow
+        impact = s * float(e["mv"]) * float(it["salience"][i])
+        if e.get("sector") == "tech" and w_it:
+            part = (float(w_it) * impact, impact * (1.0 - beta * float(w_it)), impact)
+        else:
+            part = (impact, 0.0, impact)
+        if e["story"] not in best or abs(impact) > abs(best[e["story"]][2]):
+            best[e["story"]] = part
+    sp = tech = 0.0
+    for key, (a, b, _) in best.items():
+        priced[key] = {"pct": a, "tech": b}
+        sp += a
+        tech += b
+    live = {e["story"] for k, e in stories.items() if int(it["slot"][int(k)]) >= 0}
+    for key in [k for k in priced if k not in live]:  # kept for good: nothing to give back, only forgotten
+        del priced[key]
+    return sp, tech
+
+
+def quiet_shocks(world: World, oth: dict[str, Any]) -> dict[str, float]:
+    """Today's ordinary-day moves in percent (other_investors.quiet_days): the S&P 500 from a GARCH(1,1)
+    variance with Student-t shocks; gold and the euro's dollar rate with their own volatility scaled by the same
+    variance ratio and shocks correlated with the S&P 500's (one shared t scale, so tails come together).  No
+    drift.  Updates the variance state."""
+    q = oth["cfg"]["quiet"]
+    g = q["sp"]
+    h = oth["quiet"]["h"]
+    h = float(g["var"]) if h is None else float(h)
+    nu = int(q["nu"])
+    keys = np.arange(3 + nu)
+    z = normal(world.sim_seed, Stream.QUIET, world.day, keys)
+    e = np.asarray(q["chol"], dtype=np.float64) @ z[:3]  # correlated: S&P 500, gold, euro
+    chi = float(np.sum(z[3:] ** 2))
+    t = e * np.sqrt((nu - 2) / max(chi, 1e-12))  # unit-variance Student-t, one shared scale
+    ratio = np.sqrt(h / float(g["var"]))
+    sp = float(np.sqrt(h) * t[0])
+    oth["quiet"]["h"] = float(g["omega"]) + float(g["alpha"]) * sp * sp + float(g["beta"]) * h
+    return {"sp": sp, "gold": float(q["gold_sd"] * ratio * t[1]), "eur": float(q["eur_sd"] * ratio * t[2])}
+
+
+def _apply_quiet_macro(world: World, shocks: dict[str, float]) -> None:
+    """Gold and the euro's dollar rate (euros per dollar move opposite to dollars per euro)."""
+    m = world.macro
+    if "gold_index" in m:
+        m["gold_index"] = float(m["gold_index"]) * (1.0 + shocks["gold"] / 100.0)
+    fx = m.get("fx")
+    if fx:
+        for c, spec in enumerate(world.countries):
+            if spec.currency == "EUR":
+                fx[c] = float(fx[c]) / (1.0 + shocks["eur"] / 100.0)
+
+
 def close_day(
     world: World, params: SimParams, log: EventLog, opened: DayOpen, news: NDArray[np.float64]
 ) -> dict[str, int]:
@@ -415,10 +493,15 @@ def close_day(
         m["market"]["scripted_index"] = float(m["market"]["scripted_index"]) * (1.0 + scripted / 100.0)
     else:
         scripted = 0.0
+    oth_us = st.get("others") if "USA" in st["markets"] and "market" in m else None
+    shocks = None
+    if oth_us is not None and params.market_quiet and oth_us["cfg"].get("quiet") and world.dow() < 5:
+        shocks = quiet_shocks(world, oth_us)
     for iso, mk in st["markets"].items():
         c = _country(world, iso)
         if c < 0:
             continue
+        oth = oth_us if iso == "USA" else None
         mcfg = mk["cfg"]
         inv = _investors(world, mcfg, params)
         p = pos[: world.pop.n]
@@ -452,17 +535,32 @@ def close_day(
         pend = mk["pending"]
         pend["news"] = float(pend["news"]) + news_raw
         pend["savings"] = float(pend["savings"]) + savings_raw
-        news_pct = savings_pct = 0.0
+        news_pct = savings_pct = others_pct = tech_pct = quiet_pct = 0.0
+        if oth is not None:  # other investors: priced today, traded on the next trading day if today is not one
+            o_raw, t_raw = others_news(world, st, oth, params) if params.market_others else (0.0, 0.0)
+            oth["pending"]["news"] = float(oth["pending"]["news"]) + o_raw
+            oth["pending"]["tech"] = float(oth["pending"]["tech"]) + t_raw
         if trading_day(world, mcfg):
             cap = float(mcfg["max_daily_pct"])
             total = pend["news"] + pend["savings"]
+            if oth is not None:
+                total += oth["pending"]["news"]
             if abs(total) > cap and not params.market_shadow:  # the excess waits, split in proportion
                 keep = cap / abs(total)
                 news_pct, savings_pct = pend["news"] * keep, pend["savings"] * keep
                 pend["news"], pend["savings"] = pend["news"] - news_pct, pend["savings"] - savings_pct
+                if oth is not None:
+                    op = oth["pending"]
+                    others_pct, tech_pct = op["news"] * keep, op["tech"] * keep
+                    op["news"], op["tech"] = op["news"] - others_pct, op["tech"] - tech_pct
             else:
                 news_pct, savings_pct = pend["news"], pend["savings"]
                 pend["news"] = pend["savings"] = 0.0
+                if oth is not None:
+                    others_pct, tech_pct = oth["pending"]["news"], oth["pending"]["tech"]
+                    oth["pending"]["news"] = oth["pending"]["tech"] = 0.0
+            if oth is not None and shocks is not None:
+                quiet_pct = shocks["sp"]
         people_pct = 100.0 * ((1 + news_pct / 100.0) * (1 + savings_pct / 100.0) - 1.0)
         mk["people_index"] = float(mk["people_index"]) * (1.0 + people_pct / 100.0)
         mk["news_index"] = float(mk["news_index"]) * (1.0 + news_pct / 100.0)
@@ -474,12 +572,19 @@ def close_day(
             before = float(mk["index"])
             key, label, where = f"stocks:{iso}", str(mcfg.get("news_label", f"{iso} stocks")), [c]
         after = _apply(before, news_pct, savings_pct)
+        if oth is not None:
+            after = after * (1.0 + others_pct / 100.0) * (1.0 + quiet_pct / 100.0)
         if params.market_shadow:  # the kappa fit: flows are recorded, nothing moves (no feedback)
             after = before
-        elif people_pct != 0.0:
+        elif people_pct != 0.0 or others_pct != 0.0 or quiet_pct != 0.0:
             refs = m.get("news_ref", {})
-            if key in refs:  # saving steps never count toward the automatic market headline
+            if quiet_pct != 0.0:  # ordinary-day moves never make news: start the reference here if none exists
+                refs = m.setdefault("news_ref", {})
+                refs.setdefault(key, before)
+            if key in refs:  # saving steps and ordinary-day moves never count toward the automatic market headline
                 refs[key] = float(refs[key]) * (1.0 + savings_pct / 100.0)
+                if quiet_pct != 0.0:
+                    refs[key] = float(refs[key]) * (1.0 + quiet_pct / 100.0)
             if iso == "USA" and "market" in m:
                 m["us_stocks_index"] = after
                 m["market"]["people_index"] = float(m["market"]["people_index"]) * (1.0 + people_pct / 100.0)
@@ -487,9 +592,18 @@ def close_day(
                 mk["index"] = after
             if abs(people_pct) >= LOG_MIN_PCT:
                 log.add(world.day, EventKind.MACRO_UPDATE, -1, c, -1, after, c, f"stocks_people:{iso}")
+            if abs(others_pct) >= LOG_MIN_PCT:
+                log.add(world.day, EventKind.MACRO_UPDATE, -1, c, -1, after, c, f"stocks_others:{iso}")
             stocks_headline(world, before, after, log, where, key=key, label=label)
         us = iso == "USA" and "market" in m
         total_pct = 100.0 * ((1 + (scripted if us else 0.0) / 100.0) * (1 + people_pct / 100.0) - 1.0)
+        if oth is not None:
+            total_pct = 100.0 * ((1 + total_pct / 100.0) * (1 + others_pct / 100.0) * (1 + quiet_pct / 100.0) - 1.0)
+            if not params.market_shadow:
+                oth["news_index"] = float(oth["news_index"]) * (1.0 + others_pct / 100.0)
+                oth["quiet_index"] = float(oth["quiet_index"]) * (1.0 + quiet_pct / 100.0)
+                oth["tech_index"] = float(oth["tech_index"]) * (1.0 + tech_pct / 100.0)
+            oth["last"] = {"day": world.day, "others_pct": others_pct, "tech_pct": tech_pct, "quiet_pct": quiet_pct}
         if trading_day(world, mcfg):  # logins fall after a down day (read tomorrow); in shadow mode only the
             # index's own move counts, so who looks never depends on kappa
             mk["last_trading_pct"] = (scripted if us else 0.0) if params.market_shadow else total_pct
@@ -523,6 +637,13 @@ def close_day(
             }
             stats["market_holders"] = int(inv.holds.sum())
             stats["market_traders"] = int(inv.trades.sum())
+    if oth_us is not None:
+        last = oth_us.setdefault("last", {})
+        last["gold_pct"] = last["dollar_pct"] = 0.0
+        if shocks is not None and not params.market_shadow:
+            _apply_quiet_macro(world, shocks)
+            last["gold_pct"] = shocks["gold"]
+            last["dollar_pct"] = 100.0 * (1.0 / (1.0 + shocks["eur"] / 100.0) - 1.0)  # euros per dollar
     if "stories" in st:  # forget stories nobody tracks any more (their clusters were reversed or kept above)
         slot = world.items["slot"]
         for k in [k for k in st["stories"] if int(slot[int(k)]) < 0]:

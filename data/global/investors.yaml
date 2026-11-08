@@ -318,9 +318,79 @@ other_investors:
     line by the derived beta. Only the coefficients are stored. Off in every benchmark and backtest. Checked by
     B10 (reported).
   s: null  # pending: the rule_v4 fit
-  it_weight: null  # pending: S&P Dow Jones Indices, information technology's weight in the S&P 500
-  household_share: null  # pending: Federal Reserve Z.1, households' direct holdings over the market value of US corporate equities (display split only)
-  quiet: null  # pending: scripts/quiet_days_fit.py
+  it_weight:  # information technology's weight in the S&P 500 (moves the S&P 500 on tech stories)
+    value: 0.379
+    as_of: '2026-08-31'
+    source: markets.sp500_it_weight_2026
+    range: [0.361, 0.397]  # other 2026 reports, by date and method
+    note: >-
+      Attributed to S&P Dow Jones Indices by a secondary report; S&P DJI's own S&P 500 page refused the
+      request (HTTP 403), so the official factsheet was not read. Low confidence.
+  household_share:  # display split only: households' own part of the market's reaction
+    value: 0.421
+    as_of: 2026 Q2
+    source: investors.fed_z1_households_2026q2
+    note: >-
+      Households and nonprofits' corporate equities 52,119,174 of all sectors' 123,687,233 (million US
+      dollars, market value). Direct holdings only (equity held through funds and pensions is in other
+      sectors); the Z.1 household sector is a residual that also contains hedge funds.
+  quiet:
+    sp:
+      omega: 0.052455
+      alpha: 0.08806
+      beta: 0.837635
+      var: 0.705936
+      mean_removed_pct: 0.083889
+    nu: 6
+    nu_fitted: 5.826
+    gold_sd: 1.049567
+    eur_sd: 0.450258
+    corr:
+    - - 1.0
+      - 0.0923
+      - 0.1438
+    - - 0.0923
+      - 1.0
+      - 0.2869
+    - - 0.1438
+      - 0.2869
+      - 1.0
+    chol:
+    - - 1.0
+      - 0.0
+      - 0.0
+    - - 0.092266
+      - 0.995734
+      - 0.0
+    - - 0.14382
+      - 0.2748
+      - 0.950684
+    fit:
+      date: '2026-11-08'
+      command: uv run python -I -X utf8 scripts/quiet_days_fit.py --write
+      range: 2023-01-03..2025-12-31
+      days: 688
+      event_days_dropped: 58
+      sources:
+      - FRED SP500 (S&P Dow Jones Indices)
+      - FRED DEXUSEU (Federal Reserve H.10)
+      - Yahoo Finance GC=F (COMEX gold futures)
+      neg_log_likelihood: 815.174
+      note: event days are dropped and the rest treated as consecutive; gold futures roll between contracts; prices
+        were read in memory only
+    real_b10:
+      us_stocks:
+        mean_abs_daily_pct: 0.6304
+        p95_abs_daily_pct: 1.6782
+        median_abs_21_day_pct: 3.223
+      gold:
+        mean_abs_daily_pct: 0.7752
+        p95_abs_daily_pct: 2.2607
+        median_abs_21_day_pct: 2.8144
+      euro:
+        mean_abs_daily_pct: 0.3371
+        p95_abs_daily_pct: 0.9065
+        median_abs_21_day_pct: 1.3765
 
 derived:
   us_tech_stocks:

@@ -63,6 +63,7 @@ class Stream(IntEnum):
     ATTENTION = 23  # how often a stock holder looks at their account: a lifetime draw (day fixed at 0)
     SAVE = 24  # retirement-plan participation (k=0, lifetime) and hardship withdrawals (k=1, daily)
     ODDS_TALK = 25  # which pairs of traders who met discuss a watched question (per contact and question)
+    QUIET = 26  # ordinary-day market shocks (per day; everyday activity version 2)
 
 
 def mix_int(x: int) -> int:

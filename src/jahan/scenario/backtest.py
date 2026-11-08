@@ -159,6 +159,7 @@ def _config(
     # the published benchmark and kappa were made with people trading on the day they learn news; everyday
     # activity's backtest (late reactions, rule v2) is a separate, pre-registered run that asks for it
     cfg.economy = economy
+    cfg.params.market_quiet = False  # ordinary-day movement is off in every backtest
     if kappa is not None:
         cfg.params.market_kappa = kappa
     return cfg

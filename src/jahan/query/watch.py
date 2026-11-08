@@ -46,6 +46,8 @@ COMPONENTS = {  # part -> what it means (shown on the Watch page)
     "news": "news reactions",
     "savings": "saving and cashing out",
     "scripted": "announcements and scripted",
+    "others": "other investors' news reactions",
+    "quiet": "ordinary days (other investors and news Jahan does not simulate)",
     "time": "time passing (heuristic)",
     "talk": "traders talking (heuristic)",
 }
@@ -112,7 +114,11 @@ def catalog(world: World) -> list[SeriesSpec]:
             "us_stocks_index",
             components=us_parts,
             note=(
-                "announcements and scripted moves, plus the simulated holders' news reactions (priced when a "
+                "announcements and scripted moves, the simulated holders' news reactions (priced when a story "
+                "reaches them) and cash-outs that differ from normal, other investors' reactions to market news "
+                "(at once, kept) and, on ordinary days, the movement of investors and news Jahan does not simulate"
+                if economy is not None and "others" in economy
+                else "announcements and scripted moves, plus the simulated holders' news reactions (priced when a "
                 "story reaches them) and cash-outs that differ from normal"
                 if economy is not None
                 else "announcements and scripted moves, plus the simulated holders' trading"
@@ -131,7 +137,9 @@ def catalog(world: World) -> list[SeriesSpec]:
                 "us_stocks_index",
                 derived_beta=beta,
                 components=us_parts,
-                note=f"derived: {beta:g} x each day's US stock move, not modelled on its own",
+                note=f"derived: {beta:g} x each day's US stock move"
+                + ("; stories about tech companies also move it on their own" if "others" in (economy or {}) else "")
+                + ", not modelled otherwise",
             )
         )
     for iso, mk in (economy or {}).get("markets", {}).items():
@@ -150,7 +158,8 @@ def catalog(world: World) -> list[SeriesSpec]:
                 extra={"illustrative": bool(mc.get("illustrative")) or bool(mk["last"].get("few_holders"))},
             )
         )
-    out.append(SeriesSpec("market:gold", "market", "Gold", "gold_index"))
+    quiet = ("quiet",) if _quiet_on(world) else ()
+    out.append(SeriesSpec("market:gold", "market", "Gold", "gold_index", components=quiet))
     if "DEU" in codes:
         out.append(
             SeriesSpec(
@@ -160,6 +169,7 @@ def catalog(world: World) -> list[SeriesSpec]:
                 "fx_local_per_usd",
                 country=codes.index("DEU"),
                 unit="rate",
+                components=quiet,
                 note="up: the dollar strengthens",
             )
         )
@@ -194,8 +204,15 @@ def catalog(world: World) -> list[SeriesSpec]:
 
 def _us_parts(world: World) -> tuple[str, ...]:
     if "economy" in world.macro and "USA" in world.macro["economy"]["markets"]:
+        if "others" in world.macro["economy"]:
+            return ("news", "savings", "others", "quiet", "scripted")
         return ("news", "savings", "scripted")
     return ("people", "scripted") if "market" in world.macro else ()
+
+
+def _quiet_on(world: World) -> bool:
+    oth = (world.macro.get("economy") or {}).get("others")
+    return oth is not None and bool(oth["cfg"].get("quiet"))
 
 
 def _local_note(mc: dict[str, Any], last: dict[str, Any]) -> str:
@@ -272,14 +289,23 @@ def _part_keys(world: World, spec: SeriesSpec) -> dict[str, list[tuple[str, int,
     if spec.kind == "odds":  # changes in probability points, one row per part and day
         qid = spec.metric[len("odds.") :]
         return {p: [(f"odds_{p}.{qid}", -1, spec.item)] for p in ("time", "news", "talk")}
+    if spec.metric == "gold_index":
+        return {"quiet": [("gold_quiet_pct", -1, -1)]}
+    if spec.metric == "fx_local_per_usd":
+        return {"quiet": [("dollar_quiet_pct", -1, -1)]}
     codes = [c.iso3 for c in world.countries]
     us = codes.index("USA") if "USA" in codes else -1
     return {
         "people": [("us_stocks_people_pct", -1, -1)],
         "news": [("stocks_news_pct", us, -1), ("us_stocks_people_pct", -1, -1)],
         "savings": [("stocks_savings_pct", us, -1)],
+        "others": [("us_stocks_others_pct", -1, -1)],
+        "quiet": [("us_stocks_quiet_pct", -1, -1)],
         "scripted": [("us_stocks_scripted_pct", -1, -1)],
     }
+
+
+TECH_EXTRA = ("us_stocks_tech_pct", -1, -1)  # the tech line's own move on stories about tech companies
 
 
 def _keys(world: World, spec: SeriesSpec) -> set[tuple[str, int, int]]:
@@ -287,18 +313,22 @@ def _keys(world: World, spec: SeriesSpec) -> set[tuple[str, int, int]]:
     parts = _part_keys(world, spec)
     for name in spec.components:
         keys |= set(parts[name])
+    if spec.derived_beta is not None:
+        keys.add(TECH_EXTRA)
     return keys
 
 
 def _history(world: World, spec: SeriesSpec, data: dict[tuple[str, int, int], dict[int, float]]) -> list[dict]:
-    """Every recorded day of a series (day, date, value and, for US stocks, the day's two parts)."""
+    """Every recorded day of a series (day, date, value and, for markets, the day's parts)."""
     vals = data[(spec.metric, spec.country, spec.item)]
     days = sorted(vals)
     parts = _part_keys(world, spec)
+    extra = data.get(TECH_EXTRA, {}) if spec.derived_beta is not None else {}
     if spec.derived_beta is not None:
         prev, total = 100.0, []
         for d in days:
-            total.append(100.0 * (vals[d] / prev - 1.0))
+            # beta x the day's US move, plus the tech line's own move on stories about tech companies
+            total.append(100.0 * (vals[d] / prev - 1.0) + extra.get(d, 0.0) / spec.derived_beta)
             prev = vals[d]
         levels = tech_index(total, spec.derived_beta)
         series = dict(zip(days, levels, strict=True))
@@ -311,7 +341,9 @@ def _history(world: World, spec: SeriesSpec, data: dict[tuple[str, int, int], di
         for name in spec.components:
             got = next((data[k][d] for k in parts[name] if d in data.get(k, {})), None)
             if got is not None:
-                row[f"{name}_{'pts' if spec.kind == 'odds' else 'pct'}"] = b * got
+                row[f"{name}_{'pts' if spec.kind == 'odds' else 'pct'}"] = b * got + (
+                    extra.get(d, 0.0) if name == "others" else 0.0
+                )
         rows.append(row)
     return rows
 

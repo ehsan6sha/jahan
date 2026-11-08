@@ -203,6 +203,98 @@ def test_version_1_world_upgrades_in_place():
         apply_scenario(w, Scenario(prompt="again", events=[EconomyEvent(version=2, cfg=cfg)]), EventLog(), 3)
 
 
+def _story(w, mv, sector="broad", hour=12, salience=0.8, story=None, pid=1, headline="Congress passes a tax bill"):
+    ev = NewsEvent(
+        headline=headline,
+        topic="economy",
+        valence=0.0,
+        market_valence=mv,
+        sectors=sector,
+        salience=salience,
+        countries=["USA"],
+        duration_days=3,
+        release_utc_hour=hour,
+        story=story,
+    )
+    apply_scenario(w, Scenario(prompt="story", events=[ev]), EventLog(), pid)
+
+
+def _others_world(**params):
+    return _world(n=1200, market_kappa=0.0, market_savings=False, market_quiet=False, market_others_s=2.0, **params)
+
+
+def test_other_investors_react_at_once_and_keep_it():
+    w = _others_world()
+    _story(w, -0.5)  # Tuesday noon UTC: before the New York close
+    rec = run_in_memory(w, 30)
+    others = _series(rec, "us_stocks_others_pct")
+    assert others[0] == pytest.approx(2.0 * -0.5 * 0.8)
+    assert all(v == 0.0 for d, v in others.items() if d > 0)  # once, and never given back
+    assert w.macro["us_stocks_index"] == pytest.approx(100.0 * (1 - 0.008))
+    assert w.macro["economy"]["others"]["priced"] == {}  # forgotten once the story is no longer tracked
+
+
+def test_tech_story_moves_the_tech_line_in_full():
+    w = _others_world()
+    oc = w.macro["economy"]["others"]["cfg"]
+    _story(w, -1.0, sector="tech", salience=1.0)
+    rec = run_in_memory(w, 1)
+    impact = -2.0
+    assert _series(rec, "us_stocks_others_pct")[0] == pytest.approx(oc["it_weight"] * impact)
+    extra = _series(rec, "us_stocks_tech_pct")[0]
+    assert oc["tech_beta"] * oc["it_weight"] * impact + extra == pytest.approx(impact)
+
+
+def test_other_investors_timing_clusters_and_what_they_ignore():
+    late = _others_world()
+    _story(late, -0.5, hour=22)  # after the close: traded the next day
+    rec = run_in_memory(late, 2)
+    assert _series(rec, "us_stocks_others_pct") == pytest.approx({0: 0.0, 1: -0.8})
+    pair = _others_world()
+    _story(pair, -0.25, story="bill", headline="Congress passes a tax bill")
+    _story(pair, -0.5, story="bill", headline="The tax bill raises corporate taxes")
+    rec = run_in_memory(pair, 1)
+    assert _series(rec, "us_stocks_others_pct")[0] == pytest.approx(-0.8)  # the strongest headline only
+    plain = _others_world()
+    _story(plain, None)  # no market rating: other investors do not react
+    from jahan.scenario.spec import Announcement
+
+    ann = Announcement(indicator="us_payrolls", actual=165, expected=65, headline="Jobs beat", valence=0.5)
+    apply_scenario(plain, Scenario(prompt="jobs", events=[ann]), EventLog(), 2)
+    rec = run_in_memory(plain, 2)
+    assert set(_series(rec, "us_stocks_others_pct").values()) == {0.0}
+
+
+QUIET = {  # made-up coefficients for the test (the real ones come from scripts/quiet_days_fit.py)
+    "sp": {"omega": 0.02, "alpha": 0.1, "beta": 0.88, "var": 1.0},
+    "nu": 5,
+    "chol": [[1.0, 0.0, 0.0], [0.1, 0.99, 0.0], [-0.2, 0.0, 0.98]],
+    "gold_sd": 1.2,
+    "eur_sd": 0.45,
+}
+
+
+def test_ordinary_days_move_like_markets_do():
+    def run(**params):
+        w = _world(n=800, market_kappa=0.0, market_savings=False, countries=("USA", "DEU"), **params)
+        w.macro["economy"]["others"]["cfg"]["quiet"] = QUIET
+        return w, run_in_memory(w, 60)
+
+    w, rec = run()
+    quiet = _series(rec, "us_stocks_quiet_pct")
+    weekdays = {d for d in quiet if w.date(d).weekday() < 5}
+    assert all(quiet[d] == 0.0 for d in quiet if d not in weekdays)
+    moves = np.array([quiet[d] for d in sorted(weekdays)])
+    assert 0.3 < np.mean(np.abs(moves)) < 2.0 and abs(np.mean(moves)) < 0.5
+    assert w.macro["gold_index"] != 100.0 and w.macro["fx"][1] != w.macro["fx0"][1]
+    labels = w.macro.get("item_labels", {}).values()
+    assert not any("stocks" in v.lower() for v in labels)  # ordinary days never make "stocks fall" headlines
+    w2, rec2 = run()
+    assert _series(rec2, "us_stocks_quiet_pct") == quiet  # deterministic per seed
+    w3, rec3 = run(market_quiet=False)
+    assert set(_series(rec3, "us_stocks_quiet_pct").values()) == {0.0} and w3.macro["gold_index"] == 100.0
+
+
 def test_unemployed_people_are_gloomier():
     w = _world(n=1500, mood_contagion=0.0)
     run_in_memory(w, 60)

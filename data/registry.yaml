@@ -1486,6 +1486,26 @@ entries:
   license: "coefficient only; FRED marks NASDAQ100 'Copyrighted: Pre-Approval Required', so the series is not stored"
   confidence: medium
   notes: "OLS slope with intercept over the stated date range; R2, N and the range are in data/global/investors.yaml."
+- id: markets.sp500_it_weight_2026
+  country: USA
+  variable: weight of the information technology sector in the S&P 500
+  source: "S&P Dow Jones Indices, as reported by cryptodaily.co.uk ('The 10 Stocks That Dominate the S&P 500 in 2026', October 2026): 37.9% as of 31 August 2026"
+  url: https://cryptodaily.co.uk/2026/10/top-10-sp-500-stocks-index-weight-2026
+  year: 2026
+  retrieved: '2026-11-08'
+  license: a single published figure
+  confidence: low
+  notes: "Secondary report of an S&P DJI figure; spglobal.com refused the request (HTTP 403). Other 2026 figures: 36.7% (22 July), 36.1% (31 October), 39.7% (Schwab sector table, 30 October), 39.4% of market capitalisation (3 June)."
+- id: investors.fed_z1_households_2026q2
+  country: USA
+  variable: households' direct share of US corporate equities at market value
+  source: "Board of Governors of the Federal Reserve System, Financial Accounts of the United States (Z.1), via FRED: HNOCEAQ027S (households and nonprofit organizations; corporate equities; asset, level) over BOGZ1LM893064105Q (all sectors; corporate equities; asset, market value), 2026 Q2"
+  url: https://fred.stlouisfed.org/series/HNOCEAQ027S
+  year: 2026
+  retrieved: '2026-11-08'
+  license: public domain (US government work)
+  confidence: medium
+  notes: "52,119,174 / 123,687,233 = 42.1%. Direct holdings only; the household sector is a residual in Z.1 and includes hedge funds. Used only to split the displayed reaction."
 - id: investors.kappa_fit
   country: USA
   variable: share of holdings a simulated investor moves per unit change of economic mood (kappa)

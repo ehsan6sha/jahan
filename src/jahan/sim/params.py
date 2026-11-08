@@ -85,6 +85,9 @@ class SimParams(BaseModel):
     market_attention: bool = True  # False: holders act on news the day they learn it (the older engine)
     market_savings: bool = True  # False: cash-outs and hardship withdrawals do not move prices
     market_shadow: bool = False  # True: flows are computed and recorded but no index moves (the kappa fit)
+    market_others: bool = True  # False: other investors (version 2) do not react to news
+    market_others_s: float | None = None  # overrides the fitted s (the rule_v4 fit)
+    market_quiet: bool = True  # False: no ordinary-day movement (every benchmark and backtest)
     mood_life: bool | None = None  # False: being unemployed does not lower mood
     mood_contagion: float | None = None  # HEURISTIC daily pull toward the mood of people met that day
 

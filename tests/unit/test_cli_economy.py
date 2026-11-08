@@ -37,13 +37,19 @@ def test_switch_an_old_world_on_and_undo_it(tmp_path):
     assert st["markets"]["everyday"]["since_day"] == 3 and set(st["markets"]["everyday"]["markets"]) == {"USA", "DEU"}
     cat = {c["id"]: c for c in _json(cli("watch", "catalog", "--run", run, "--json"))["catalog"]}
     assert cat["market:stocks:DEU"]["components"] == ["news"]
-    assert cat["market:us_stocks"]["components"] == ["news", "savings", "scripted"]
+    assert cat["market:us_stocks"]["components"] == ["news", "savings", "others", "quiet", "scripted"]
     cli("watch", "add", "--run", run, "market:stocks:USA", "market:stocks:DEU")  # the alias means US stocks
     watched = _json(cli("watch", "list", "--run", run, "--json"))
     assert set(watched) == {"market:us_stocks", "market:stocks:DEU"}
     cli("run", "--run", run, "--days", "2", "--no-autonomy")
     show = {s["id"]: s for s in _json(cli("watch", "show", "--run", run, "--json"))["series"]}
-    assert set(show["market:us_stocks"]["components"]) == {"news_pct", "savings_pct", "scripted_pct"}
+    assert set(show["market:us_stocks"]["components"]) == {
+        "news_pct",
+        "savings_pct",
+        "others_pct",
+        "quiet_pct",
+        "scripted_pct",
+    }
     assert [p["name"] for p in show["market:stocks:DEU"]["parts"]] == ["news"]
     cli("reset", "--run", run, "--before-prompt", "1")
     st = _json(cli("status", "--run", run, "--json"))

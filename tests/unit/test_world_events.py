@@ -14,7 +14,10 @@ EX = Path(__file__).resolve().parents[2] / "examples" / "scenarios"
 
 
 def _world(countries, n=2000, seed=4):
-    return generate_world(RunConfig(n_agents=n, countries=countries, seed=seed, start_date="2026-10-13"))
+    # scripted paths exactly: no ordinary-day movement
+    cfg = RunConfig(n_agents=n, countries=countries, seed=seed, start_date="2026-10-13")
+    cfg.params.market_quiet = False
+    return generate_world(cfg)
 
 
 def _series(rec, metric, country):
