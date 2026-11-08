@@ -2,8 +2,8 @@
 
 The checks, their pass limits, what may be tuned and the fit / hold-out split were registered in
 ``data/backtests/benchmarks.yaml`` before any run; the rule for kappa under late reactions is
-``data/global/investors.yaml`` ``trading.kappa.rule_v3`` (after rule_v2).  Real data: ``data/backtests/benchmark_actuals.yaml``
-(written by scripts/benchmark_actuals.py from FRED) and, for B5, Polymarket daily prices fetched at run time and
+``data/global/investors.yaml`` ``trading.kappa.rule_v3`` (after rule_v2).  Real data:
+``data/backtests/benchmark_actuals.yaml`` (written by scripts/benchmark_actuals.py from FRED) and, for B5, Polymarket daily prices fetched at run time and
 recorded under ``runs/_benchmark/recordings`` (git-ignored).  Deterministic given those inputs; no LLM.
 
 B1  US stocks on announcement days, release day plus the next 4 FRED dates (score; kappa is chosen here)
