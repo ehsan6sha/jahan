@@ -1701,7 +1701,7 @@
     }
     const d = W.data && W.data.day !== undefined && W.key && W.key.startsWith(S.world + "|") ? W.data : null;
     const toggle = (id, on) => act(box, ["watch", on ? "add" : "remove", "--run", S.world, id], { ok: on ? "Watching it from today." : "Stopped watching it.", rerender: true });
-    const out = page("Watch", h("span", {}, "Pick what to follow, move time forward, and see how it moved, and why: each market move is split into its parts (news reactions, saving and cashing out, announcements and what-ifs). Everything here is simulated, not a forecast."));
+    const out = page("Watch", h("span", {}, "Pick what to follow, move time forward, and see how it moved, and why: each market move is split into its parts (news reactions, saving and cashing out, other investors, ordinary days, announcements and what-ifs). Everything here is simulated, not a forecast."));
     for (const n of watchNotices(st, box)) out.append(n);
     out.append(timeCard());
     const rows = d ? d.series : [];
@@ -1732,7 +1732,7 @@
     if (qs.length) out.append(card(h("span", {}, "Event odds: simulated and real"), "The simulated odds are the average belief of simulated traders. The real price is shown for comparison only and never moves the simulation.",
       ...qs.map(questionRow)));
     out.append(oddsQuestionsCard(st, box));
-    out.append(card("Add to the watch list", "Markets move on announcements, scripted what-ifs and people's trading on the news they hear (every country's own market in worlds with everyday activity). Use What-if to add news or a market move and watch the effect.",
+    out.append(card("Add to the watch list", "Markets move on announcements, scripted what-ifs and people's trading on the news they hear (every country's own market in worlds with everyday activity); in version 2 worlds other investors react to market news at once, and US stocks, gold and the euro also move by chance on ordinary days. Use What-if to add news or a market move and watch the effect.",
       !d ? loading() : h("div", {}, ...groups.filter(([k]) => cat.some((c) => c.kind === k)).map(([k, label]) => h("div", {},
         h("h4", {}, label),
         h("div", { class: "watch-cat" }, ...cat.filter((c) => c.kind === k).map((c) => h("label", { class: "check", title: c.note || "" },
