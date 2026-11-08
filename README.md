@@ -358,10 +358,11 @@ launch as prompt 1, run some days, inject the dollar rise as prompt 2, and run t
     Israeli strikes on Iran in March 2026 the S&P 500 fell 1.74% on its worst day and 7.45% within 20 trading
     days, so the simulated size is small next to a real crisis. The people's part is given back on the
     day a story stops being tracked (how the news feels, not a lasting change in what companies are worth),
-    which is cruder than real fading. **Jahan cannot predict which way the market goes on a news day.** On the
-    57 days after the rating model's training data, Claude's reading of the headlines got the direction of
-    the S&P 500 right on 26 of 50 rated days, about a coin flip, and on the 9 days that moved 1% or more it was
-    right on 2 and wrong on 6. Replaying the midterm week gives about 0.0%, -0.2% and +0.1% against the real
+    which is cruder than real fading. **Do not read Jahan's news-day moves as predictions of direction.** On the
+    57 days after the rating model's training data (a calm stretch: the largest move was 1.66%), Claude's reading of
+    the headlines got the direction of the S&P 500 right on 26 of 50 rated days, about a coin flip, and on the 9 days
+    that moved 1% or more it was right on 2 and wrong on 6. Those days contain no crash, so that is untested; a
+    big shock typed into What-if will look small. Replaying the midterm week gives about 0.0%, -0.2% and +0.1% against the real
     +1.6%, -4.4% and +0.3%, and none of the fixes tried changes that. Simulated households read good economic news as good for stocks; real
     markets sometimes take it as bad (when it means higher interest rates), as on both 2026 jobs reports.
   - **Turning parts off** (in the run config's `params`, before `jahan gen`): `market_people: false` (no

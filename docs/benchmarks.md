@@ -45,8 +45,12 @@ $9.01 in all (75 earlier days with four variants $4.58; the clean days $4.43).
 | No change | 0.603 | 0.571 | 0.800 |
 | Material rater, s refitted to 3.67 (95% interval 0.73 to 8.43) | 0.766 | 0.722 | 1.032 |
 
-The current engine is worse than s = 0 by 0.125 (95% interval 0.048 to 0.202). The people's part alone is not
-distinguishable from no change (difference -0.017, interval -0.071 to 0.033). Direction on rated clean days: 26 of 50
+The current engine is worse than s = 0 by 0.125 (95% interval 0.048 to 0.202; resampling whole weeks, because
+stories cluster, 0.056 to 0.186; on the fresh days alone 0.097, 0.024 to 0.163). The people's part alone is not
+distinguishable from no change (difference -0.017, interval -0.071 to 0.033), so that part is a default, not a
+demonstrated skill. Only s = 1.43 and s = 0 were decided between; refitting s on resampled clean days gives a median
+of 0 with a 95% interval of 0 to 0.34. Ordinary-day movement is off in all of these scores (three seeds averaged). On
+the 9 days of 1% or more: 1.509 with s = 1.43, 1.454 with s = 0, 1.441 for no change. Direction on rated clean days: 26 of 50
 for the current rater, 19 of 32 for the material one; on the 9 days of 1% or more the current rater was right on 2 and
 wrong on 6. The largest move among the 57 days was only 1.66%, so these days say nothing about crashes.
 
@@ -61,10 +65,13 @@ this was found on these days, so it needs new days to test.
 adopted; s = 0 beats s = 1.43, so **other investors' news reaction now defaults to s = 0**. Ordinary-day movement stays.
 Users can turn the reaction back on with `market_others_s`. Worlds already at version 2 keep the s they stored.
 
-**What this does and does not show.** News days from a public chronology, one headline at a time, say almost nothing about
-which way the S&P 500 goes that day. The trade-off is plain: without other investors, a big shock is far too small
-(7 days picked because markets moved: 1.743 against 1.505 with them). The midterm week is still missed. The missing
-channels (oil, interest rates, company results, sectors) are untested.
+**What this does and does not show.** On these days (about four months, one calm stretch, largest move 1.66%), news from a
+public chronology, one headline at a time, said almost nothing about which way the S&P 500 went that day. The 57 days
+contain no shock, so they do not test crashes. Against the current engine the gain is 17%; against always predicting no
+change it is about 3%, within noise. The trade-off: without other investors, typed big shocks look small (on 7 days
+picked because markets moved, three of them before the rating model's training cutoff: 1.743 against 1.505 with them; days
+picked for their size favour any reaction, and this comparison was never used to decide). The midterm week is still missed. The missing channels (oil,
+interest rates, company results, sectors) are untested, and these 57 days are now used up: a new test needs new days.
 
 Reproduce: `uv run python -X utf8 scripts/rater_variants.py choose` and `clean` (replays the recordings in
 `runs/_benchmark`, git-ignored; `--rate` calls Claude for anything not recorded).
