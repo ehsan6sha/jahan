@@ -1,0 +1,2554 @@
+# B9: US stock market on unscheduled news days (data/backtests/benchmarks.yaml, check B9).
+#
+# Collected on 2026-11-08 under the selection rule registered in commit 4886978 before any collection: for each
+# month the first two qualifying events in Wikipedia's "<year> in the United States" (revisions below), chosen
+# by the news, never by the market. Three research helpers read the pages through the MediaWiki API, found one
+# contemporaneous report per event to time it, and wrote one neutral headline per event (never about markets).
+# How they read the clauses, and every judgment call with the alternative pick, are in each event's note;
+# notable readings: "elections" means an election held or its result (not campaign news); troop deployments in
+# a war count as war actions; an event first reported after 16:00 New York time goes to the next trading day.
+# Outcome-chosen days (picked because markets moved) are scored but never used to choose anything.
+# The `actual` moves are FRED SP500 percent changes (release day and the next 4 FRED dates), added by
+# scripts/news_days_moves.py; the tech line's moves (FRED NASDAQ100, "Copyrighted: Pre-Approval Required") are
+# never stored here (runs/_benchmark/news_days_tech.yaml, git-ignored). Check S&P Dow Jones Indices' terms before
+# reusing the percent moves.
+
+registered_in: 4886978567ae27b09f6ec9621765c03e4f4611fa
+collected: '2026-11-08'
+source_revisions:
+  '2023':
+    revid: 1383824537
+    timestamp: '2026-11-05T01:38:24Z'
+    url: https://en.wikipedia.org/w/index.php?title=2023_in_the_United_States&oldid=1383824537
+  '2024':
+    revid: 1383880078
+    timestamp: '2026-11-05T08:48:57Z'
+    url: https://en.wikipedia.org/w/index.php?title=2024_in_the_United_States&oldid=1383880078
+  '2025':
+    revid: 1383825058
+    parentid: 1380370182
+    timestamp: '2026-11-05T01:40:44Z'
+    url: https://en.wikipedia.org/w/index.php?title=2025_in_the_United_States&oldid=1383825058
+  '2026':
+    revid: 1384428393
+    parentid: 1384405476
+    timestamp: '2026-11-08T04:57:04Z'
+    url: https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393
+months_with_fewer_than_two:
+  2023-08: 1
+  2024-08: 1
+days:
+- id: news-2023-01-03
+  trading_day: '2023-01-03'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2023-01-01'
+    category: policy
+    headline: A federal labeling law takes effect making sesame the ninth major food allergen that must be declared on
+      U.S. food packages.
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://www.fda.gov/food/food-allergies/faster-act-sesame-ninth-major-food-allergen
+    note: 'Effective 00:00 Jan 1 (Sunday). Jan 2 was an NYSE holiday, so the trading day is Jan 3. Judgment call: read
+      as a federal product-regulation action that took effect, not excluded as minor. Scheduled long in advance (FASTER
+      Act, 2021).'
+    month: 2023-01
+  - event_date: '2023-01-03'
+    category: politics
+    headline: The 118th Congress convenes with Republicans taking control of the House and Democrats keeping the Senate.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://www.cnn.com/politics/live-news/new-congress-sworn-in-2023/index.html
+    - https://www.npr.org/2023/01/03/1146763468/house-deadlocks-in-vote-for-new-speaker
+    note: Convened at noon ET. Qualifies as a change of control of government (the House majority moved from Democrats
+      to Republicans). The speaker balloting that began the same day is a separate later bullet and was not needed.
+    month: 2023-01
+  actual:
+    us_stocks:
+    - -0.4001
+    - 0.7539
+    - -1.1646
+    - 2.2841
+    - -0.0768
+- id: news-2023-02-06
+  trading_day: '2023-02-06'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2023-02-04'
+    category: geopolitics
+    headline: A U.S. fighter jet shoots down a suspected Chinese surveillance balloon off the coast of South Carolina.
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://www.npr.org/2023/02/04/1154541809/u-s-takes-down-chinese-spy-balloon-off-of-south-carolina-coast
+    note: Shot down about 14:39 ET on Saturday, so the trading day is Monday Feb 6.
+    month: 2023-02
+  actual:
+    us_stocks:
+    - -0.614
+    - 1.2873
+    - -1.1081
+    - -0.883
+    - 0.2195
+- id: news-2023-02-10
+  trading_day: '2023-02-10'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2023-02-10'
+    category: geopolitics
+    headline: On President Biden's order, a U.S. fighter jet shoots down an unidentified high-altitude object over Alaska.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://www.npr.org/2023/02/10/1156166870/high-altitude-object-shot-down-by-military-over-alaska
+    note: 'Wikipedia lists this under Feb 9. It happened on Feb 10: an F-22 downed the object at 13:45 ET and the White
+      House announced it that afternoon.'
+    month: 2023-02
+  actual:
+    us_stocks:
+    - 0.2195
+    - 1.1449
+    - -0.028
+    - 0.2773
+    - -1.3789
+- id: news-2023-03-09
+  trading_day: '2023-03-09'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2023-03-08'
+    category: finance
+    headline: Silvergate Capital says it will wind down operations and voluntarily liquidate Silvergate Bank, a lender
+      to crypto firms.
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://www.bloomberg.com/news/articles/2023-03-08/silvergate-plans-to-wind-down-bank-operations-and-liquidate
+    - https://www.businesswire.com/news/home/20230308005795/en/Silvergate-Capital-Corporation-Announces-Intent-to-Wind-Down-Operations-and-Voluntarily-Liquidate-Silvergate-Bank
+    note: Announced by press release after the close on Mar 8. Reports describe the reaction coming in after-hours trading.
+      A syndicated Yahoo report's ID suggests about 17:04 ET (inferred, not displayed).
+    month: 2023-03
+  actual:
+    us_stocks:
+    - -1.8459
+    - -1.4478
+    - -0.151
+    - 1.6477
+    - -0.6981
+- id: news-2023-03-10
+  trading_day: '2023-03-10'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2023-03-10'
+    category: finance
+    headline: California regulators close Silicon Valley Bank and appoint the FDIC as receiver after a run on its deposits.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://www.cnbc.com/2023/03/10/silicon-valley-bank-is-shut-down-by-regulators-fdic-to-protect-insured-deposits.html
+    note: Closed on Friday morning (Pacific time). AP and CNBC reports appeared before 12:00 ET.
+    month: 2023-03
+  actual:
+    us_stocks:
+    - -1.4478
+    - -0.151
+    - 1.6477
+    - -0.6981
+    - 1.7562
+- id: news-2023-04-20
+  trading_day: '2023-04-20'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2023-04-20'
+    category: tech_energy
+    headline: SpaceX's Starship rocket lifts off on its first test flight from Texas and explodes minutes after launch.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://www.npr.org/2023/04/20/1170983959/spacex-starship-launch-elon-musk
+    - https://www.cnn.com/2023/04/20/world/spacex-starship-launch-thursday-scn
+    note: Liftoff 08:33 CT (09:33 ET).
+    month: 2023-04
+  actual:
+    us_stocks:
+    - -0.5953
+    - 0.0903
+    - 0.0852
+    - -1.5811
+    - -0.3841
+- id: news-2023-04-24
+  trading_day: '2023-04-24'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2023-04-21'
+    category: politics
+    headline: The Supreme Court blocks lower-court restrictions on the abortion pill mifepristone while appeals continue.
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://www.cnbc.com/2023/04/21/supreme-court-says-abortion-pill-mifepristone-will-remain-broadly-available-during-legal-battle.html
+    - https://www.npr.org/2023/04/21/1170742958/u-s-supreme-court-blocks-lower-court-decision-in-fda-approval-of-abortion-pill-c
+    note: Wikipedia lists this under Apr 22 (Saturday). The order was issued on Friday evening, Apr 21, ahead of an 11:59
+      pm deadline, and an AP-style Yahoo reprint's ID suggests about 19:19 ET (inferred). The trading day is Apr 24 under
+      either date.
+    month: 2023-04
+  actual:
+    us_stocks:
+    - 0.0852
+    - -1.5811
+    - -0.3841
+    - 1.9566
+    - 0.8253
+- id: news-2023-05-01
+  trading_day: '2023-05-01'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2023-05-01'
+    category: finance
+    headline: Regulators seize First Republic Bank and sell most of its deposits and assets to JPMorgan Chase.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://www.npr.org/2023/05/01/1172868295/first-republic-bank-failure-fdic-jpmorgan-chase
+    - https://www.pbs.org/newshour/economy/first-republic-bank-seized-sold-to-jpmorgan-chase-in-2nd-biggest-failure-in-u-s-history
+    note: Announced before the open, early on Monday morning.
+    month: 2023-05
+  actual:
+    us_stocks:
+    - -0.0386
+    - -1.1586
+    - -0.6998
+    - -0.7219
+    - 1.8475
+- id: news-2023-05-11
+  trading_day: '2023-05-11'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2023-05-11'
+    category: policy
+    headline: The federal COVID-19 public health emergency expires, ending emergency health-care waivers and some free
+      testing coverage.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://www.npr.org/2023/05/11/1175403668/3-years-later-the-covid-public-health-emergency-is-drawing-to-a-close
+    - https://www.cnbc.com/2023/05/11/us-covid-public-health-emergency-ends.html
+    note: 'Judgment call: read as federal regulatory policy (it ended waivers for providers and insurers and some coverage
+      requirements). The expiry, at the end of May 11, had been announced months earlier, so the news was public before
+      the close. If this were not counted, the second May event would be the debt-limit deal (May 27, trading day May
+      30).'
+    month: 2023-05
+  actual:
+    us_stocks:
+    - -0.1697
+    - -0.1583
+    - 0.2958
+    - -0.6378
+    - 1.1891
+- id: news-2023-06-05
+  trading_day: '2023-06-05'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2023-06-03'
+    category: policy
+    headline: President Biden signs the bipartisan bill suspending the federal debt limit and capping spending, two days
+      before the projected default date.
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://www.cnn.com/2023/06/03/politics/biden-signs-debt-ceiling-deal/index.html
+    - https://www.pbs.org/newshour/politics/biden-signs-bipartisan-bill-that-suspends-debt-limit-until-2025-cuts-spending
+    note: Signed privately on Saturday, so the time is irrelevant and the trading day is Monday Jun 5.
+    month: 2023-06
+  - event_date: '2023-06-05'
+    category: tech_energy
+    headline: Apple unveils the Vision Pro, a $3,499 mixed-reality headset, at its annual developers conference.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://www.cnbc.com/2023/06/05/apple-vision-pro-announced-its-first-major-product-since-2014.html
+    note: Revealed during the WWDC keynote, which started at 10:00 PT (13:00 ET).
+    month: 2023-06
+  actual:
+    us_stocks:
+    - -0.2004
+    - 0.2354
+    - -0.3812
+    - 0.6189
+    - 0.1148
+- id: news-2023-07-06
+  trading_day: '2023-07-06'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2023-07-05'
+    category: tech_energy
+    headline: Meta launches Threads, a text-based social app positioned as a rival to Twitter.
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://www.cnbc.com/2023/07/05/meta-launches-instagram-threads-messaging-app-challenging-twitter.html
+    note: Went live on the evening of Jul 5, a day earlier than the App Store listing had said. The CNBC launch report
+      is time-stamped 19:00 EDT.
+    month: 2023-07
+  actual:
+    us_stocks:
+    - -0.7923
+    - -0.2865
+    - 0.2405
+    - 0.6742
+    - 0.7411
+- id: news-2023-07-11
+  trading_day: '2023-07-11'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2023-07-11'
+    category: policy
+    headline: Federal regulators order Bank of America to pay about $250 million over repeat overdraft fees, withheld
+      card rewards and unauthorized accounts.
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://www.npr.org/2023/07/11/1187060652/bank-of-america-250-million-illegal-fees-fake-accounts-fines
+    - https://www.consumerfinance.gov/archive/newsroom/bank-of-america-for-illegally-charging-junk-fees-withholding-credit-card-rewards-opening-fake-accounts/
+    note: Announced on Jul 11, but the time could not be established, so the event date is used under the rule. Read
+      as a federal regulatory enforcement action. The Yellen visit to Beijing (Jul 6-9), listed earlier on the page,
+      was skipped as a diplomatic visit, not a policy action (judgment call).
+    month: 2023-07
+  actual:
+    us_stocks:
+    - 0.6742
+    - 0.7411
+    - 0.847
+    - -0.1024
+    - 0.3855
+- id: news-2023-08-02
+  trading_day: '2023-08-02'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2023-08-01'
+    category: policy
+    headline: Fitch Ratings cuts the U.S. government's long-term credit rating to AA+ from AAA, citing expected fiscal
+      deterioration and governance.
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://www.cnbc.com/2023/08/01/fitch-downgrades-us-long-term-ratings-to-aa-from-aaa.html
+    - https://www.npr.org/2023/08/01/1191481666/fitch-credit-rating-aaa-debt-default-debt-ceiling
+    note: 'Announced late on Tuesday after the close. Judgment call: the actor is not federal, but the subject is the
+      federal government''s fiscal standing, read as ''concerning federal fiscal policy (including debt limits)''. No
+      other August entry qualified: the Camp David pact, a hurricane-response hearing and a Google data-center investment
+      were skipped; see judgment_calls.'
+    month: 2023-08
+  actual:
+    us_stocks:
+    - -1.384
+    - -0.2548
+    - -0.53
+    - 0.9024
+    - -0.4218
+- id: news-2023-09-25
+  trading_day: '2023-09-25'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2023-09-25'
+    category: policy
+    headline: The Transportation Department awards $1.4 billion in infrastructure-law grants for 70 rail safety and capacity
+      projects in 35 states.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://www.pbs.org/newshour/politics/biden-administration-announces-1-4-billion-to-improve-rail-safety-and-boost-capacity-in-35-states
+    - https://railroads.dot.gov/about-fra/communications/newsroom/press-releases/biden-harris-administration-announces-14-billion-0
+    note: 'Announced on Monday. The AP report on PBS is time-stamped 14:59 ET. Read as a federal fiscal action (grant
+      awards). Earlier September entries were skipped: the SLAC X-ray laser first light (Sep 18) as a tech development
+      with no national-outlet coverage found, the $33T debt milestone (Sep 20) as a statistic, plus a lithium find, the
+      Instacart IPO and the Brightline opening. See judgment_calls.'
+    month: 2023-09
+  actual:
+    us_stocks:
+    - 0.4023
+    - -1.4734
+    - 0.0229
+    - 0.5893
+    - -0.2709
+- id: news-2023-09-26
+  trading_day: '2023-09-26'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2023-09-26'
+    category: policy
+    headline: The Federal Trade Commission and 17 states sue Amazon, accusing it of illegally maintaining monopoly power.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://www.cnbc.com/2023/09/26/ftc-and-17-states-sue-amazon-on-antitrust-charges.html
+    - https://www.ftc.gov/news-events/news/press-releases/2023/09/ftc-sues-amazon-illegally-maintaining-monopoly-power
+    note: CNBC report time-stamped 12:04 EDT.
+    month: 2023-09
+  actual:
+    us_stocks:
+    - -1.4734
+    - 0.0229
+    - 0.5893
+    - -0.2709
+    - 0.0079
+- id: news-2023-10-04
+  trading_day: '2023-10-04'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2023-10-03'
+    category: politics
+    headline: The House votes 216-210 to remove Kevin McCarthy as speaker, the first time the chamber has ousted its
+      speaker.
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://www.npr.org/2023/10/03/1203310040/mccarthy-gaetz-speaker-news
+    - https://www.cnn.com/politics/live-news/matt-gaetz-kevin-mccarthy-house-speakership-10-03-23/index.html
+    note: 'CNN''s live blog shows the vacate vote opening at about 16:26 ET, so the result came after the close. An earlier
+      vote to table the motion failed in the afternoon. Judgment call: removal of the Speaker read as an election or
+      change in control of the House''s leadership.'
+    month: 2023-10
+  actual:
+    us_stocks:
+    - 0.811
+    - -0.1304
+    - 1.1815
+    - 0.6304
+    - 0.5208
+- id: news-2023-10-09
+  trading_day: '2023-10-09'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2023-10-08'
+    category: geopolitics
+    headline: Defense Secretary Austin orders the USS Gerald R. Ford carrier strike group to the eastern Mediterranean
+      after the Hamas attack on Israel.
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://www.cnbc.com/2023/10/08/us-is-sending-a-carrier-strike-group-closer-to-israel-and-will-begin-supplying-munitions.html
+    note: 'Wikipedia lists this under Oct 9. Austin announced it on Sunday afternoon, Oct 8, and Monday Oct 9 was an
+      NYSE trading day. Judgment call: a combat-force deployment in response to the war was read as ''war involving the
+      United States''.'
+    month: 2023-10
+  actual:
+    us_stocks:
+    - 0.6304
+    - 0.5208
+    - 0.4293
+    - -0.6246
+    - -0.5019
+- id: news-2023-11-21
+  trading_day: '2023-11-21'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2023-11-21'
+    category: policy
+    headline: The FCC chair proposes banning early termination fees for cable and satellite TV service, with a commission
+      vote set for December 13.
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://www.cnbc.com/2023/11/21/biden-proposes-ban-on-cable-cord-cutting-fees.html
+    - https://www.lightreading.com/video-broadcast/fcc-might-ban-early-termination-fees-for-pay-tv
+    note: 'Wikipedia lists this under Nov 22 and attributes it to the FTC. Reports show it was the FCC, on Tuesday Nov
+      21. The announcement time could not be established, so the event date is used under the rule. Caution: the earliest
+      time-stamped report found is CNBC at 17:30 ET; if the release came after 16:00, the trading day would be Nov 22.
+      Read as a formal federal rulemaking action. Earlier November entries skipped: APEC/Biden-Xi summit, OpenAI board
+      firing, hostage deal; see judgment_calls.'
+    month: 2023-11
+  actual:
+    us_stocks:
+    - -0.2021
+    - 0.4061
+    - 0.0597
+    - -0.1954
+    - 0.098
+- id: news-2023-11-30
+  trading_day: '2023-11-30'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2023-11-30'
+    category: tech_energy
+    headline: Tesla delivers its first Cybertruck pickups to customers at an event at its Texas factory.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://www.npr.org/2023/11/30/1216083781/tesla-cybertruck-release-musk
+    - https://www.nasdaq.com/articles/how-to-watch-teslas-cybertruck-delivery-event-today-and-what-to-expect
+    note: The event was scheduled for 14:00 CT (15:00 ET), per previews. One preview cited an investor-relations comment
+      of about 13:00 CT, which is also before the close. Read as a product launch. Nov 28 Mayo Clinic and Nov 30 Amkor
+      investment announcements were skipped as corporate investment news.
+    month: 2023-11
+  actual:
+    us_stocks:
+    - 0.3784
+    - 0.5874
+    - -0.5408
+    - -0.0569
+    - -0.3906
+- id: news-2023-12-07
+  trading_day: '2023-12-07'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2023-12-07'
+    category: policy
+    headline: Federal officials give final approval to the $1.5 billion Revolution Wind offshore wind farm off the Rhode
+      Island coast.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://finance.yahoo.com/news/us-gives-final-nod-rhode-164316893.html
+    note: The Reuters report (syndicated on Yahoo, as reuters.com was not reachable) is time-stamped about 11:43 ET.
+      Interior had approved the construction plan on Nov 17. The Dec 7 item is the permitting-council sign-off listed
+      on the page. This is a federal regulatory approval of an energy project, so it would also satisfy the energy clause.
+    month: 2023-12
+  actual:
+    us_stocks:
+    - 0.7968
+    - 0.4095
+    - 0.3925
+    - 0.4599
+    - 1.3651
+- id: news-2023-12-08
+  trading_day: '2023-12-08'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2023-12-08'
+    category: policy
+    headline: The FDA approves the first gene therapies for sickle cell disease, including the first U.S. treatment based
+      on CRISPR gene editing.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2023_in_the_United_States
+    - https://www.fda.gov/news-events/press-announcements/fda-approves-first-gene-therapies-treat-patients-sickle-cell-disease
+    - https://www.npr.org/sections/health-shots/2023/12/08/1217123089/fda-approves-first-gene-editing-treatments-for-human-illness
+    note: CNBC report time-stamped 11:19 ET.
+    month: 2023-12
+  actual:
+    us_stocks:
+    - 0.4095
+    - 0.3925
+    - 0.4599
+    - 1.3651
+    - 0.2647
+- id: news-2024-01-08
+  trading_day: '2024-01-08'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2024-01-05'
+    category: policy
+    headline: The FAA grounds about 171 Boeing 737 Max 9 jets after a section of an Alaska Airlines plane blows out in
+      flight.
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://www.cnbc.com/2024/01/06/boeing-737-max-9-grounding-after-alaska-airlines-door-blows-midflight.html
+    note: The blowout happened about 17:07 PT (20:07 ET) on Friday Jan 5, after the close, and the FAA grounding order
+      followed on Saturday Jan 6, so the trading day is Monday Jan 8. Read as a federal regulatory action, since the
+      entry includes the FAA grounding.
+    month: 2024-01
+  actual:
+    us_stocks:
+    - 1.4115
+    - -0.1478
+    - 0.5666
+    - -0.0671
+    - 0.0751
+- id: news-2024-01-12
+  trading_day: '2024-01-12'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2024-01-11'
+    category: geopolitics
+    headline: U.S. and British forces launch airstrikes on Houthi targets in Yemen in response to attacks on Red Sea
+      shipping.
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://www.npr.org/2024/01/11/1223238786/us-strikes-houthis-yemen
+    - https://www.cnn.com/2024/01/11/politics/read-biden-statement-airstrikes-houthis-yemen/index.html
+    note: Wikipedia lists this under Jan 12, the Yemen date. The strikes and Biden's statement came on the evening of
+      Jan 11 New York time, after the close. The trading day is Jan 12 either way.
+    month: 2024-01
+  actual:
+    us_stocks:
+    - 0.0751
+    - -0.3731
+    - -0.5617
+    - 0.8805
+    - 1.2313
+- id: news-2024-02-01
+  trading_day: '2024-02-01'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2024-02-01'
+    category: geopolitics
+    headline: President Biden signs an executive order imposing financial sanctions and visa bans on Israeli settlers
+      accused of violence in the West Bank.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://www.npr.org/2024/02/01/1228388748/biden-executive-order-israeli-settlers-west-bank-palestinians
+    - https://www.cbsnews.com/news/biden-executive-order-israeli-settlers-palestinians-west-bank/
+    note: Reported on the morning of Feb 1. The CBS report was updated at 14:04 ET with the four names.
+    month: 2024-02
+  actual:
+    us_stocks:
+    - 1.2494
+    - 1.0684
+    - -0.3186
+    - 0.231
+    - 0.8241
+- id: news-2024-02-06
+  trading_day: '2024-02-06'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2024-02-06'
+    category: tech_energy
+    headline: The social network Bluesky ends its invitation-only system and opens registration to everyone.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://www.bloomberg.com/news/articles/2024-02-06/jack-dorsey-s-bluesky-opens-up-social-network-to-everyone
+    - https://www.washingtonpost.com/business/2024/02/06/bluesky-twitter-social-network/da4a954e-c546-11ee-bbc9-9b5ca9b20779_story.html
+    note: Covered by Bloomberg and AP (via the Washington Post). The time is inferred from an Engadget report coded 14:00
+      UTC (09:00 ET). Read as a product opening, a tech development.
+    month: 2024-02
+  actual:
+    us_stocks:
+    - 0.231
+    - 0.8241
+    - 0.0571
+    - 0.5742
+    - -0.0949
+- id: news-2024-03-04
+  trading_day: '2024-03-04'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2024-03-04'
+    category: politics
+    headline: The Supreme Court unanimously reverses Colorado's removal of Donald Trump from its primary ballot, ruling
+      states cannot enforce the insurrection clause against federal candidates.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://www.cnbc.com/2024/03/04/supreme-court-rules-in-trump-colorado-ballot-case.html
+    note: Opinion released about 10:00 ET (CNBC 10:01 ET). The Mar 2 entry on U.S. military airdrops of humanitarian
+      aid into Gaza was skipped as a humanitarian operation, not war, a strike, an attack or sanctions (judgment call).
+      Had it counted, it would be event 1. Biden announced it on Mar 1, and the CNBC report is 14:30 ET Mar 1.
+    month: 2024-03
+  actual:
+    us_stocks:
+    - -0.1193
+    - -1.0193
+    - 0.5141
+    - 1.0304
+    - -0.6529
+- id: news-2024-03-05
+  trading_day: '2024-03-05'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2024-03-05'
+    category: policy
+    headline: The Consumer Financial Protection Bureau finalizes a rule capping typical credit card late fees at $8 for
+      large card issuers.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://www.cnbc.com/2024/03/05/cfpb-rule-caps-credit-card-late-fees-at-8.html
+    - https://www.npr.org/2024/03/05/1235973211/credit-card-late-fees-cap-junk-fees-cfpb
+    note: CNBC report time-stamped 08:13 ET.
+    month: 2024-03
+  actual:
+    us_stocks:
+    - -1.0193
+    - 0.5141
+    - 1.0304
+    - -0.6529
+    - -0.1122
+- id: news-2024-04-17
+  trading_day: '2024-04-17'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2024-04-17'
+    category: geopolitics
+    headline: The United States declines to renew a license easing oil and gas sanctions on Venezuela, reimposing the
+      restrictions over Maduro's election conduct.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://www.npr.org/2024/04/17/1245374275/us-reimposes-venezuela-oil-sanctions
+    - https://www.cnbc.com/video/2024/04/17/treasury-department-to-reimpose-oil-sanctions-on-venezuela.html
+    note: 'CNBC was reporting the decision on air at 15:40 EDT, before the close. Sanctions on a major oil producer.
+      Earlier April entries skipped: the Apr 3 Army Corps dredging of San Juan Bay ''for a natural gas terminal'' was
+      read as a port and navigation project, not an energy asset, and starting a funded project is not a policy action
+      under the key (judgment call; if counted, it would be event 1 and the Apr 20 aid vote would drop). The Apr 1 aid-worker
+      death and the Apr 2 GE split were also skipped; see judgment_calls.'
+    month: 2024-04
+  actual:
+    us_stocks:
+    - -0.5781
+    - -0.2208
+    - -0.8759
+    - 0.8731
+    - 1.1965
+- id: news-2024-04-22
+  trading_day: '2024-04-22'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2024-04-20'
+    category: policy
+    headline: The House passes $95 billion in aid for Ukraine, Israel and Taiwan in a series of bipartisan Saturday votes,
+      sending the package to the Senate.
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://www.npr.org/2024/04/20/1245993370/house-ukraine-israel-aid-bills
+    - https://www.pbs.org/newshour/politics/house-passes-new-61-billion-aid-package-for-ukraine-after-long-congressional-stalemate
+    note: The votes took place on Saturday afternoon, so the time is irrelevant and the trading day is Monday Apr 22.
+      Read as a federal fiscal action (supplemental appropriations passed by a chamber of Congress). It also concerns
+      U.S. support in the wars in Ukraine and Gaza. The two Apr 19 entries (Tesla Cybertruck recall, Title IX rule) were
+      skipped; see judgment_calls.
+    month: 2024-04
+  actual:
+    us_stocks:
+    - 0.8731
+    - 1.1965
+    - 0.0213
+    - -0.4576
+    - 1.0209
+- id: news-2024-05-02
+  trading_day: '2024-05-02'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2024-05-02'
+    category: policy
+    headline: The FTC clears Exxon Mobil's purchase of Pioneer Natural Resources on condition that Pioneer's former chief
+      executive stays off Exxon's board.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://www.cnbc.com/2024/05/02/ftc-accuses-ex-pioneer-ceo-of-colluding-with-opec-blocks-him-from-exxon-board.html
+    - https://www.ftc.gov/news-events/news/press-releases/2024/05/ftc-order-bans-former-pioneer-ceo-exxon-board-seat-exxon-pioneer-deal
+    note: Wikipedia lists this under May 3. The FTC announced it on May 2, and the CNBC report is time-stamped 13:52
+      EDT, which moves the trading day from May 3 to May 2.
+    month: 2024-05
+  actual:
+    us_stocks:
+    - 0.9128
+    - 1.2557
+    - 1.0326
+    - 0.1343
+    - -0.0006
+- id: news-2024-05-08
+  trading_day: '2024-05-08'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2024-05-08'
+    category: tech_energy
+    headline: Google DeepMind and Isomorphic Labs unveil AlphaFold 3, an AI model that predicts the structures and interactions
+      of proteins, DNA, RNA and other molecules.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://www.bloomberg.com/news/articles/2024-05-08/deepmind-ceo-targets-100-billion-plus-ai-drug-discovery-business-with-alphafold
+    - https://www.engadget.com/google-deepminds-latest-medical-breakthrough-borrows-a-trick-from-ai-image-generators-194725620.html
+    note: Published in Nature on May 8. The earliest time found is inferred from an Engadget report coded 19:47 UTC (15:47
+      ET), which is before the close. Treated as a technology development, an AI model release, with national coverage
+      (Bloomberg).
+    month: 2024-05
+  actual:
+    us_stocks:
+    - -0.0006
+    - 0.5091
+    - 0.1649
+    - -0.0241
+    - 0.4838
+- id: news-2024-06-05
+  trading_day: '2024-06-05'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2024-06-05'
+    category: tech_energy
+    headline: Boeing's Starliner capsule launches on its first crewed flight, carrying two NASA astronauts toward the
+      International Space Station.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://www.cnbc.com/2024/06/05/boeing-starliner-crew-launch.html
+    - https://www.nasa.gov/news-release/liftoff-nasa-astronauts-pilot-first-starliner-crewed-test-to-station/
+    note: Liftoff 10:52 ET. The Jun 4 asylum executive order, listed earlier on the page, was skipped as immigration
+      policy, outside the economic, fiscal, trade, tax or regulatory list (judgment call).
+    month: 2024-06
+  - event_date: '2024-06-05'
+    category: geopolitics
+    headline: A gunman opens fire near the U.S. Embassy outside Beirut before being wounded and detained by Lebanese
+      soldiers.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://www.npr.org/2024/06/05/nx-s1-4993452/us-embassy-beirut-lebanon-attack-gunmen-lebanese-military
+    note: 'Morning in Beirut, which is overnight in New York, so before the close. Judgment call: read as an ''attack
+      involving the United States'' (a U.S. diplomatic mission), not excluded as an ordinary crime under (c). If it were
+      excluded, event 2 would be the Jun 6 State Department travel bans on Georgian Dream politicians (sanctions).'
+    month: 2024-06
+  actual:
+    us_stocks:
+    - 1.1848
+    - -0.02
+    - -0.1115
+    - 0.2581
+    - 0.271
+- id: news-2024-07-01
+  trading_day: '2024-07-01'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2024-07-01'
+    category: politics
+    headline: The Supreme Court rules 6-3 that former presidents have immunity from prosecution for official acts, but
+      not for unofficial ones.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://www.npr.org/2024/07/01/nx-s1-5002157/supreme-court-trump-immunity
+    - https://www.cnbc.com/2024/07/01/donald-trump-immunity-supreme-court-ruling.html
+    note: Opinion released on the morning of Jul 1.
+    month: 2024-07
+  actual:
+    us_stocks:
+    - 0.2676
+    - 0.6195
+    - 0.5084
+    - 0.5449
+    - 0.1017
+- id: news-2024-07-03
+  trading_day: '2024-07-03'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2024-07-03'
+    category: policy
+    headline: Federal regulators say General Motors will pay about $146 million in penalties and surrender emissions
+      credits over excess emissions from 5.9 million vehicles.
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://www.pbs.org/newshour/nation/gm-hit-with-146-million-in-penalties-over-excess-emissions-by-millions-of-its-older-vehicles
+    - https://www.epa.gov/newsreleases/general-motors-agrees-retire-50-million-metric-tons-greenhouse-gas-credits-resolve
+    note: 'NHTSA (penalties) and EPA (credits) announced it on Wednesday Jul 3, an early-close day: the NYSE closed at
+      13:00. The announcement time could not be established, so the event date is used under the rule as written (16:00).
+      If it came after 13:00 it was not tradable that day, and the next trading day would be Jul 5. The parent should
+      decide whether the early close overrides the rule.'
+    month: 2024-07
+  actual:
+    us_stocks:
+    - 0.5084
+    - 0.5449
+    - 0.1017
+    - 0.0741
+    - 1.0208
+- id: news-2024-08-02
+  trading_day: '2024-08-02'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2024-08-01'
+    category: politics
+    headline: Secretary of State Blinken says the evidence shows Venezuelan opposition candidate Edmundo Gonzalez won
+      the most votes in the July 28 election.
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://www.npr.org/2024/08/01/nx-s1-5060485/us-recognizes-venezuelan-opposition-leader
+    - https://www.nbcnews.com/news/latino/us-recognizes-opposition-candidate-gonzalez-winner-venezuela-election-rcna164802
+    note: 'NBC says the statement came Thursday night, after the close. Judgment call: read as a U.S. government action
+      recognizing an election result. ''Elections'' in the rule is not limited to U.S. elections, and Venezuela is a
+      major oil producer. If foreign elections are excluded, August 2024 has 0 qualifying events. Other August entries
+      failed: the Aug 1 prisoner swap (a diplomatic exchange, not war, strikes, attacks or sanctions), the DNC nomination
+      and RFK Jr.''s exit (candidacy), and the rest were (c) or state-level.'
+    month: 2024-08
+  actual:
+    us_stocks:
+    - -1.8382
+    - -2.9969
+    - 1.0354
+    - -0.7735
+    - 2.3043
+- id: news-2024-09-03
+  trading_day: '2024-09-03'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2024-09-02'
+    category: geopolitics
+    headline: U.S. authorities seize a plane used by Venezuelan President Nicolas Maduro in the Dominican Republic, citing
+      sanctions and export-control violations.
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://www.npr.org/2024/09/02/nx-s1-5098318/us-seizes-venezuela-maduro-plane
+    - https://www.justice.gov/archives/opa/pr/united-states-seizes-aircraft-used-nicolas-maduro-moros-violation-us-export-control-and
+    note: Sep 2 was Labor Day (NYSE closed), so the time is irrelevant and the trading day is Sep 3. Read as sanctions
+      enforcement against a major oil producer.
+    month: 2024-09
+  actual:
+    us_stocks:
+    - -2.1151
+    - -0.1602
+    - -0.3018
+    - -1.726
+    - 1.158
+- id: news-2024-09-05
+  trading_day: '2024-09-05'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2024-09-05'
+    category: policy
+    headline: The United States signs the Council of Europe's framework convention on artificial intelligence, described
+      as the first international treaty on AI.
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://2021-2025.state.gov/the-council-of-europes-framework-convention-on-artificial-intelligence-and-human-rights-democracy-and-the-rule-of-law/
+    note: 'Signed in Vilnius by Deputy Secretary Verma. The time could not be established (likely morning in Vilnius,
+      overnight in New York), so the event date is used. Judgment call: read as federal regulatory policy on a technology
+      (AI governance). No list-outlet report was found, only State Department pages. If it were not counted, event 2
+      would be the Polaris Dawn commercial spacewalk (Sep 12).'
+    month: 2024-09
+  actual:
+    us_stocks:
+    - -0.3018
+    - -1.726
+    - 1.158
+    - 0.4473
+    - 1.0665
+- id: news-2024-10-08
+  trading_day: '2024-10-08'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2024-10-08'
+    category: policy
+    headline: The EPA issues a final rule requiring most U.S. water systems to replace lead service lines within 10 years.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://www.npr.org/2024/10/08/g-s1-27109/biden-sets-10-year-deadline-for-u-s-cities-to-replace-lead-pipes-nationwide
+    - https://www.epa.gov/newsreleases/biden-harris-administration-issues-final-rule-requiring-replacement-lead-pipes-within
+    note: 'Announced on Tuesday. The CBS report was updated at 15:28 EDT, and AP coverage was out during the day. Oct
+      1 entries were skipped: the dockworkers'' strike as labor action, not policy, and the California fracking ban as
+      a state law.'
+    month: 2024-10
+  actual:
+    us_stocks:
+    - 0.9689
+    - 0.7113
+    - -0.207
+    - 0.6052
+    - 0.7708
+- id: news-2024-10-10
+  trading_day: '2024-10-10'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2024-10-10'
+    category: policy
+    headline: U.S. authorities impose about $3 billion in penalties on TD Bank over anti-money-laundering failures as
+      the bank pleads guilty.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://www.cnbc.com/2024/10/10/td-bank-3-billion-fine-doj-settle-money-laundering-drug-cartel.html
+    - https://www.fincen.gov/system/files/enforcement_action/2024-10-10/FinCEN-TD-Bank-Consent-Order-508FINAL.pdf
+    note: 'CNBC report time-stamped 12:41 EDT, after the Attorney General''s announcement. Judgment call: the page frames
+      this as a FinCEN regulatory fine, so it was read as federal regulatory enforcement on a financial institution and
+      not excluded as a crime. The resolution did include a criminal guilty plea.'
+    month: 2024-10
+  actual:
+    us_stocks:
+    - -0.207
+    - 0.6052
+    - 0.7708
+    - -0.7609
+    - 0.4679
+- id: news-2024-11-05
+  trading_day: '2024-11-05'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2024-11-05'
+    category: policy
+    headline: The United States agrees to cancel more than $1 billion of debt owed to it by Somalia.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://ewn.co.za/2024/11/05/us-writes-off-over-1-billion-of-somalia-debt
+    - https://www.scmp.com/news/world/africa/article/3285337/us-writes-over-us1-billion-somalia-debt
+    note: 'Signed in Mogadishu by the U.S. ambassador and Somalia''s finance minister. The AFP report on EWN is time-stamped
+      17:32 South Africa time (10:32 ET). No list-outlet copy was reachable, so AFP via EWN and SCMP is cited. Judgment
+      call: federal debt relief read as a fiscal action.'
+    month: 2024-11
+  actual:
+    us_stocks:
+    - 1.2266
+    - 2.5296
+    - 0.7431
+    - 0.3757
+    - 0.0969
+- id: news-2024-11-06
+  trading_day: '2024-11-06'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2024-11-05'
+    category: politics
+    headline: Donald Trump wins the U.S. presidential election, defeating Vice President Kamala Harris.
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://www.cnbc.com/2024/11/06/trump-wins-2024-election-for-president.html
+    - https://www.npr.org/live-updates/trump-harris-2024-election-results
+    note: Election Day was Nov 5. Results came only after polls closed in the evening, and AP called the race at 05:34
+      ET on Nov 6, so the trading day is Nov 6.
+    month: 2024-11
+  actual:
+    us_stocks:
+    - 2.5296
+    - 0.7431
+    - 0.3757
+    - 0.0969
+    - -0.2893
+- id: news-2024-12-06
+  trading_day: '2024-12-06'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2024-12-06'
+    category: policy
+    headline: A federal appeals court upholds the law requiring TikTok's Chinese owner to sell the app or face a U.S.
+      ban.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://www.nbcnews.com/tech/tech-news/federal-judges-uphold-tiktok-ban-say-platform-us-rcna183106
+    - https://www.npr.org/2024/12/06/nx-s1-5220219/u-s-court-of-appeals-has-upheld-a-law-that-would-force-the-sale-of-tiktok
+    note: NBC report time-stamped 10:38 ET. A lower federal court ruling on a federal law forcing the sale of a business,
+      which counts as economic regulation.
+    month: 2024-12
+  actual:
+    us_stocks:
+    - 0.2495
+    - -0.6144
+    - -0.2964
+    - 0.8166
+    - -0.5414
+- id: news-2024-12-10
+  trading_day: '2024-12-10'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2024-12-10'
+    category: geopolitics
+    headline: U.S. Central Command says two Navy destroyers shot down Houthi drones and a cruise missile while escorting
+      U.S.-flagged ships in the Gulf of Aden.
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/wiki/2024_in_the_United_States
+    - https://www.centcom.mil/MEDIA/PUBLIC-RELEASES/Article/3994115/centcom-forces-defeat-houthi-attacks-on-us-navy-and-us-flagged-ships-in-the-gul/
+    - https://news.usni.org/2024/12/10/uss-stockdale-uss-okane-shoot-down-houthi-weapons-while-escorting-u-s-merchant-ships-says-centcom
+    note: 'Wikipedia lists this as Dec 9-10. The attacks spanned Dec 9-10, Gulf time, and CENTCOM announced them on Tuesday
+      Dec 10. The announcement time could not be established, so the event date of first public report (Dec 10) is used.
+      Caution: one national report was first time-stamped 00:38 ET Dec 11, so if CENTCOM posted after 16:00 the trading
+      day would be Dec 11.'
+    month: 2024-12
+  actual:
+    us_stocks:
+    - -0.2964
+    - 0.8166
+    - -0.5414
+    - -0.0026
+    - 0.3799
+- id: news-2025-01-02
+  trading_day: '2025-01-02'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2025-01-02'
+    category: policy
+    headline: Federal appeals court rules the FCC lacks authority to reinstate its net neutrality rules
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://investing.com/news/stock-market-news/us-appeals-court-blocks-biden-administration-net-neutrality-rules-3794350
+    note: 'Reuters (David Shepardson) wire copy on Investing.com stamped 12:04 PM, Jan 2 (updated 2:25 PM). Bullets 1-4
+      of the month skipped (New Orleans attack and Cybertruck explosion: crimes, clause c; Honduras threat to expel US
+      bases: not a strike/attack/sanction, clause a; public-domain works: not a category).'
+    month: 2025-01
+  actual:
+    us_stocks:
+    - -0.2224
+    - 1.2596
+    - 0.5538
+    - -1.1104
+    - 0.156
+- id: news-2025-01-03
+  trading_day: '2025-01-03'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2025-01-03'
+    category: politics
+    headline: New Republican-controlled Congress convenes and narrowly re-elects Mike Johnson as House speaker on the
+      first ballot
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://www.pbs.org/newshour/politics/mike-johnson-reelected-house-speaker-in-dramatic-first-round-floor-vote
+    note: 'Judgment call: passes (a) as "elections, a change of control of government" (Speaker election; the 119th Congress
+      seated a Republican Senate majority). AP story on PBS stamped 2:53 PM EST. Bullet 6 (reported US convoy to Kobani,
+      Pentagon denies) skipped: not a strike/attack/sanction. The next qualifier would have been the same-day bullet
+      "Biden blocks Nippon Steel acquisition of U.S. Steel" (same trading day).'
+    month: 2025-01
+  actual:
+    us_stocks:
+    - 1.2596
+    - 0.5538
+    - -1.1104
+    - 0.156
+    - -1.5412
+- id: news-2025-02-03
+  trading_day: '2025-02-03'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2025-02-01'
+    category: policy
+    headline: Trump orders 25% tariffs on imports from Canada and Mexico and 10% on Chinese goods, citing a national
+      emergency
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://www.pbs.org/newshour/politics/trump-imposes-promised-tariffs-on-canada-mexico-and-china-raising-risk-of-higher-inflation
+    note: Saturday; next trading day Monday Feb 3. AP (Josh Boak) on PBS stamped 6:17 PM EST Feb 1; exact signing time
+      not established.
+    month: 2025-02
+  - event_date: '2025-02-01'
+    category: geopolitics
+    headline: US military carries out airstrikes on Islamic State operatives in Somalia on Trump's orders
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://www.pbs.org/newshour/world/u-s-military-strikes-islamic-state-operatives-in-somalia-for-the-first-time-in-trumps-new-term
+    note: Saturday; next trading day Monday Feb 3 regardless of time.
+    month: 2025-02
+  actual:
+    us_stocks:
+    - -0.7609
+    - 0.7225
+    - 0.3909
+    - 0.3644
+    - -0.9465
+- id: news-2025-03-03
+  trading_day: '2025-03-03'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2025-03-01'
+    category: geopolitics
+    headline: US Central Command says an airstrike in northwest Syria killed the senior military leader of al-Qaida affiliate
+      Hurras al-Din
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://www.centcom.mil/MEDIA/PUBLIC-RELEASES/Article/4086506/centcom-forces-kill-the-senior-military-leader-of-al-qaeda-affiliate-hurras-al/
+    note: 'Saturday; announced by CENTCOM press release on Mar 1 (some reports say the strike itself occurred Feb 23).
+      Next trading day Mon Mar 3. Bullet 1 (executive order making English the official language) skipped: not an economic/fiscal/trade/tax/regulatory
+      policy.'
+    month: 2025-03
+  - event_date: '2025-03-02'
+    category: tech_energy
+    headline: Firefly Aerospace's Blue Ghost lander touches down on the Moon, the first fully successful commercial lunar
+      landing, carrying NASA experiments
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://www.apr.org/science-health/2025-03-02/private-lunar-lander-blue-ghost-touches-down-on-the-moon
+    note: 'Sunday; touchdown 3:34 a.m. EST per Firefly/AP. Next trading day Mon Mar 3. Judgment call: bullet 5 "Hegseth
+      orders a halt to US Cyber Command offensive operations against Russia" (Mar 2) skipped under (a): a pause of operations
+      is not a war, strike, attack or sanction. It would land on the same trading day (Mar 3).'
+    month: 2025-03
+  actual:
+    us_stocks:
+    - -1.7597
+    - -1.2235
+    - 1.1159
+    - -1.7819
+    - 0.5521
+- id: news-2025-04-03
+  trading_day: '2025-04-03'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2025-04-02'
+    category: policy
+    headline: Trump announces a 10% baseline tariff on all imports and higher "reciprocal" tariffs on dozens of trading
+      partners
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://www.pbs.org/newshour/politics/watch-live-trump-announces-broad-tariffs-at-liberation-day-white-house-event
+    - https://www.cbsnews.com/news/trump-liberation-day-new-tariffs-us
+    note: Rose Garden announcement scheduled for and begun at about 4 p.m. ET, so the tariff rates became public at or
+      after 16:00; next trading day Apr 3. (That an announcement was coming was known in advance; its content was not.)
+    month: 2025-04
+  - event_date: '2025-04-02'
+    category: policy
+    headline: Senate passes a resolution to end the national emergency behind Trump's Canada tariffs, with four Republicans
+      joining Democrats
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://www.yahoo.com/news/4-gop-senators-voted-block-234336443.html
+    - https://www.npr.org/2025/04/02/nx-s1-5347699/senate-trump-tariffs-canada
+    note: NPR report listed (its page timed out when fetched; timing taken from the Business Insider copy). Vote came
+      in the evening, "hours after" the 4 p.m. tariff announcement (Business Insider on Yahoo, stamped 11:43 PM UTC =
+      7:43 PM EDT); next trading day Apr 3. Not binding unless the House also acts.
+    month: 2025-04
+  actual:
+    us_stocks:
+    - -4.8396
+    - -5.975
+    - -0.2331
+    - -1.5701
+    - 9.5154
+- id: news-2025-05-01
+  trading_day: '2025-05-01'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2025-05-01'
+    category: policy
+    headline: House votes to revoke the federal waiver that lets California phase out sales of new gasoline-powered cars
+      by 2035
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://www.cbsnews.com/amp/sacramento/news/california-gas-powered-vehicle-ban-house-votes-to-block-hjres88
+    - https://laist.com/news/transportation/the-house-strikes-a-blow-against-california-in-a-fight-over-evs
+    note: House vote 246-164; CBS report updated 11:03 AM PDT (2:03 PM EDT) May 1. LAist (NPR member station) report
+      also listed.
+    month: 2025-05
+  actual:
+    us_stocks:
+    - 0.6299
+    - 1.4727
+    - -0.6382
+    - -0.7693
+    - 0.4346
+- id: news-2025-05-02
+  trading_day: '2025-05-02'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2025-05-01'
+    category: policy
+    headline: Trump signs an executive order directing an end to federal funding for NPR and PBS
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://www.pbs.org/newshour/politics/trump-signs-executive-order-directing-federal-funding-cuts-to-pbs-and-np
+    - https://news.bloomberglaw.com/social-justice/trump-signs-executive-order-to-end-federal-funding-of-npr-pbs
+    note: Announced "late Thursday" (Bloomberg); AP story first stamped 12:21 AM May 2. Exact clock time not given but
+      clearly after 16:00; next trading day Fri May 2.
+    month: 2025-05
+  actual:
+    us_stocks:
+    - 1.4727
+    - -0.6382
+    - -0.7693
+    - 0.4346
+    - 0.58
+- id: news-2025-06-05
+  trading_day: '2025-06-05'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2025-06-05'
+    category: policy
+    headline: Trump says he is very disappointed in Elon Musk over his attacks on the Republican tax and spending bill,
+      and later threatens to end Musk's federal contracts and subsidies
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://www.pbs.org/newshour/politics/watch-trump-says-hes-very-disappointed-in-elon-musk-after-criticism-of-presidents-budget-bill
+    - https://www.npr.org/2025/06/05/nx-s1-5424502/trump-elon-musk
+    note: 'Judgment call: kept under (a) "concern federal ... fiscal ... policy" because the entry describes the quarrel
+      as over the Big Beautiful Bill (deficits, end of the EV mandate). PBS stamped 3:03 PM EST. Skipped before it: Jun
+      1 Boulder attack (crime, c); Jun 4 travel ban on 12 countries (immigration, a); Jun 4 US veto of UN Gaza ceasefire
+      resolution (diplomatic, not a US strike/attack/sanction, a). If the feud were excluded, the next qualifier would
+      be Micron (Jun 12), then the Jun 18 Nippon Steel completion or Supreme Court ruling.'
+    month: 2025-06
+  actual:
+    us_stocks:
+    - -0.5277
+    - 1.0281
+    - 0.092
+    - 0.5483
+    - -0.2744
+- id: news-2025-06-12
+  trading_day: '2025-06-12'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2025-06-12'
+    category: tech_energy
+    headline: Micron raises its planned US chipmaking and research investment to about $200 billion, announced with the
+      Trump administration
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://www.thestar.com.my/tech/tech-news/2025/06/12/micron-expands-us-investments-to-200-billion-amid-trump039s-onshoring-push
+    - https://content.govdelivery.com/accounts/USDOC/bulletins/3e4c251
+    note: 'Judgment call: a large technology-manufacturing investment covered by Reuters and the Commerce Department
+      counted as "a technology ... development covered as national news". Reuters (Shepardson/Bajwa) copy stamped 9:34
+      PM MYT = 9:34 AM EDT. Skipped before it: Jun 5 DOJ probe of Rhode Island hiring, Jun 5 Comer subpoena, Jun 6 Abrego
+      Garcia return/charges, Jun 7 National Guard deployment to Los Angeles (deployment, not a strike/attack, a), Jun
+      9 California lawsuit over the Guard.'
+    month: 2025-06
+  actual:
+    us_stocks:
+    - 0.3822
+    - -1.1296
+    - 0.9393
+    - -0.8352
+    - -0.0309
+- id: news-2025-07-01
+  trading_day: '2025-07-01'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2025-07-01'
+    category: policy
+    headline: Senate narrowly passes Trump's tax-cut and spending-cut bill, with Vice President Vance breaking a 50-50
+      tie
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://whyy.org/articles/trump-senate-republicans-big-funding-bill-passes/
+    - https://www.aljazeera.com/news/2025/7/1/senate-passes-trumps-one-big-beautiful-bill-sending-it-to-house
+    note: Final passage vote at about midday Tuesday Jul 1 after the overnight vote-a-rama (AP via WHYY; Al Jazeera "shortly
+      after midday").
+    month: 2025-07
+  actual:
+    us_stocks:
+    - -0.1118
+    - 0.4745
+    - 0.8339
+    - -0.7862
+    - -0.0716
+- id: news-2025-07-08
+  trading_day: '2025-07-08'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2025-07-07'
+    category: policy
+    headline: IRS tells a federal court that churches may endorse political candidates to their congregations without
+      losing tax-exempt status
+    public_before_close: false
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://www.sltrib.com/religion/2025/07/07/churches-can-endorse-political/
+    - https://www.npr.org/2025/07/08/nx-s1-5460886/irs-now-says-pastors-can-endorse-candidates
+    - https://www.1011now.com/2025/07/08/pastors-who-endorse-political-candidates-shouldnt-lose-tax-exempt-status-irs-says-filing
+    note: 'Tax policy (tax-exempt status). Joint court filing made Monday Jul 7 in E.D. Texas; the New York Times (David
+      Fahrenthold) broke the story, and the earliest timestamped copy found is the Salt Lake Tribune reprint at 9:49
+      p.m. Jul 7; AP and NPR followed on Jul 8. No report before 16:00 Jul 7 was found, so under the delayed-disclosure
+      rule the trading day is the next trading day, Tue Jul 8 (by the literal unknown-time fallback it would be Jul 7).
+      Judgment calls before it: Jul 1 "Jabil plans a $500M North Carolina data-center manufacturing plant" skipped as
+      not "covered as national news" (only regional/trade press found); Jul 7 "TSA no longer requires travelers to remove
+      shoes" skipped as an airport-security screening procedure, not economic/fiscal/trade/tax/regulatory policy (same
+      trading day if counted). Other skips: Wisconsin court abortion ruling (state), Del Monte bankruptcy (not a financial
+      institution), Alligator Alcatraz (immigration), several shootings (crime), Texas floods (disaster).'
+    month: 2025-07
+  actual:
+    us_stocks:
+    - -0.0716
+    - 0.6062
+    - 0.2746
+    - -0.3298
+    - 0.1407
+- id: news-2025-08-01
+  trading_day: '2025-08-01'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2025-08-01'
+    category: policy
+    headline: Corporation for Public Broadcasting says it will wind down operations after Congress rescinded its federal
+      funding
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://www.kpbs.org/news/politics/2025/08/01/corporation-for-public-broadcasting-says-its-shutting-down
+    - https://michiganadvance.com/?p=95309
+    note: 'Judgment call: counted as concerning federal fiscal policy (closure follows the $1.1 billion rescission of
+      its federal appropriation; the Wikipedia entry itself gives no reason). States Newsroom report stamped 3:43 pm
+      ET Aug 1. If excluded, August would be the Aug 5 mRNA cancellation and the Aug 7 GPT-5 launch. Skipped before it:
+      Delaware cannabis sales (state policy), Ghislaine Maxwell transfer, Hatch Act inquiry into Jack Smith, Las Vegas
+      union, Texas House warrants (state), Arkansas Ten Commandments ruling (state).'
+    month: 2025-08
+  actual:
+    us_stocks:
+    - -1.5992
+    - 1.4737
+    - -0.4858
+    - 0.7282
+    - -0.0797
+- id: news-2025-08-06
+  trading_day: '2025-08-06'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2025-08-05'
+    category: policy
+    headline: Health Secretary Kennedy cancels about $500 million in federal funding for mRNA vaccine projects against
+      respiratory viruses
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://www.pbs.org/newshour/health/rfk-jr-pulls-funding-for-vaccines-being-developed-to-fight-respiratory-viruses
+    - https://hhs.gov/press-room/hhs-winds-down-mrna-development-under-barda.html
+    note: Federal spending cancellation (fiscal). Announced Tuesday night; AP stamped 6:54 PM EDT Aug 5; next trading
+      day Wed Aug 6.
+    month: 2025-08
+  actual:
+    us_stocks:
+    - 0.7282
+    - -0.0797
+    - 0.78
+    - -0.2504
+    - 1.1346
+- id: news-2025-09-02
+  trading_day: '2025-09-02'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2025-09-02'
+    category: policy
+    headline: Disney agrees to pay $10 million to settle FTC allegations that it allowed children's data to be collected
+      through YouTube videos
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://www.yahoo.com/news/articles/disney-pay-10-million-settle-190009561.html
+    note: 'Federal regulatory enforcement (FTC/COPPA). Reuters (Kanishka Singh) stamped 7:00 PM UTC = 3:00 PM EDT Tue
+      Sep 2. Judgment call: the bullet before it, "Trump says Space Command headquarters will move from Colorado to Alabama"
+      (Sep 2), skipped: a military basing decision is not a war/strike/attack/sanction nor economic/fiscal/trade/tax/regulatory
+      policy.'
+    month: 2025-09
+  actual:
+    us_stocks:
+    - -0.6922
+    - 0.51
+    - 0.8346
+    - -0.3165
+    - 0.2106
+- id: news-2025-09-12
+  trading_day: '2025-09-12'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2025-09-12'
+    category: policy
+    headline: FAA proposes $3.1 million in fines against Boeing over safety violations, including those tied to the 2024
+      Alaska Airlines door-plug blowout
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://www.faa.gov/newsroom/faa-proposes-31-million-fines-against-boeing
+    - https://news.bloomberglaw.com/product-liability-and-toxics-law/boeing-faces-3-1-million-in-us-fines-for-safety-violations
+    - https://www.opb.org/article/2025/09/13/faa-seeks-dollar3-1-million-in-fines-from-boeing-over-safety-violations/
+    note: 'Wikipedia lists this under Sep 13 (Saturday), but AP says the FAA announced it Friday and Bloomberg published
+      it at 4:56 PM UTC = 12:56 PM EDT Fri Sep 12, so the first trading day the news could be traded is Sep 12 (by Wikipedia''s
+      date alone it would be Mon Sep 15). Judgment calls before it: Sep 5 "Two authors sue Apple, alleging its AI training
+      used their books" skipped: a private lawsuit filing is not a ruling, a federal policy, or a technology development;
+      Sep 11 "NASA bars Chinese nationals with valid visas" skipped: security/access policy, not economic/trade/regulatory.
+      Other skips: Sep 5 Defense Department secondary name (not economic), Sep 8 Carroll verdict upheld (private civil
+      case), Sep 10 Charlie Kirk assassination (crime, c).'
+    month: 2025-09
+  actual:
+    us_stocks:
+    - -0.0483
+    - 0.4707
+    - -0.1288
+    - -0.097
+    - 0.4789
+- id: news-2025-10-01
+  trading_day: '2025-10-01'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2025-10-01'
+    category: policy
+    headline: Federal government shuts down after Congress fails to pass funding, with hundreds of thousands of workers
+      facing furloughs
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://www.pbs.org/newshour/politics/partial-government-shutdown-begins-as-nation-faces-new-period-of-uncertainty
+    note: Shutdown began 12:01 a.m. EDT Wed Oct 1.
+    month: 2025-10
+  actual:
+    us_stocks:
+    - 0.34
+    - 0.0618
+    - 0.0066
+    - 0.3647
+    - -0.3811
+- id: news-2025-10-03
+  trading_day: '2025-10-03'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2025-10-03'
+    category: tech_energy
+    headline: Large fire breaks out at Chevron's El Segundo refinery near Los Angeles, a major West Coast fuel producer
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://www.news4jax.com/news/national/2025/10/03/massive-fire-erupts-at-chevron-refinery-near-los-angeles/
+    note: 'Judgment call: an industrial fire at a major refinery, covered nationally by AP, counted as "an energy development
+      covered as national news" (it is neither a natural disaster nor a crime). Fire began about 9:30 p.m. PDT Thu Oct
+      2 (Chevron, quoted by AP; the news4jax link is the AP story) = 12:30 a.m. EDT Fri Oct 3, so the New York date is
+      Oct 3 (Wikipedia lists Oct 2); either way the first trading day is Fri Oct 3. Skipped before it: Bronx building
+      collapse (accident), "Musk briefly passes $500 billion net worth" (a market-wealth item, not a category), LaGuardia
+      runway collision (accident), Robert Morris plea (crime). If excluded, the next candidates were Oct 6 Supreme Court
+      rejection of Ghislaine Maxwell''s appeal (a cert denial) and Oct 8 Gaza peace deal first phase.'
+    month: 2025-10
+  actual:
+    us_stocks:
+    - 0.0066
+    - 0.3647
+    - -0.3811
+    - 0.5828
+    - -0.2756
+- id: news-2025-11-03
+  trading_day: '2025-11-03'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2025-11-01'
+    category: policy
+    headline: November food-stamp benefits for about 42 million Americans are not issued as the federal shutdown drains
+      SNAP funding
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://www.dawn.com/news/1952092
+    - https://www.cbsnews.com/news/food-stamps-snap-benefits-november-2025-government-shutdown
+    - https://www.cbsnews.com/news/federal-food-aid-govenrment-shutdown
+    note: Dawn carries an AFP report; CBS reports on the USDA notice that no November benefits would go out. Shutdown-related
+      (fiscal policy, "including ... shutdowns"). Saturday; next trading day Mon Nov 3. USDA had said in late October
+      that no benefits would be issued on Nov 1; the lapse itself is dated Nov 1.
+    month: 2025-11
+  actual:
+    us_stocks:
+    - 0.1721
+    - -1.1737
+    - 0.3654
+    - -1.1178
+    - 0.1262
+- id: news-2025-11-04
+  trading_day: '2025-11-04'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2025-11-03'
+    category: policy
+    headline: IRS tells participating states its free Direct File tax-filing service will not be offered in the 2026
+      filing season
+    public_before_close: false
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://www.nextgov.com/digital-government/2025/11/direct-file-wont-happen-2026-irs-tells-states/409309/
+    - https://www.cpapracticeadvisor.com/2025/11/05/irs-says-direct-file-wont-be-around-for-2026-filing-season/172448/
+    - https://www.wsmv.com/2025/11/06/irs-direct-file-wont-be-available-next-year-heres-what-that-means-taxpayers
+    note: 'Tax policy. The IRS email went to 25 state officials on Monday Nov 3; AP (Nov 6 story, carried by WSMV) says
+      the Washington Post and Nextgov first reported it. The earliest dated report found is Nextgov/FCW on Tue Nov 4
+      (time not shown); AP followed, so it was not public before the close on Nov 3; trading day = next trading day,
+      Nov 4 (if Nextgov published after 16:00 it would be Nov 5). Earlier reports in 2025 had already said Direct File
+      was being wound down. Skipped before it: Nov 1 World Series (sports).'
+    month: 2025-11
+  actual:
+    us_stocks:
+    - -1.1737
+    - 0.3654
+    - -1.1178
+    - 0.1262
+    - 1.5401
+- id: news-2025-12-01
+  trading_day: '2025-12-01'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2025-12-01'
+    category: geopolitics
+    headline: White House says a Navy admiral, acting under Hegseth's authorization, ordered a second strike on an alleged
+      drug boat in September and insists it was lawful
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://www.ajc.com/news/2025/12/white-house-says-admiral-ordered-follow-on-strike-on-alleged-drug-boat-insists-attack-was-lawful
+    - https://www.yahoo.com/news/articles/white-house-confirms-hegseth-authorized-192131579.html
+    note: Concerns US military strikes (Caribbean boat strikes near Venezuela, a major oil producer). The strike itself
+      was on Sep 2; the news event is the Dec 1 White House confirmation at the afternoon press briefing (Yahoo copy
+      stamped 19:21 UTC = 2:21 PM EST).
+    month: 2025-12
+  actual:
+    us_stocks:
+    - -0.5323
+    - 0.2457
+    - 0.298
+    - 0.108
+    - 0.1937
+- id: news-2025-12-03
+  trading_day: '2025-12-03'
+  split: fit
+  chosen:
+  - news
+  events:
+  - event_date: '2025-12-02'
+    category: politics
+    headline: Republican Matt Van Epps wins the special election for Tennessee's 7th congressional district by a narrower
+      margin than Trump's 2024 showing there
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2025_in_the_United_States
+    - https://www.washingtonexaminer.com/?p=3904810
+    - https://www.yahoo.com/news/articles/republican-matt-van-epps-projected-032100604.html
+    - https://www.newschannel9.com/news/local/republican-candidate-matt-van-epps-wins-tennessees-7th-congressional-district-aftyn-behn-special-election-district-7-nashville-election
+    note: The NewsChannel 9 report cites the AP race call. Polls closed 8 p.m. ET; race called in the evening (NBC about
+      8:25 p.m., AP between 8:40 and 9:45 p.m. depending on source), after the close; next trading day Wed Dec 3.
+    month: 2025-12
+  actual:
+    us_stocks:
+    - 0.298
+    - 0.108
+    - 0.1937
+    - -0.3477
+    - -0.0876
+- id: news-2026-01-02
+  trading_day: '2026-01-02'
+  split: seen
+  chosen:
+  - news
+  events:
+  - event_date: '2026-01-01'
+    category: politics
+    headline: Zohran Mamdani is sworn in as mayor of New York City
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2026_in_the_United_States
+    - https://www.startribune.com/zohran-mamdani-sworn-in-as-new-york-city-mayor-at-historic-subway-station/601555695
+    note: 'Judgment call: counted under "a change of control of government" (clause a has no federal qualifier for elections/change
+      of control, unlike the policy clause). Sworn in just after midnight Jan 1 (AP); Jan 1 is an NYSE holiday, so next
+      trading day Fri Jan 2. If excluded, January would be the Jan 3 Venezuela strike plus a Jan 5 item (Walz not seeking
+      reelection or the Corporation for Public Broadcasting voting to dissolve), all on trading day Jan 5.'
+    month: 2026-01
+  actual:
+    us_stocks:
+    - 0.1895
+    - 0.6354
+    - 0.6197
+    - -0.344
+    - 0.0077
+- id: news-2026-01-05
+  trading_day: '2026-01-05'
+  split: seen
+  chosen:
+  - news
+  events:
+  - event_date: '2026-01-03'
+    category: geopolitics
+    headline: US carries out large-scale strikes on Venezuela and says President Nicolas Maduro and his wife have been
+      captured and flown out of the country
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2026_in_the_United_States
+    - https://www.pbs.org/newshour/world/us-strikes-venezuela-and-says-its-leader-maduro-has-been-captured-and-flown-out-of-the-country
+    note: Saturday; Trump announced it early Saturday on Truth Social (AP). Venezuela is a major oil producer. Next trading
+      day Mon Jan 5.
+    month: 2026-01
+  actual:
+    us_stocks:
+    - 0.6354
+    - 0.6197
+    - -0.344
+    - 0.0077
+    - 0.6476
+- id: greenland-tariffs-2026-01-20
+  trading_day: '2026-01-20'
+  split: outcome
+  chosen:
+  - outcome
+  events:
+  - headline: Trump says goods from Denmark, Norway, Sweden, France, Germany, the UK, the Netherlands and Finland will
+      face a 10% US tariff from Feb. 1, rising to 25% in June, until a deal is reached for the US to buy Greenland.
+    public_before_close: null
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#January
+    - https://www.cnbc.com/2026/01/17/trump-greenland-tariffs-nato.html
+    note: Truth Social post on Saturday Jan 17; CNBC published 11:36 ET Jan 17. Markets were closed Jan 19 (MLK Day),
+      so Jan 20 was the first trading day.
+  actual:
+    us_stocks:
+    - -2.0627
+    - 1.1588
+    - 0.5488
+    - 0.0327
+    - 0.5006
+- id: news-2026-02-03
+  trading_day: '2026-02-03'
+  split: seen
+  chosen:
+  - news
+  events:
+  - event_date: '2026-02-03'
+    category: policy
+    headline: Trump signs a $1.2 trillion spending package ending a brief partial government shutdown, with Homeland
+      Security funded only for two weeks
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/wiki/2026_in_the_United_States
+    - https://www.foxnews.com/politics/government-shutdown-ends-trump-signs-bill-dhs-funding-deadline-looms.amp
+    - https://www.kpbs.org/news/politics/2026/02/03/house-votes-to-end-partial-government-shutdown-setting-up-contentious-talks-on-ice
+    note: 'House passed it 217-214 earlier Tuesday; Trump signed "Tuesday afternoon", "shortly after passage" (Politico,
+      NPR). Fox reported the signing at 4:41 p.m. EST, so the signing was before 4:41 p.m. but its exact time relative
+      to 16:00 is not established; time unknown, so trading day = event date. Skipped before it: Feb 1 Grammy Awards
+      (entertainment).'
+    month: 2026-02
+  actual:
+    us_stocks:
+    - -0.8404
+    - -0.5072
+    - -1.2251
+    - 1.9696
+    - 0.4691
+- id: news-2026-02-10
+  trading_day: '2026-02-10'
+  split: seen
+  chosen:
+  - news
+  events:
+  - event_date: '2026-02-09'
+    category: policy
+    headline: Trump threatens to block the opening of the new Gordie Howe bridge between Detroit and Canada until the
+      US is compensated and Canada treats it fairly on trade
+    public_before_close: false
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/wiki/2026_in_the_United_States
+    - https://www.clickondetroit.com/news/local/2026/02/09/trump-threatens-to-block-opening-of-new-bridge-between-detroit-canada
+    - https://www.fox2detroit.com/news/absolutely-nothing-president-trump-says-he-will-block-opening-gordie-howe-bridge
+    - https://www.nhpr.org/2026-02-10/trump-is-threatening-to-block-a-new-bridge-between-detroit-and-canada-from-opening
+    note: 'NHPR link is the NPR report (Wikipedia also cites BBC, CTV, DW). Judgment call: a presidential threat over
+      a US-Canada trade crossing, tied in the post to trade grievances (dairy tariffs, alcohol, a Canada-China deal),
+      counted as concerning federal trade policy. Posted on Truth Social on Monday Feb 9, described as "late Monday afternoon"
+      (WWJ) or "Monday evening" (CTV); earliest timestamped reports 6:58 PM ET (WDIV) and 7:45 PM EST (Fox 2), so treated
+      as after the close; next trading day Tue Feb 10, which is also Wikipedia''s date. If the post was in fact before
+      16:00 on Feb 9 the trading day would be Feb 9. Judgment calls before it: Feb 5 "New START nuclear treaty with Russia
+      expires" skipped: a treaty expiry is not a war, strike, attack or sanction; Feb 4 CIA ends World Factbook, Feb
+      4 Washington Post layoffs, Feb 6 Obama video, Feb 8 Super Bowl skipped (no category).'
+    month: 2026-02
+  actual:
+    us_stocks:
+    - -0.3304
+    - -0.0049
+    - -1.5661
+    - 0.0499
+    - 0.1031
+- id: scotus-tariffs-2026-02-20
+  trading_day: '2026-02-20'
+  split: outcome
+  chosen:
+  - outcome
+  events:
+  - headline: The Supreme Court rules 6-3 that the emergency-powers law Trump invoked does not authorize tariffs, striking
+      down his sweeping IEEPA tariffs and leaving refunds to a lower court.
+    public_before_close: true
+    time_known: true
+    sources: &id001
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#February
+    - https://www.cnbc.com/2026/02/20/supreme-court-trump-tariff-decision-illegal-refunds.html
+    - https://www.cnbc.com/2026/02/20/trump-global-trade-tariff-supreme-court.html
+    note: CNBC report on the ruling published 10:40 ET Feb 20. The CNBC piece on the 10% global tariff was first published
+      13:41 ET, and the executive order was signed that evening, so headline 2 was at least partly public before the
+      close.
+  - headline: Trump says he will impose a new 10% global tariff under a different trade law after the ruling.
+    public_before_close: true
+    time_known: true
+    sources: *id001
+  actual:
+    us_stocks:
+    - 0.694
+    - -1.0386
+    - 0.7652
+    - 0.8136
+    - -0.5366
+- id: news-2026-03-02
+  trading_day: '2026-03-02'
+  split: seen
+  chosen:
+  - news
+  - outcome
+  events:
+  - event_date: '2026-03-01'
+    category: geopolitics
+    headline: Pro-Iran protesters try to storm the US consulate in Karachi, Pakistan, and US Marine guards open fire,
+      with several protesters reported killed
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/wiki/2026_in_the_United_States
+    - https://www.dawn.com/news/1977805
+    - https://www.arabnews.pk/node/2635069
+    note: 'Judgment call: an assault on a US diplomatic mission abroad during the US-Iran war counted as "attacks ...
+      involving the United States" (not treated as a domestic crime under c). Sunday; next trading day Mon Mar 2. Death
+      toll and who fired the fatal shots were disputed (Reuters: two US officials said Marines fired; the Dawn and Arab
+      News links carry that Reuters report; Wikipedia cites the Washington Post). Skipped before it: Mar 1 Austin bar
+      shooting (crime, c).'
+    month: 2026-03
+  - event_date: '2026-03-02'
+    category: geopolitics
+    headline: US military says three of its F-15E fighter jets were shot down over Kuwait by Kuwaiti air defenses in
+      an apparent friendly-fire incident; all six crew ejected safely
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2026_in_the_United_States
+    - https://kvia.com/news/2026/03/02/three-us-fighter-jets-accidentally-shot-down-by-kuwaiti-air-defenses-military-says/
+    - https://www.yahoo.com/news/articles/us-fighter-jets-crashed-kuwait-112138411.html
+    note: Part of the US-Iran war (war involving the US). The KVIA link is the CNN report. CENTCOM said the jets went
+      down about 11:03 p.m. ET Mar 1; the announcement was public by early Mar 2 (Yahoo copy stamped 11:21 UTC = 6:21
+      AM EST), before the close. If the Karachi item were excluded, the next qualifier would be the same-day "Iran strikes
+      the American embassy in Saudi Arabia" (Mar 2).
+    month: 2026-03
+  outcome_id: iran-war-2026-03-02
+  note: 'also outcome-chosen; the outcome-chosen headlines: The United States and Israel launch large-scale strikes on
+    Iran, and Trump says the bombing will continue as long as necessary. | Iranian state media confirm that Supreme Leader
+    Ali Khamenei was killed in the US-Israeli strikes. | Iran fires missiles and drones at Israel and at US bases in
+    Gulf states, including Kuwait, Qatar, the UAE and Bahrain.'
+  actual:
+    us_stocks:
+    - 0.0398
+    - -0.9444
+    - 0.7756
+    - -0.5647
+    - -1.3277
+- id: news-2026-04-01
+  trading_day: '2026-04-01'
+  split: seen
+  chosen:
+  - news
+  events:
+  - event_date: '2026-03-31'
+    category: geopolitics
+    headline: Trump says US military operations against Iran could end within two to three weeks and that the US will
+      leave whether or not a deal is reached
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2026_in_the_United_States
+    - https://www.presidency.ucsb.edu/documents/pool-reports-march-31-2026
+    - https://www.aljazeera.com/video/newsfeed/2026/3/31/trump-says-us-will-be-leaving-iran-in-two-to-three-weeks
+    - https://www.foxnews.com/politics/trump-iran-conflict-end-timeline-nuclear-goal
+    note: 'Judgment call: a presidential statement on the timeline of an active war involving the US (and Iran, a major
+      oil producer) counted as concerning that war. Wikipedia lists it under Apr 1, but the remarks were made Tuesday
+      Mar 31 in the Oval Office during an executive-order signing: the White House pool entered at 5:32 PM ET and the
+      pool report quoting "within 2-3 weeks" was filed at 5:58 PM, i.e. after the close. First trading day = Wed Apr
+      1.'
+    month: 2026-04
+  actual:
+    us_stocks:
+    - 0.7169
+    - 0.1121
+    - 0.4427
+    - 0.0759
+    - 2.5081
+- id: news-2026-04-02
+  trading_day: '2026-04-02'
+  split: seen
+  chosen:
+  - news
+  events:
+  - event_date: '2026-04-01'
+    category: tech_energy
+    headline: NASA launches Artemis II, sending four astronauts on the first crewed flight around the Moon since 1972
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2026_in_the_United_States
+    - https://www.space.com/space-exploration/artemis/nasa-launches-4-astronauts-to-the-moon-on-historic-artemis-2-voyage-a-lunar-leap-for-the-21st-century
+    - https://www.nasa.gov/?p=980286
+    note: Liftoff 6:35 p.m. EDT Apr 1 (NASA), after the close; next trading day Thu Apr 2 (Apr 3 is Good Friday, NYSE
+      closed).
+    month: 2026-04
+  actual:
+    us_stocks:
+    - 0.1121
+    - 0.4427
+    - 0.0759
+    - 2.5081
+    - 0.617
+- id: ceasefire-2026-04-08
+  trading_day: '2026-04-08'
+  split: outcome
+  chosen:
+  - outcome
+  events:
+  - headline: Trump announces a two-week, Pakistan-mediated ceasefire with Iran, suspending US bombing on condition that
+      Iran fully and immediately reopens the Strait of Hormuz, with talks to follow in Islamabad.
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#April
+    - https://www.cnbc.com/2026/04/07/trump-iran-ceasefire-hormuz-strait.html
+    - https://www.aljazeera.com/news/2026/4/7/trump-suspends-iran-bombing-for-two-weeks-following-dire-threats
+    note: Truth Social post at about 18:32 ET Tuesday Apr 7 (Al Jazeera), ahead of a 20:00 ET deadline. CNBC published
+      18:38 ET. The first tradable day is Apr 8.
+  actual:
+    us_stocks:
+    - 2.5081
+    - 0.617
+    - -0.1139
+    - 1.0173
+    - 1.1783
+- id: news-2026-05-01
+  trading_day: '2026-05-01'
+  split: seen
+  chosen:
+  - news
+  events:
+  - event_date: '2026-05-01'
+    category: geopolitics
+    headline: Trump tells Congress that hostilities with Iran have "terminated" under the ceasefire as the War Powers
+      Resolution's 60-day deadline arrives
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2026_in_the_United_States
+    - https://www.ksl.com/article/51491844/white-house-says-iran-war-terminated-as-war-powers-deadline-arrives
+    - https://katv.com/news/nation-world/president-donald-trump-administration-claims-iran-conflict-ended-as-60-day-war-powers-deadline-hits-fragile-ceasefire-democrat-republican-military-actions-us-naval-blockade-defense-secretary-hegseth
+    note: Reuters (Zengerle/Holland) on KSL posted 1:25 p.m. Mountain time (3:25 PM EDT) Fri May 1, headlined "White
+      House says Iran war terminated", updated 4:56 p.m. MT. The exact time the letter itself was delivered is not given,
+      but the White House position was public before the close.
+    month: 2026-05
+  actual:
+    us_stocks:
+    - 0.2928
+    - -0.4062
+    - 0.812
+    - 1.4588
+    - -0.3803
+- id: news-2026-05-04
+  trading_day: '2026-05-04'
+  split: seen
+  chosen:
+  - news
+  events:
+  - event_date: '2026-05-03'
+    category: geopolitics
+    headline: Trump announces "Project Freedom," a US military operation to escort neutral commercial ships out of the
+      Strait of Hormuz
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/wiki/2026_in_the_United_States
+    - https://www.cnbc.com/2026/05/03/trump-iran-strait-of-hormuz-trapped-ships.html
+    - https://gcaptain.com/u-s-launches-project-freedom-to-escort-ships-out-of-hormuz-as-risks-of-clash-with-iran-loom/
+    - https://www.washingtonexaminer.com/?p=4553042
+    note: 'Announced in a Truth Social post on Sunday afternoon (Washington Examiner; CNBC report dated May 3); exact
+      time not established, irrelevant because Sunday; next trading day Mon May 4. Skipped before it: May 1 May Day protests
+      (not a category), May 1 Zayn Malik tour cancellation (entertainment), May 2 Kentucky Derby (sports), May 2 "Spirit
+      Airlines announces it is ceasing operations" (an airline is not a financial institution, and not a technology/energy
+      development).'
+    month: 2026-05
+  actual:
+    us_stocks:
+    - -0.4062
+    - 0.812
+    - 1.4588
+    - -0.3803
+    - 0.8426
+- id: news-2026-06-01
+  trading_day: '2026-06-01'
+  split: seen
+  chosen:
+  - news
+  events:
+  - event_date: '2026-06-01'
+    category: policy
+    headline: Trump administration plans to drop its $1.8 billion "anti-weaponization" fund created by settling Trump's
+      lawsuit against the IRS, after Republican objections and a court block
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2026_in_the_United_States
+    - https://www.rawstory.com/trump-slush-fund-2676981922/
+    - https://gvwire.com/2026/06/01/trump-plans-to-drop-weaponization-fund-says-axios/
+    note: 'Federal spending/tax matter (fiscal, tax). First reported by Axios on Monday Jun 1 (the gvwire link is the
+      Reuters story, Shakil/Chiacu, citing Axios); Raw Story citing Axios stamped 3:29 PM ET, so public before the close.
+      Formally confirmed by Acting AG Blanche on Jun 2. Skipped before it: Jun 1 Florida attorney general sues OpenAI
+      (a state lawsuit, not a ruling, federal policy or technology development).'
+    month: 2026-06
+  actual:
+    us_stocks:
+    - 0.2625
+    - 0.1292
+    - -0.7372
+    - 0.4055
+    - -2.6445
+- id: news-2026-06-03
+  trading_day: '2026-06-03'
+  split: seen
+  chosen:
+  - news
+  events:
+  - event_date: '2026-06-02'
+    category: politics
+    headline: Supreme Court, over three dissents, lets Alabama use its Republican-favored 2023 congressional map for
+      this year's elections
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/wiki/2026_in_the_United_States
+    - https://rollcall.com/2026/06/02/supreme-court-allows-alabama-to-use-new-congressional-map/
+    - https://m.washingtontimes.com/news/2026/jun/2/supreme-court-oks-alabama-congressional-map-favoring-republicans/
+    note: 'Unsigned emergency order issued Tuesday evening (Roll Call, Truthout), after the close; next trading day Wed
+      Jun 3. Judgment calls before it: Jun 1 "Data center construction spending tops public transportation construction
+      spending for the first time" skipped: an economic statistic (from the monthly construction-spending release), not
+      a technology development; Jun 1 Axios report that Trump berated Netanyahu over Israel''s Lebanon escalation skipped:
+      a diplomatic exchange about an ally''s operations, not a US strike/attack/sanction or an official statement on
+      the conduct of the US war. Also skipped: Jun 1 Scott Pelley firing, Jun 1 appeals-court ruling on the transgender
+      military ban (not economic/regulatory policy in the listed sense).'
+    month: 2026-06
+  actual:
+    us_stocks:
+    - -0.7372
+    - 0.4055
+    - -2.6445
+    - 0.2978
+    - -0.2576
+- id: news-2026-07-01
+  trading_day: '2026-07-01'
+  split: holdout
+  chosen:
+  - news
+  events:
+  - event_date: '2026-07-01'
+    category: policy
+    headline: US trade officials say the United States will not renew the US-Mexico-Canada trade agreement in its current
+      form, triggering annual reviews instead of a 16-year extension.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#July
+    - https://www.nbcnews.com/business/economy/trump-usmca-renewal-tariffs-trade-rcna352594
+    - https://ustr.gov/about/policy-offices/press-office/press-releases/2026/july/ambassador-greer-issues-statement-usmca-joint-review
+    note: Wednesday; NBC report published 14:59 ET the same day
+    month: 2026-07
+  actual:
+    us_stocks:
+    - -0.2151
+    - 0.0001
+    - 0.7242
+    - -0.4455
+    - -0.2817
+- id: iran-strikes-2026-07-07
+  trading_day: '2026-07-07'
+  split: outcome
+  chosen:
+  - outcome
+  events:
+  - headline: Three commercial tankers are attacked in the Strait of Hormuz, and the US Treasury revokes the license
+      that allowed sales of Iranian oil under the June interim deal.
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://www.ttnews.com/articles/treasury-revokes-iran-oil-waiver
+    - https://www.cnbc.com/2026/07/07/us-strikes-iran-hormuz-ships.html
+    - https://www.aljazeera.com/news/2026/7/7/us-says-strikes-launched-as-explosions-heard-in-southern-iran
+    - https://www.hawaiipublicradio.org/national-international/2026-07-07/trump-says-ceasefire-with-iran-is-over-as-nato-summit-wraps
+    note: 'Mixed. Headline 1 was public on Jul 7 before or around the close: the ship attacks happened Mon-Tue, and the
+      Bloomberg piece on the waiver revocation was published 16:00 ET. Headline 2 was announced after the close (CNBC
+      17:22 ET Jul 7). Headline 3 came on the morning of Jul 8 ET (NPR 05:12 ET). Only headline 1 is clearly "known at
+      the time" for a Jul 7 trading day. The label "US strikes; Trump says truce is over" describes news first tradable
+      on Jul 8.'
+  actual:
+    us_stocks:
+    - -0.4455
+    - -0.2817
+    - 0.8143
+    - 0.4209
+    - -0.7927
+  note: 'Only the first headline was public before the 7 July close (the collector''s timing: the strikes were reported
+    at 17:22 New York time and ''the ceasefire is over'' the next morning, so they belong to 8 July). Dropped: US Central
+    Command says it struck about 80 Iranian targets, including more than 60 Revolutionary Guard boats, in response to
+    the ship attacks, calling them a violation of the ceasefire. | Trump says the ceasefire with Iran is over.'
+- id: news-2026-07-08
+  trading_day: '2026-07-08'
+  split: holdout
+  chosen:
+  - news
+  events:
+  - event_date: '2026-07-08'
+    category: geopolitics
+    headline: Trump says the interim ceasefire with Iran is over after Iranian attacks on ships in the Strait of Hormuz
+      and a night of US strikes, while leaving room for further talks.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#July
+    - https://www.hawaiipublicradio.org/national-international/2026-07-07/trump-says-ceasefire-with-iran-is-over-as-nato-summit-wraps
+    - https://www.opb.org/article/2026/07/08/trump-says-ceasefire-with-iran-is-over-as-nato-summit-wraps/
+    note: Wikipedia cites a WSJ piece dated 2026-08-17 for this entry. Contemporaneous reports confirm the Jul 8 date
+      of the remark. The underlying US strikes (about 80 targets) were announced after the Jul 7 close. This is the same
+      story as Part 2 iran-strikes-2026-07-07, but Part 1 timing gives Jul 8. Wednesday; Trump spoke in Ankara (NATO
+      summit) in the Turkish morning. NPR story first posted 23:12 HST Jul 7 = 05:12 ET Jul 8
+    month: 2026-07
+  actual:
+    us_stocks:
+    - -0.2817
+    - 0.8143
+    - 0.4209
+    - -0.7927
+    - 0.3759
+- id: news-2026-08-03
+  trading_day: '2026-08-03'
+  split: holdout
+  chosen:
+  - news
+  events:
+  - event_date: '2026-08-01'
+    category: geopolitics
+    headline: Cyberattacks on US water systems have spread to at least seven states, with evidence pointing to Iranian-linked
+      hackers, according to a New York Times report.
+    time_known: false
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://www.nytimes.com/2026/08/01/us/politics/iran-cyberattack-water-systems.html
+    - https://www.staradvertiser.com/2026/08/01/breaking-news/scope-of-hacks-on-u-s-water-supply-widens-as-evidence-points-to-iran/
+    note: Event date is a Saturday, so the next trading day is used whatever the time. The NYT story is dated Aug 1,
+      with a syndicated copy on staradvertiser.com dated 2026/08/01 Counted as an attack involving the US by a major
+      oil producer (clause a), not as a crime (clause c), because it is a suspected state attack during the war. If it
+      is treated as a crime, August pick 1 becomes the Aug 3 Supreme Court refusal to halt a $655M judgment against the
+      Palestinian Authority, which may or may not count as "a ruling".
+    month: 2026-08
+  - event_date: '2026-08-02'
+    category: geopolitics
+    headline: Trump says he has called off a planned large-scale US attack on Iran, with Israel joining, after being
+      told the outline of a deal to reopen the Strait of Hormuz and end Iran's nuclear program had been agreed.
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#August
+    - https://www.timesofisrael.com/trump-says-he-and-israel-have-called-off-iran-attack-after-being-assured-deal-is-imminent/
+    note: Both August picks fall on the same trading day (2026-08-03). The rule does not forbid this, so both are kept.
+      Weekend. Trump posted on Truth Social late Saturday Aug 1 (US time) and Wikipedia lists it Aug 2. Either day maps
+      to Monday Aug 3
+    month: 2026-08
+  actual:
+    us_stocks:
+    - 1.4791
+    - 1.7896
+    - -0.1676
+    - -0.176
+    - 0.6184
+- id: news-2026-09-01
+  trading_day: '2026-09-01'
+  split: holdout
+  chosen:
+  - news
+  - outcome
+  events:
+  - event_date: '2026-09-01'
+    category: geopolitics
+    headline: US forces begin striking Revolutionary Guard targets in Iran, citing attempted attacks on commercial shipping
+      in the Strait of Hormuz and on US troops.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.timesofisrael.com/liveblog_entry/us-military-confirms-fresh-strikes-in-iran-after-attacks-on-shipping-us-forces/
+    - https://en.royanews.tv/news/73238
+    note: 'The tanker part (US drones hitting two Iranian government tankers) was first reported by Axios in a story
+      dated Sep 2. It may not have been public before the Sep 1 close, so the headline leaves it out. Overlaps Part 2
+      iran-strikes-2026-09-01. Tuesday. CENTCOM: "Today at 12 p.m. ET, U.S. forces began striking IRGC targets in Iran."
+      Reported by about 12:45 ET (Roya 19:43 and Times of Israel 19:48, both UTC+3)'
+    month: 2026-09
+  outcome_id: iran-strikes-2026-09-01
+  note: 'also outcome-chosen; the outcome-chosen headlines: US forces begin striking Revolutionary Guard targets in Iran,
+    citing attempted attacks on commercial shipping in the Strait of Hormuz and on US troops. | US drones strike two
+    Iranian government oil tankers under a new "tanker-for-tanker" policy approved by Trump, US officials say.'
+  actual:
+    us_stocks:
+    - -0.7113
+    - 0.4603
+    - 1.058
+    - -0.3757
+    - -0.584
+- id: news-2026-09-03
+  trading_day: '2026-09-03'
+  split: holdout
+  chosen:
+  - news
+  events:
+  - event_date: '2026-09-02'
+    category: geopolitics
+    headline: Defense Secretary Hegseth is extending deployments of about 50,000 US troops in the Middle East into 2027
+      as the Iran war continues, the Wall Street Journal reports.
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.wsj.com/politics/national-security/hegseth-extends-mideast-deployments-into-2027-escalating-strain-on-troops-c10fc533
+    - https://www.newsquawk.com/headlines/-us-secretary-of-war-hegseth-will-extend-troop-deployments-in-the-middle-east-through-2027-increasing-strain-on-us-forces-according-to-wsj
+    - https://www.commondreams.org/news/hegseth-troop-deployments-2027
+    note: WSJ report published "late Wednesday" Sep 2 (Common Dreams). The Newsquawk feed carried the WSJ headline at
+      01:10 UTC Sep 3 = 21:10 ET Sep 2, so the first tradable day is Thursday Sep 3 A troop deployment is counted as
+      a military action in a war involving the US (clause a). If deployments are excluded, September pick 2 becomes Sep
+      3 "Nvidia agrees to buy Hugging Face for $12.9 billion" (tech development; timing not checked).
+    month: 2026-09
+  actual:
+    us_stocks:
+    - 1.058
+    - -0.3757
+    - -0.584
+    - -0.4843
+    - -0.5848
+- id: hormuz-2026-09-28
+  trading_day: '2026-09-28'
+  split: outcome
+  chosen:
+  - outcome
+  events:
+  - headline: Trump says he has rejected Iran's offer to reopen the Strait of Hormuz within seven days in return for
+      lifting the US naval blockade, waiving oil sanctions and a ceasefire that includes Lebanon.
+    public_before_close: null
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#September
+    - https://www.wafb.com/2026/09/26/trump-rejects-irans-proposal-reopen-strait-hormuz/
+    note: 'Trump told reporters on Saturday Sep 26 (AP via WAFB, 10:09 CDT). Monday Sep 28 was the first trading day.
+      Not used: a Sep 28 entry on Rubio ordering Iran''s UNGA delegation out (cited to Axios Oct 1; timing unknown).'
+  actual:
+    us_stocks:
+    - -0.7712
+    - -0.1672
+    - -0.2516
+    - 0.1949
+    - 0.734
+- id: news-2026-10-01
+  trading_day: '2026-10-01'
+  split: holdout
+  chosen:
+  - news
+  events:
+  - event_date: '2026-10-01'
+    category: geopolitics
+    headline: The Treasury imposes sanctions on Iran's automotive, rail, manufacturing and steel sectors, including its
+      two largest carmakers and foreign suppliers, under its "Operation Economic Outcast" campaign.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://home.treasury.gov/news/press-releases/sb0643
+    - https://content.govdelivery.com/accounts/USTREAS/bulletins/42d6fab
+    note: Thursday; Treasury email bulletin sent 13:04 ET
+    month: 2026-10
+  - event_date: '2026-10-01'
+    category: geopolitics
+    headline: The US military is sending roughly 9,000 more sailors and Marines to the Middle East aboard the Theodore
+      Roosevelt carrier group and Makin Island amphibious group, a US official says, as Trump weighs new strikes on Iran.
+    public_before_close: true
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#October
+    - https://www.irishexaminer.com/world/arid-41918584.html
+    note: AP story (Toropin, Price) appeared on the Irish Examiner site at 20:51 Irish time = 15:51 ET. That is only
+      9 minutes before the close, and the original AP posting time was not found Deployment counted under clause a, as
+      in September. If deployments are excluded, October pick 2 becomes Oct 2 "US sanctions Hamas financing network"
+      (sanctions involving the US; timing not checked). The before-close finding is marginal. If the AP story first moved
+      after 16:00, the trading day would be Oct 2.
+    month: 2026-10
+  actual:
+    us_stocks:
+    - 0.1949
+    - 0.734
+    - 0.6634
+    - 0.5786
+    - -0.2195
+- id: ai-selloff-2026-10-30
+  trading_day: '2026-10-30'
+  split: outcome
+  chosen:
+  - outcome
+  events:
+  - headline: Amazon says it will spend meaningfully more on capital investment in 2027 after third-quarter capital spending
+      of $77.3 billion, more than double a year earlier, and keeps its 2026 forecast at about $220 billion.
+    public_before_close: false
+    time_known: true
+    sources: &id002
+    - https://www.cnbc.com/2026/10/29/amazon-amzn-q3-earnings-report-2026.html
+    - https://www.aboutamazon.com/news/company-news/amazon-earnings-q3-2026-report
+    - https://www.intc.com/news-events/press-releases/detail/1786/intel-reports-third-quarter-2026-financial-results
+    note: 'Both were released after the Oct 29 close: Intel at 16:01 ET, and Amazon after the close (CNBC: "extended
+      trading Thursday"). The first tradable day is Fri Oct 30. Not used: Alphabet and Microsoft both reported after
+      the close on Wed Oct 28 (Microsoft: Q1 capex $45.2B, Q2 capex guided above $50B), so that news was tradable Oct
+      29. An Anthropic pre-IPO filing "this week" has no established date.'
+  - headline: Intel forecasts fourth-quarter revenue of $15 billion to $16 billion, below its third-quarter $16.5 billion,
+      and expects client-computing revenue to fall more than 20%.
+    public_before_close: false
+    time_known: true
+    sources: *id002
+  actual:
+    us_stocks:
+    - -1.8175
+    - -0.5102
+    - 0.3649
+    - 1.5815
+    - -4.3557
+- id: news-2026-11-03
+  trading_day: '2026-11-03'
+  split: holdout
+  chosen:
+  - news
+  events:
+  - event_date: '2026-11-02'
+    category: geopolitics
+    headline: US forces carry out limited "defensive" strikes on Iranian positions on Qeshm Island in the Strait of Hormuz,
+      US officials say.
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#November
+    - https://www.nbcnews.com/world/iran/us-conducted-defensive-strikes-iranian-targets-strait-hormuz-us-offici-rcna607161
+    note: Monday. NBC first published 21:06 ET Nov 2, and Fars reported explosions in the early hours of Nov 3 Iran time
+      (evening of Nov 2 ET). The first tradable day is Tuesday Nov 3, election day, when NYSE was open
+    month: 2026-11
+  actual:
+    us_stocks:
+    - 0.3649
+    - 1.5815
+    - -4.3557
+- id: news-2026-11-04
+  trading_day: '2026-11-04'
+  split: holdout
+  chosen:
+  - news
+  - outcome
+  events:
+  - event_date: '2026-11-03'
+    category: politics
+    headline: Democrats win majorities in both the House and the Senate in the midterm elections, flipping at least seven
+      Senate seats.
+    public_before_close: false
+    time_known: true
+    sources:
+    - https://en.wikipedia.org/w/index.php?title=2026_in_the_United_States&oldid=1384428393#November
+    - https://aljazeera.com/news/2026/11/4/democratic-party-flips-us-senate-in-2026-midterm-elections
+    note: 'Overlaps Part 2 midterms-2026-11-04. Results came after polls closed. Networks projected a Democratic House
+      flip just before 22:00 ET Nov 3 (MS NOW, then CNN, NBC, CBS; States Newsroom). AP called the Senate for Democrats
+      "late on Tuesday" (Al Jazeera). The time of AP''s own House call was not found. First tradable day: Wednesday Nov
+      4'
+    month: 2026-11
+  outcome_id: midterms-2026-11-04
+  note: 'also outcome-chosen; the outcome-chosen headlines: Democrats win majorities in both the House and the Senate
+    in the midterm elections, flipping at least seven Senate seats.'
+  actual:
+    us_stocks:
+    - 1.5815
+    - -4.3557
+- id: data-centers-2026-11-05
+  trading_day: '2026-11-05'
+  split: outcome
+  chosen:
+  - outcome
+  events:
+  - headline: Sen. Bernie Sanders calls for a national moratorium on data centers after the midterms, and progressive
+      House Democrats urge a pause on advanced AI development as the new majority's first priority.
+    public_before_close: true
+    time_known: true
+    sources: &id003
+    - https://www.cnbc.com/2026/11/05/democrats-data-center-restrictions-midterms.html
+    - https://www.cnbc.com/2026/11/04/data-center-ballot-measures-2026-midterm.html
+    note: 'CNBC "Top Democrats call to rein in AI buildout..." published 15:16 ET Thu Nov 5. The ballot tally (CNBC,
+      first published 13:56 ET Nov 4, updated 13:08 ET Nov 5) was public before the close. However, Sanders'' X post
+      appears to date from Wednesday Nov 4 (Benzinga), so this news was likely first tradable on Nov 4. The "about 39
+      measures passed" figure was not confirmed. Contemporaneous counts varied: CNBC/TNW 40 of 41 against; Ballotpedia
+      via Novara 38 of 41 with 3 pending; Washington Post at least 29 jurisdictions; Axios Nov 4 early returns about
+      two dozen.'
+  - headline: Voters in 40 of 41 local ballot measures across 10 states side against data center development, according
+      to a Ballotpedia and CNBC tally.
+    public_before_close: true
+    time_known: true
+    sources: *id003
+  actual:
+    us_stocks:
+    - -4.3557
