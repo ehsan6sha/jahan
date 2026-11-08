@@ -96,8 +96,11 @@ def parse_prompt(
     feed: bool = False,
     answers: dict[str, str] | None = None,
     first_future_offset: int | None = None,
+    purpose_tag: str = "",
 ) -> ParseResult:
-    """Free text to a Scenario.  ``first_future_offset``: days from now to the first day without real news."""
+    """Free text to a Scenario.  ``first_future_offset``: days from now to the first day without real news.
+    ``purpose_tag`` makes a second, independent recorded answer to the same prompt (the benchmark's retest)."""
+    tag = f":{purpose_tag}" if purpose_tag else ""
     # The model sees (and must satisfy) the world-event schema only; actor events cannot come from a prompt.
     schema = json.dumps(PromptScenario.model_json_schema(), separators=(",", ":"))
     facts = world_facts(world)
@@ -114,7 +117,7 @@ def parse_prompt(
     messages = [{"role": "user", "content": user}]
     role = "feed_parser" if feed else "scenario_parser"
     system = FEED_SYSTEM if feed else SYSTEM
-    raw = client.complete(role, system, messages, max_tokens=2000, purpose="parse_prompt", sim_day=world.day)
+    raw = client.complete(role, system, messages, max_tokens=2000, purpose="parse_prompt" + tag, sim_day=world.day)
     for attempt in range(2):
         try:
             data = extract_json(raw)
@@ -136,6 +139,6 @@ def parse_prompt(
                 {"role": "user", "content": f"That was invalid: {e}. Reply with corrected JSON only."},
             ]
             raw = client.complete(
-                role, system, messages, max_tokens=2000, purpose="parse_prompt_retry", sim_day=world.day
+                role, system, messages, max_tokens=2000, purpose="parse_prompt_retry" + tag, sim_day=world.day
             )
     return ParseResult(None, [], raw, error="unreachable")

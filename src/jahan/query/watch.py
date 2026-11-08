@@ -36,8 +36,10 @@ from jahan.store.rundir import RunDir
 
 DISCLAIMER = (
     "Simulated, not a forecast: educational and testing use only; not financial advice; no warranty. "
-    "Stocks move by published estimates on US announcements, scripted what-ifs, and the simulated holders' "
-    "trading; event odds are the average belief of simulated traders."
+    "Stocks move by published estimates on US announcements, scripted what-ifs, the simulated holders' "
+    "trading and, in worlds with everyday activity version 2, other investors' reactions to rated news and "
+    "ordinary-day movement sized from real days (chance, not a prediction); event odds are the average belief "
+    "of simulated traders."
 )
 WATCH_FILE = "watch.json"
 ALIASES = {"market:stocks:USA": "market:us_stocks"}
@@ -420,12 +422,23 @@ def quiet_explanation(
         say.append(f"Stories still reached people about {int(heard):,} times, but none moved what you watch.")
     ids = [str(s["id"]) for s in series]
     everyday = "economy" in world.macro
+    quiet = _quiet_on(world) and bool(world.config.params.market_quiet)
     stocks = any(i in ("market:us_stocks", "market:us_tech_stocks") or i.startswith("market:stocks:") for i in ids)
-    if stocks and everyday:
+    if stocks and everyday and quiet:
+        say.append(
+            "US stocks, gold and the euro move on every weekday (ordinary days); other countries' markets move "
+            "only when news reaches their investors, and the days you looked at had none."
+        )
+    elif stocks and everyday:
         say.append(
             "Markets react when news reaches their investors; with no news nobody's view changes, so only "
             "cash-outs that differ from normal (US) move stocks, and those are rare on any one day."
         )
+        if int(world.macro["economy"].get("version", 1)) < 2:
+            say.append(
+                "This world uses everyday activity version 1: `jahan economy on` upgrades it (ordinary days move "
+                "like real ones, and other investors react to market news at once)."
+            )
     elif stocks:
         if "market" not in world.macro:
             say.append(
@@ -435,7 +448,7 @@ def quiet_explanation(
         else:
             say.append("People here buy and sell stocks only when news reaches them; with no news, nobody trades.")
         say.append("This world was made before everyday activity: turn it on with `jahan economy on`.")
-    if any(i in ("market:gold", "market:dollar") or i.startswith("market:fx:") for i in ids):
+    if any(i in ("market:gold", "market:dollar") or i.startswith("market:fx:") for i in ids) and not quiet:
         say.append("Gold and currencies move only when a what-if or an announcement moves them.")
     if any(i.startswith("mood:") for i in ids):
         say.append(
@@ -604,8 +617,19 @@ def market_levels(world: World) -> dict[str, Any]:
     economy = m.get("economy")
     out["everyday"] = None
     if economy is not None:
+        oth = economy.get("others")
         out["everyday"] = {
             "since_day": int(economy["since_day"]),
+            "version": int(economy.get("version", 1)),
+            "others": None
+            if oth is None
+            else {
+                "s": float(oth["cfg"]["s"]),
+                "fitted": bool(oth["cfg"].get("fitted")),
+                "ordinary_days": bool(oth["cfg"].get("quiet")) and bool(world.config.params.market_quiet),
+                "news_index": float(oth["news_index"]),
+                "quiet_index": float(oth["quiet_index"]),
+            },
             "markets": {
                 iso: {
                     "label": mk["cfg"]["label"],

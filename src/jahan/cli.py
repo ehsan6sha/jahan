@@ -1086,7 +1086,19 @@ def bench(
 def benchmark(
     only: Annotated[str | None, typer.Option(help="Checks to run, e.g. B1,B3 (default: all)")] = None,
     tune: Annotated[
-        bool, typer.Option(help="Choose kappa under rule v3 (B1 with its B2 and stability bounds)")
+        bool,
+        typer.Option(
+            help="With B1: choose kappa under rule v3 (B1 with its B2 and stability bounds); with B9: choose s "
+            "under rule v4"
+        ),
+    ] = False,
+    rate: Annotated[
+        bool,
+        typer.Option(
+            "--rate",
+            help="B9: let Claude rate days not yet recorded (about $0.03 a day; needs ANTHROPIC_API_KEY); "
+            "otherwise recorded ratings only",
+        ),
     ] = False,
     config: Annotated[Path | None, typer.Option(help="RunConfig YAML (default configs/m1.yaml)")] = None,
     agents_n: Annotated[int | None, typer.Option("--agents", help="Override the number of agents (tests only)")] = None,
@@ -1112,7 +1124,7 @@ def benchmark(
     reg = bm.registration_record()
     if reg["changed_since"] and not allow_unregistered:
         raise typer.BadParameter("data/backtests/benchmarks.yaml changed since it was registered (commit it first)")
-    want = {c.strip().upper() for c in only.split(",")} if only else {"B1", "B2", "B3", "B4", "B5", "B6"}
+    want = {c.strip().upper() for c in only.split(",")} if only else {"B1", "B2", "B3", "B4", "B5", "B6", "B10"}
     cfg_path = config or paths.data_dir().parent / "configs" / "m1.yaml"
     base = RunConfig.load(cfg_path) if cfg_path.exists() else RunConfig(countries=["USA", "DEU"], n_agents=10000)
     if agents_n is not None:
@@ -1126,7 +1138,7 @@ def benchmark(
     kappa = float(cfg_now["markets"]["USA"]["kappa"]) if cfg_now else 0.0
     checks: dict = {}
     record = None
-    if "B1" in want or tune:
+    if "B1" in want:
         if tune:
             fit = bm.fit_kappa(file, base, actuals, tuple(range(seeds)), say)
             record, kappa = fit.record, float(fit.record["kappa"])
@@ -1210,6 +1222,52 @@ def benchmark(
             "passed": None,
             **r6,
         }
+    news_record = None
+    if "B9" in want:
+        from jahan.llm.provider import make_client
+        from jahan.llm.recordings import MissingRecording
+        from jahan.scenario import benchmark_news as bn
+
+        try:
+            client = make_client(bn.bench_root(), "anthropic" if rate else "scripted", replay_only=not rate)
+        except RuntimeError as e:
+            raise typer.BadParameter(f"B9 needs Claude for ratings not yet recorded: {e}") from e
+        try:
+            r9 = bn.run_b9(base, client, kappa, tuple(range(seeds)), tune, actuals, say)
+        except MissingRecording as e:
+            raise typer.BadParameter(f"{e}; run with --rate to let Claude rate the missing days") from e
+        news_record = r9["record"]
+        fit9 = r9["scores"]["fit"]
+        checks["B9"] = {
+            "summary": "s {:g}: fit days {} miss {:.4f} vs {:.4f} without other investors (no change {:.4f}); "
+            "{}".format(
+                r9["s"],
+                fit9.get("days", 0),
+                fit9.get("day0", float("nan")),
+                fit9.get("day0_s0", float("nan")),
+                fit9.get("day0_no_change", float("nan")),
+                r9["holdout_status"],
+            ),
+            "passed": r9["passed"],
+            **r9,
+        }
+        if not as_json:
+            typer.echo(client.budget.summary(), err=True)
+    if "B10" in want:
+        from jahan.scenario import benchmark_news as bn10
+
+        q = bn10.quiet_check(progress=say)
+        sims = q.get("sim", {})
+        checks["B10"] = {
+            "summary": "ordinary days, simulated vs real mean daily move: "
+            + ", ".join(
+                f"{k} {v['mean_abs_daily_pct']:.2f}% vs {q['real'][k]['mean_abs_daily_pct']:.2f}%"
+                for k, v in sims.items()
+            )
+            if sims
+            else q.get("summary", ""),
+            **q,
+        }
     import datetime as _dt2
 
     report = {
@@ -1234,6 +1292,11 @@ def benchmark(
 
         typer.echo("Paste under trading.kappa.fitted_v3 in data/global/investors.yaml:")
         typer.echo(_yaml.safe_dump({"fitted_v3": record}, sort_keys=False))
+    if news_record is not None:
+        import yaml as _yaml2
+
+        typer.echo("Paste under other_investors in data/global/investors.yaml (s and fitted_v4):")
+        typer.echo(_yaml2.safe_dump({"s": news_record["s"], "fitted_v4": news_record}, sort_keys=False))
 
 
 economy_app = typer.Typer(

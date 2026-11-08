@@ -317,7 +317,7 @@ other_investors:
     correlated with the S&P 500's as in the data (one Student-t scale shared, so tails come together); the tech
     line by the derived beta. Only the coefficients are stored. Off in every benchmark and backtest. Checked by
     B10 (reported).
-  s: null  # pending: the rule_v4 fit
+  s: 1.43  # fitted 2026-11-08 under rule_v4 (fitted_v4 below)
   it_weight:  # information technology's weight in the S&P 500 (moves the S&P 500 on tech stories)
     value: 0.379
     as_of: '2026-08-31'
@@ -392,6 +392,125 @@ other_investors:
         p95_abs_daily_pct: 0.9065
         median_abs_21_day_pct: 1.3765
 
+  fitted_v4:
+    date: '2026-11-08'
+    command: jahan benchmark --only B9 --tune --rate
+    rule: data/global/investors.yaml other_investors.rule_v4 (registered 2026-11-08, before any B9 data)
+    config: 10000 people, USA and DEU, everyday activity version 2, saving and ordinary days off, kappa 0.048 fixed,
+      seeds [0, 1, 2]
+    parser:
+      model: claude-sonnet-5-5
+      prompt_hash: 2efb3e1a29bea946
+    fit_days: 64
+    grid: 0 to 20, step 0.01
+    s_optimum: 1.43
+    boundary_solution: false
+    s_ci95:
+    - 0.0
+    - 4.776999999999961
+    substituted_for_b2: false
+    s: 1.43
+    constraints:
+      b2:
+        iran_example_ratings:
+        - headline: Iran-US confrontation escalates
+          market_valence: -0.4
+          sectors: broad
+        real:
+          from: '2026-02-27'
+          to: '2026-03-27'
+          largest_daily_fall_pct: -1.7406
+          largest_20_day_fall_pct: -7.4513
+        runs:
+          '1.43':
+            s: 1.43
+            sim:
+              largest_daily_fall_pct: -1.0472229935514998
+              largest_20_day_fall_pct: -1.06022297497822
+              end_index: 99.4831579043887
+            passed: true
+      stability: a scripted -3% day has no rated story, so other investors cannot react (unchanged from trading.kappa.fitted_v3)
+      b1: announcement headlines get no other-investor reaction, so B1 cannot change with s
+    loss_at:
+      '0': 0.8341
+      '0.5': 0.8174
+      '1': 0.8026
+      '2': 0.8001
+      '3': 0.8114
+      '5': 0.8849
+      '10': 1.3416
+      '20': 2.3905
+    fit_scores:
+      days: 64
+      day0: 0.7955
+      day0_s0: 0.8341
+      day0_no_change: 0.8384
+      big_days: 3
+      big_direction_right: 3
+      big_within_factor_2: 0
+      big_days_detail:
+      - day: '2024-09-03'
+        real: -2.12
+        sim: -0.0
+      - day: '2024-11-06'
+        real: 2.53
+        sim: 0.71
+      - day: '2025-04-03'
+        real: -4.84
+        sim: -1.63
+      tech_day0: 1.0804
+      tech_day0_no_change: 1.1201
+      next_4_days_after_1pct_days:
+        days: 18
+        mean_signed_move_pct: 0.041
+    seen_scores:
+      days: 11
+      day0: 0.5145
+      day0_s0: 0.4764
+      day0_no_change: 0.4509
+      big_days: 0
+      tech_day0: 0.7963
+      tech_day0_no_change: 0.6434
+    outcome_scores:
+      days: 7
+      day0: 1.5045
+      day0_s0: 1.7431
+      day0_no_change: 1.965
+      big_days: 3
+      big_direction_right: 3
+      big_within_factor_2: 1
+      big_days_detail:
+      - day: '2026-01-20'
+        real: -2.06
+        sim: -1.12
+      - day: '2026-04-08'
+        real: 2.51
+        sim: 1.08
+      - day: '2026-11-05'
+        real: -4.36
+        sim: -0.19
+      tech_day0: 1.9099
+      tech_day0_no_change: 2.8808
+      next_4_days_after_1pct_days:
+        days: 4
+        mean_signed_move_pct: 0.844
+    holdout_scores:
+      days: 8
+      day0: 1.0499
+      day0_s0: 0.7537
+      day0_no_change: 0.7998
+      big_days: 0
+      tech_day0: 1.3238
+      tech_day0_no_change: 1.0793
+      next_4_days_after_1pct_days:
+        days: 3
+        mean_signed_move_pct: -1.44
+    ratings_retest:
+      days_rated_both_times: 90
+      rated_only_once: 0
+      market_valence_correlation: 0.994
+      mean_abs_difference: 0.01
+      same_sign_share: 0.989
 derived:
   us_tech_stocks:
     of: us_stocks

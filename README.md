@@ -57,7 +57,8 @@ simulated in the browser. You can:
 - watch the odds of real prediction-market questions (searched on Polymarket, or saved ones that work
   offline) or your own, held by simulated traders, next to the real price. The odds also move as quiet days
   pass and as traders talk;
-- turn on everyday activity in a world made before it existed (one button, undone like any what-if);
+- turn on everyday activity in a world made before it existed, or upgrade a version 1 world (one button,
+  undone like any what-if);
 - add what-ifs in plain words, future events, ready-made examples, or today's real news, after checking a
   preview of the exact events;
 - browse and filter people, open anyone's view of the world, ask them questions, and replay one of their
@@ -94,6 +95,7 @@ uv run jahan watch set  --run runs/demo odds:<id> --kind by_date   # how quiet d
 uv run jahan economy on --run runs/old --yes             # everyday activity in a world made before it
 uv run jahan backtest                                      # the benchmark below (offline, about 4 min)
 uv run jahan benchmark --tune                              # everyday activity against real data (1-2 hours)
+uv run jahan benchmark --only B9 --rate                    # news days (Claude rates them once: about $3)
 ```
 
 Example scenarios in `examples/scenarios/`: a product launch, a 20% dollar rise during a worldwide launch,
@@ -324,23 +326,50 @@ launch as prompt 1, run some days, inject the dollar rise as prompt 2, and run t
     stated bridge), and back when they find work. People also pull toward the moods of those they meet (a
     heuristic rate). Neither drives trading: the same study finds personal experience does not change
     expectations about stock prices.
-  - **What it can and cannot do.** With no news at all, stocks stay almost flat (only the small saving
-    steps), moods move a little with job losses and new jobs, and event odds move with time. The example
-    Iran-US tension story takes US stocks down about 0.5% the day it breaks and gives it back when the story
-    fades; after the real US and Israeli strikes on Iran in March 2026 the S&P 500 fell 1.74% on its worst day
-    and 7.45% within 20 trading days, so the simulated size is small next to a real crisis. The whole move
-    is given back on the day a story stops being tracked: people's part reflects how the news feels, not a
-    lasting change in what companies are worth (only the published estimates on announcements are
-    lasting), and the one-day give-back is cruder than real fading. Simulated households always read good
-    economic news as good for stocks; real markets sometimes take it as bad (when it means higher interest
-    rates), as on both 2026 jobs reports. There is no random daily noise and no institutional trading, and
-    nothing checks the direction of reactions to news other than Fed decisions and jobs reports.
+  - **Version 2** (worlds made since 8 November 2026; `jahan economy on` upgrades older ones, recorded and
+    undoable). Prompted by the midterm week of November 2026, when the S&P 500 rose 1.6%, fell 4.4% and
+    rose 0.3% while Jahan moved 0.0%, -0.15% and +0.1%: the market heard news only through the few
+    simulated households who heard a story on its first day, Claude's ratings were not defined for markets,
+    several headlines about one event added up, and kappa had been fitted on hand-set ratings.
+    - *One event, one price.* Headlines about the same event from one prompt share a story key and are
+      priced once, as the strongest of them.
+    - *Other investors.* Funds, pension funds, insurers and foreign investors, who hold most US stock
+      (households hold 42% of US corporate equity directly: Federal Reserve Z.1, 2026 Q2), are not simulated
+      one by one; they appear as one labelled part. A story moves it on the day it comes out (at or after the
+      New York close: the next trading day), by s x its market rating x its salience, once per story, and the
+      move is kept. The market rating comes from Claude: how the story bears on company profits and share
+      prices compared with what investors expected before it (-1 to +1). s = 1.43 is the one number fitted on
+      64 news days of 2023-2025 under a rule registered before the data was collected (B9); the data cannot
+      rule out s = 0. A story about tech companies moves the tech line in full and the S&P 500 by
+      information technology's weight in it (37.9%, a secondary report of S&P Dow Jones Indices' figure, low
+      confidence). No reaction to Fed decisions or jobs reports (the published estimates already are the
+      whole market's reaction) or to Jahan's own "stocks fall" headlines.
+    - *Ordinary days.* On every weekday US stocks, gold and the euro move by chance with the size, fat tails,
+      calm and stormy stretches and co-movement of real 2023-2025 days without a Fed decision or jobs report
+      (a GARCH(1,1) model with Student-t shocks fitted by `scripts/quiet_days_fit.py`; only its coefficients
+      are stored; no built-in drift). This is the movement of investors and news Jahan does not simulate: it
+      is chance, not a prediction, and it never makes headlines. It is off in every benchmark and backtest.
+  - **What it can and cannot do.** With no news at all, US stocks, gold and the euro still move on weekdays
+    by chance (version 2), moods move a little with job losses and new jobs, and event odds move with time;
+    other countries' markets move only with news and cash-outs. The example Iran-US tension story takes US
+    stocks down about 1% the day it breaks (people and other investors together); after the real US and
+    Israeli strikes on Iran in March 2026 the S&P 500 fell 1.74% on its worst day and 7.45% within 20 trading
+    days, so the simulated size is still small next to a real crisis. The people's part is given back on the
+    day a story stops being tracked (how the news feels, not a lasting change in what companies are worth),
+    which is cruder than real fading; the other investors' part is kept. Replaying the midterm week with
+    version 2 still gives about 0.0%, -0.2% and +0.1%: Claude rates the election result as neutral for
+    markets and the call for a data-center moratorium as a moderate story about tech companies, so the
+    reaction stays small; the fall came from investors repricing AI spending in a market already falling,
+    which Jahan does not model. Simulated households read good economic news as good for stocks; real
+    markets sometimes take it as bad (when it means higher interest rates), as on both 2026 jobs reports.
   - **Turning parts off** (in the run config's `params`, before `jahan gen`): `market_people: false` (no
-    people-driven moves), `market_savings: false`, `mood_life: false`, `mood_contagion: 0`,
-    `market_kappa: <value>` to try another reaction size.
+    people-driven moves), `market_savings: false`, `market_others: false` (no other investors),
+    `market_quiet: false` (no ordinary-day movement), `mood_life: false`, `mood_contagion: 0`,
+    `market_kappa: <value>` or `market_others_s: <value>` to try another reaction size.
   - **US tech stocks (Nasdaq-100)** are derived, not modelled on their own: each day they move by 1.299
     times the US stock index's move, the slope of the Nasdaq-100's daily changes on the S&P 500's from
-    January 2023 to October 2026 (FRED; R² 0.89; only the coefficient is stored).
+    January 2023 to October 2026 (FRED; R² 0.89; only the coefficient is stored); in version 2, stories about
+    tech companies also move them on their own.
 - **Event odds.** A watched yes/no question ("US x Iran ceasefire continues through October 31?") is held
   as a belief by simulated traders: about one in ten internet-using adults, more of them young men (a
   low-confidence US survey figure, borrowed for every country, and a heuristic skew). They start with
@@ -396,6 +425,18 @@ numbers that may be tuned and the split between fitting and testing were committ
 | B5: event odds over quiet stretches (285 real Polymarket questions) | time passing misses the real price by 8.3 points against 10.7 for a flat price (79 questions closing before July 2026), and 12.1 against 15.7 on 206 later ones | yes |
 | B6: mood and unemployment (exploratory) | per point of unemployment, simulated mood moves 0.02% of its scale and real sentiment 3.3% of its range: job losses alone barely move the national mood | reported only |
 | B7, B8 | no benchmark exists outside the US; trading volume is not modelled | stated |
+| B9: US stocks on unscheduled news days (8 November 2026; 64 fit days 2023-2025 chosen by the news, two a month from Wikipedia's yearly US chronology) | other investors' one number s = 1.43: average release-day miss 0.796 with them, 0.834 without, 0.838 for "no change"; the 95% interval of s runs from 0 to 4.8. On the 3 fit days that moved 2% or more the direction was right every time, but no size came within a factor of 2 (Liberation Day 2025: -1.6% against -4.8%) | yes |
+| B9 on 2026 (seen before) and from July 2026 (after the parser model's training data) | first half of 2026: 0.515 with, 0.476 without (11 days, worse); from July: 1.050 with, 0.754 without (8 days, worse; provisional until 20 days exist) | not used to choose |
+| B9 on days picked because markets moved (7, never fitted) | 1.505 with, 1.743 without; direction right on all 3 big days, size within a factor of 2 on one (Greenland tariffs: -1.1% against -2.1%); 5 November 2026: -0.2% against -4.4% | reported |
+| B10: ordinary days (three quiet years against the 688 real days the model was fitted to) | US stocks' mean daily move 0.66% against 0.63%, 95th percentile 1.75% against 1.68%, typical month 2.65% against 3.22% (the real one includes 2023-2025's rise); gold 0.82% against 0.78%; the euro 0.35% against 0.34% | yes |
+
+**Why 2026 went the other way (B9).** Claude rated almost every Iran-war escalation of 2026 as bad for
+company profits (-0.3 to -0.6), and so other investors sold; but after March markets mostly shrugged
+escalations off or rose on them (3 November: strikes on Qeshm, simulated -0.9%, real +0.4%). Each day's news is
+rated on its own, without the run-up, so "compared with what investors expected" cannot work when the
+expectation came from earlier news. Claude's ratings are consistent (rated twice, the two market ratings
+correlate 0.99), so the problem is what they measure, not noise. The test from July 2026 has only 8 days so
+far; its verdict waits for 20.
 
 The first registered version (late reactions moving prices) chose kappa = 0: 87% of the simulated reaction
 fell on the days after a release, when the real index no longer follows the news. The mechanism was changed
@@ -720,6 +761,10 @@ Several numbers for player actions and public-figure autonomy are heuristics, no
   politics 0.6, every other topic 0.2), and the anchors Claude rates salience against (1.0 the day's top
   story everywhere, 0.7 a leading story in most national outlets, 0.5 carried by most outlets, 0.2 niche;
   salience enters the chance of hearing a story cubed);
+- in everyday activity version 2: news out at or after 21:00 UTC trades the next day (daylight saving is
+  ignored), the other investors' reaction growing in step with a story's salience, the split of every story
+  into broad or tech, and treating 2023-2025 days without a Fed decision or jobs report as consecutive when
+  fitting ordinary days;
 - in everyday activity: that only holders with internet trade, the 10% cap on a day's move, no market
   holidays, the pull toward the moods of people met (0.05 a day), weekends counting like weekdays for
   logins, the 30-holder line below which a market is labelled illustrative, the mapping of Kuchler and

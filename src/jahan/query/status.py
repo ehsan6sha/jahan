@@ -316,8 +316,16 @@ def status_text(st: dict[str, Any]) -> str:
         lines.append("Everyday activity: off (this world was made before it existed; `jahan economy on`)")
     else:
         local = [f"{v['label']} {v['index']:.2f}" for iso, v in ev["markets"].items() if iso != "USA"]
+        oth = ev.get("others")
+        version = f"version {ev.get('version', 1)}" + (
+            f" (other investors' reaction s = {oth['s']:g}; ordinary days {'on' if oth['ordinary_days'] else 'off'})"
+            if oth
+            else "; `jahan economy on` upgrades it"
+            if ev.get("version", 1) < 2
+            else ""
+        )
         lines.append(
-            f"Everyday activity: on since day {ev['since_day']}"
+            f"Everyday activity: on since day {ev['since_day']}, {version}"
             + (f"; local markets (100 = that day): {', '.join(local)}" if local else "")
         )
     if st["watch"]:

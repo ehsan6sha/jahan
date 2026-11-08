@@ -78,6 +78,8 @@
     watch: "A series you follow while time moves: a market, a currency, a country's mood or the odds of an event. The change is counted from the day you started watching.",
     question: "A yes/no question about the future, such as whether the US-Iran ceasefire holds. Simulated traders (about one in ten adults online) hold a belief about it, starting near the real market price; the simulated odds are their average. News that bears on it moves the beliefs of the traders who hear it.",
     "people's trading": "Simulated adults who hold stock (in each country, the share its own surveys or investor counts report) want to hold more or less as news makes things look better or worse. The market moves when a story first reaches them and gives the move back when the story fades; people who act later trade what the market has already priced. In worlds with everyday activity, US cash-outs by people who lose their jobs also move prices a little. Shown separately from announcements and scripted what-ifs.",
+    "other investors": "Funds, pension funds, insurers and foreign investors, who hold most US stock but are not simulated one by one (everyday activity version 2). They react to a story on the day it comes out, by Claude's rating of how it bears on company profits against what was expected, times its reach, times one number fitted on 64 real news days (2023-2025). The move is kept; it is not given back when the story fades. Stories about tech companies move the tech line in full and the S&P 500 by tech's weight in it.",
+    "ordinary days": "On every weekday US stocks, gold and the euro move by chance, with the size, fat tails and calm and stormy stretches of real days in 2023-2025 that had no Fed decision or jobs report. This is the movement of investors and news Jahan does not simulate: it is not a prediction and never makes headlines.",
   };
   const term = (key, label) => h("span", { class: "term", title: GLOSSARY[key] || "", tabindex: 0 }, label || key);
 
@@ -1748,6 +1750,11 @@
         : "Its US stocks move only on announcements and what-ifs, and nobody in it buys or sells. ",
       "Turning everyday activity on changes that from today: markets react when news reaches their investors, each country gets its own market, job losses and cash-outs matter, and moods move with life and conversation. It is recorded as a prompt, so Undo (Results) takes the world back to just before it; days already simulated stay as they were. ",
       h("button", { class: "btn small act", onclick: () => act(box, ["economy", "on", "--run", S.world, "--yes"], { ok: "Everyday activity is on from today.", rerender: true }) }, "Turn on everyday activity")));
+    const ev = st.markets && st.markets.everyday;
+    if (ev && (ev.version || 1) < 2) out.push(h("div", { class: "notice" },
+      h("strong", {}, "This world uses everyday activity version 1"),
+      "Version 2 prices several headlines about one event once, lets other investors (funds, pensions, foreign investors) react to market news at once, and moves US stocks, gold and the euro on ordinary days like real markets. It is recorded as a prompt, so Undo (Results) takes the world back to just before it. ",
+      h("button", { class: "btn small act", onclick: () => act(box, ["economy", "on", "--run", S.world, "--yes"], { ok: "Everyday activity is upgraded from today.", rerender: true }) }, "Upgrade")));
     if (!st.llm.ready) out.push(h("div", { class: "notice" },
       h("strong", {}, "Claude is not set up, so some things are off"),
       "Public figures do not act on their own, new headlines are not rated against your questions, and what-ifs in plain words do not work. Start the browser with ",
