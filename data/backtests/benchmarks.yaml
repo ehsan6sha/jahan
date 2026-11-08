@@ -10,9 +10,23 @@
 # the rule for s, the one fitted number of other investors' news reactions (other_investors.rule_v4 in the same
 # file), registered on 2026-11-08 before any B9 data was collected or any run of that mechanism.
 
-version: 3
+version: 4
 registered: '2026-11-08'
 history:
+  - version: 3
+    registered: '2026-11-08'
+    result: >-
+      B9: s = 1.43 on the 64 fit days (0.796 against 0.834 with s = 0 and 0.838 for no change; the 95% interval of s
+      is 0 to 4.78); 11 seen days 0.515 against 0.476 (no change 0.451); 8 hold-out days 1.050 against 0.754 (no
+      change 0.800). B10 passed.
+    changes_in_version_4: >-
+      Prompted by the diagnosis of those results on 2026-11-08, on saved data: (1) with the right direction forced
+      the fit improves from 0.795 to 0.621 and s rises to 3.94, so direction is the main loss; (2) direction agrees
+      with the real move on 30 of 50 rated fit days; (3) five days carry the fit (without them s = 0); (4) later
+      ratings lean negative (8 of 9 on the hold-out days, while the market rose on 5 of 8); (5) reaction shape,
+      volatility scaling and the model's memory of past days were tested and do not explain it. The hold-out days
+      were looked at day by day for this diagnosis, so version 4 also collects days nobody has looked at. New
+      check B11. B1 to B10 are unchanged.
   - version: 1
     registered: '2026-10-17'
     result: >-
@@ -195,6 +209,61 @@ checks:
       against the same statistics of the real days
     pass: reported; each simulated statistic within 20% of the real one, otherwise flagged
     tune: none (the coefficients are fitted to the real days, never to this check)
+  B11:
+    what: does a different way of rating the news beat the current one on days after the rater's training data
+    fresh_days: >-
+      Selected by B9's rule, clauses (a) to (c), from the same page revision (2026 in the United States, oldid
+      1384428393): every qualifying event dated 2026-07-01 to 2026-11-06 that is not among the events B9 chose (the
+      third and later of each month), collected and written as neutral headlines before any move is looked at. A
+      trading day already in data/backtests/news_days.yaml is dropped, because its move has been seen. Stored in
+      data/backtests/news_days_extra.yaml. S&P 500 moves from Yahoo Finance ^GSPC closes, which matched FRED SP500
+      within 0.0001 points on all 90 B9 days.
+    clean_days: the B9 hold-out days plus the fresh days
+    variants:
+      A_current: the What-if parser as it is (the recorded first ratings of B9)
+      B_material: >-
+        A, plus these rating notes: "How to rate market_valence here: it measures how much the news changes what
+        the whole US stock market is worth: the profits of companies overall, interest rates, or the availability
+        of credit, compared with what investors already expected. Most news does not change these; leave
+        market_valence at 0 unless the story clearly does. Bad news for people is not by itself bad news for
+        shares: wars, attacks, political fights and elections are 0 unless they change oil supply, trade rules,
+        taxes, interest rates or credit. Reserve 0.7 to 1, up or down, for events that change profits or rates
+        across the whole economy, and use that range when they do. A story about only one part of the market is
+        rated for that part (sectors)."
+      C_context: >-
+        A, plus: "What investors already knew before this day (headlines of the previous 30 days, oldest first):"
+        with the dated headlines of every day in news_days.yaml and news_days_extra.yaml in the 30 calendar days
+        before the trading day (or "none on file"), then: "Rate today's news only for what it changes against
+        that: a further step in a story already under way counts only for the part investors had not expected."
+      D_context_market: >-
+        C, plus: "The S&P 500 before this day: previous day X%, last 5 trading days Y%, last 20 trading days Z%, N%
+        below its one-year high." (from closes before the trading day only)
+      E_material_context: B and C together
+      P_placebo: >-
+        the chosen variant if it uses context, with the context replaced by the headlines of the same 30-day
+        window one year earlier. Scored on the clean days, reported, never chosen
+    how_rated: >-
+      Claude Sonnet 5.5 through the What-if parser, the extra text added to the world facts (no other change),
+      recorded under runs/_benchmark/recordings and replayable; temperature and effort as in B9; one rating per day
+    choosing_one: >-
+      Using only the fit and seen days (2023-01-01 to 2026-06-30), never a clean day: leave-one-period-out over the
+      periods 2023, 2024, 2025 and the first half of 2026. For each left-out period, s is fitted on the other
+      periods (B9's loss and grid, the saved people's part of A held fixed in this step) and the left-out days are
+      scored. The variant with the lowest mean score is chosen if it is at least 0.01 below A; otherwise A stays
+      and only the other-investors default below is decided
+    final_score: >-
+      For the chosen variant only: s refitted on the 64 fit days with B9's full per-day worlds (B9's config). On
+      the clean days: |simulated - real| in units of 0.92 for (a) the current engine, A with s = 1.43; (b) A with
+      s = 0; (c) the chosen variant with its s; and no change. Also direction on rated days, the mean of simulated
+      minus real, bootstrap 95% intervals of the differences (2,000 resamples of days, seed 0), and the same on the
+      fresh days alone. The 7 outcome-chosen days and 30 October to 6 November are shown, never used to choose
+    decision: >-
+      Binding once at least 20 clean days exist. The default becomes (c) if (c) scores below (b) and below no change
+      on the clean days and is not above (b) on the fresh days alone; otherwise, if (b) scores below (a), the
+      other-investors' news reaction defaults to s = 0 (ordinary-day movement stays, and users can turn the reaction
+      back on); (a) stays only if it scores below (b). The outcome is published whatever it shows. Fewer than 20
+      clean days: reported as provisional and nothing changes
+    tune: s only (as in B9); none of the variants' texts may change after the first call
 
 if_nothing_passes: >-
   decided before any run: if no kappa passes B1 and B2, kappa is 0 (people's news reactions off; saving and
