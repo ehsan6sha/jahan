@@ -93,10 +93,25 @@ class DerivedSeries(BaseModel):
     range: str | None = None
 
 
+class OtherInvestors(BaseModel):
+    """Funds, pensions, insurers and foreign investors as one labelled part (everyday activity version 2): their
+    pre-registered rule (rule_v4), its fit, and the ordinary-day movement rule (quiet_days)."""
+
+    model_config = ConfigDict(extra="forbid")
+    rule_v4: str
+    quiet_days: str
+    s: float | None = Field(default=None, ge=0)  # None until the rule_v4 fit
+    it_weight: dict[str, Any] | None = None  # information technology's weight in the S&P 500, with its source
+    household_share: dict[str, Any] | None = None  # display split only, with its source
+    quiet: dict[str, Any] | None = None  # fitted ordinary-day coefficients (scripts/quiet_days_fit.py)
+    fitted_v4: dict[str, Any] | None = None
+
+
 class InvestorsConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
     ownership: Ownership
     trading: Trading
+    other_investors: OtherInvestors | None = None
     derived: dict[str, DerivedSeries] = Field(default_factory=dict)
 
     def source_ids(self) -> list[str]:

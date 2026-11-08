@@ -282,6 +282,46 @@ trading:
           S&P 500 by less than 1%. People now trade on the news they learn that day instead. The 2026 hold-out
           result above had been seen before this change; the change was prompted by the scenario sizes.
 
+other_investors:
+  # Worlds with everyday activity version 2 (sim/economy.py). The simulated households are the only investors
+  # simulated one by one; funds, pension funds, insurers and foreign investors, who hold most US stock, appear as
+  # one labelled part: "other investors (not simulated one by one)".
+  rule_v4: >-
+    Registered 2026-11-08, before any B9 data was collected and before any run of this mechanism (scores:
+    data/backtests/benchmarks.yaml B9). A news story with an explicit market_valence (mv, -1..1: how it bears on
+    company profits and share prices compared with what investors expected before it, rated by the What-if parser
+    or the headline classifier) moves the US stock index on the first US trading day at or after its release (a
+    release at or after 21:00 UTC counts as the next day), once per story cluster (stories from one prompt sharing
+    a story key; the member with the largest absolute impact counts), and permanently (never given back).
+    impact = s x mv x salience on the part the story is about: a broad story moves the S&P 500 by impact and the
+    tech line by the derived beta (1.299) x impact; a tech story moves the tech line by impact and the S&P 500 by
+    w_it x impact, where w_it is information technology's weight in the S&P 500 (S&P Dow Jones Indices). No
+    reaction to announcement headlines (published estimates already are the whole market's reaction), to Jahan's
+    own market headlines, or to stories without an explicit market_valence. s minimises the B9 day-0 score over
+    the fit days with kappa held at trading.kappa.fitted_v3 (0.048); the people's part comes from one simulation
+    per day in shadow mode, seed offsets 0, 1 and 2 averaged (the other-investors part is computed exactly from
+    the ratings); grid 0 to 20, step 0.01; ties and the grid edges resolve to the smallest s; a boundary optimum is
+    reported and adopted. Constraints: B1 (day-0 and five-day scores no worse than without), stability (a
+    scripted -3% day, as in rule_v2) and B2's bounds, with the Iran example's news events rated by the parser for
+    market_valence and sector before the run (recorded; their hand-set salience kept). If the optimum breaks a
+    constraint, the largest grid s below it that meets all of them is used and the substitution reported. If no
+    positive s beats s = 0 on the fit days, s is 0. The bootstrap 95% interval of s (2,000 resamples of fit days,
+    seed 0) and the loss at grid points are published. Seen and hold-out days as in benchmarks.yaml split.news.
+  quiet_days: >-
+    Registered 2026-11-08, before the fit. Worlds with everyday activity version 2 get daily movement on days
+    without news from the same other investors (and news Jahan does not simulate): US stocks on US trading days,
+    gold and the euro's dollar rate on weekdays. Fitted once by scripts/quiet_days_fit.py to real days
+    2023-01-01..2025-12-31 without a Fed decision or jobs report (FRED SP500, FRED DEXUSEU, Yahoo Finance GC=F):
+    a GARCH(1,1) variance for the S&P 500 with Student-t shocks (maximum likelihood), demeaned (no drift); gold and
+    the euro rate move by their own standard deviation times the same variance ratio and their own shocks,
+    correlated with the S&P 500's as in the data (one Student-t scale shared, so tails come together); the tech
+    line by the derived beta. Only the coefficients are stored. Off in every benchmark and backtest. Checked by
+    B10 (reported).
+  s: null  # pending: the rule_v4 fit
+  it_weight: null  # pending: S&P Dow Jones Indices, information technology's weight in the S&P 500
+  household_share: null  # pending: Federal Reserve Z.1, households' direct holdings over the market value of US corporate equities (display split only)
+  quiet: null  # pending: scripts/quiet_days_fit.py
+
 derived:
   us_tech_stocks:
     of: us_stocks

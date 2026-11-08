@@ -6,10 +6,12 @@
 # stay published next to the new ones.
 #
 # The rule for kappa (the one fitted number of people's trading) is in data/global/investors.yaml
-# (trading.kappa.rule_v3, after rule_v2); B1 and B2 are its score and its bounds.
+# (trading.kappa.rule_v3, after rule_v2); B1 and B2 are its score and its bounds. Version 3 adds B9 and B10 and
+# the rule for s, the one fitted number of other investors' news reactions (other_investors.rule_v4 in the same
+# file), registered on 2026-11-08 before any B9 data was collected or any run of that mechanism.
 
-version: 2
-registered: '2026-10-17'
+version: 3
+registered: '2026-11-08'
 history:
   - version: 1
     registered: '2026-10-17'
@@ -24,6 +26,21 @@ history:
       prices), registered before it was run, for the reason given in investors.yaml. (2) B6's units: both slopes
       are now expressed as a share of the series' observed range (real: the University of Michigan index's
       1978-2025 range; simulated: the mood scale's width of 2), still reported only. Everything else unchanged.
+  - version: 2
+    registered: '2026-10-17'
+    result: >-
+      B1 kappa 0.048 under rule_v3 (2023-2025 five-day 0.828 with people, 0.841 without; the 95% interval of the
+      difference includes zero; the 8 seen 2026 events worse, 0.886 against 0.869); B2 passed (the Iran example's
+      worst day -0.54% against the real -1.74%); B3 passed; B4 ownership passed, logins failed; B5 passed; B6
+      flagged (layoffs alone barely move the national mood).
+    changes_in_version_3: >-
+      Prompted by a replay of 3-6 November 2026 (the midterm week: real S&P 500 +1.58%, -4.36%, +0.3%; Jahan 0.00%,
+      -0.15%, +0.01 to +0.16%). Diagnosis: the market heard news only through the few simulated households who
+      heard a story on its first day; the parser's ratings were not defined for markets; split headlines added
+      up; kappa was fitted on hand-set ratings. (1) New B9: unscheduled news days, scored for the other-investors
+      part (other_investors.rule_v4) and the people's part together. (2) New B10: ordinary-day movement
+      (other_investors.quiet_days), reported. (3) B1 is also re-scored with the announcement headlines rated by
+      the What-if parser instead of hand-set (reported; kappa is not refitted). Everything else unchanged.
 
 split:
   stocks:
@@ -37,6 +54,16 @@ split:
   odds:
     fit: questions whose market closed before 2026-07-01
     holdout: questions whose market closed on 2026-07-01 or later (or is still open at the run)
+  news:
+    fit: B9 news-chosen days 2023-01-01 to 2025-12-31
+    seen: >-
+      B9 news-chosen days 2026-01-01 to 2026-06-30, and every outcome-chosen day: reported, never used to choose
+      anything. The parser model (claude-sonnet-5-5, training data to June 2026 per Anthropic's models page) saw
+      what happened on all days before July 2026, so fit and seen results are optimistic
+    holdout: >-
+      B9 news-chosen days from 2026-07-01 on (after the parser model's training data): never used to choose
+      anything; results are provisional until 20 such days are scored, then the verdict is published whatever it
+      shows
 
 checks:
   B1:
@@ -118,8 +145,59 @@ checks:
   B8:
     what: trading volume
     pass: stated as not modelled (Jahan models each holder's whole stock position, not stock picking)
+  B9:
+    what: US stocks on unscheduled news days (no Fed decision or jobs report)
+    selection: >-
+      Chosen by the news, never by the market's move. Source: the English Wikipedia article "<year> in the United
+      States", section Events (2023 to 2026; the page revision used is recorded). For each calendar month, the
+      first two listed events in date order that (a) concern federal economic, fiscal, trade, tax or regulatory
+      policy (including debt limits and shutdowns); elections, a change of control of government or a ruling of
+      the Supreme Court; war, military strikes, attacks or sanctions involving the United States or a major oil
+      producer; the failure, rescue or crisis of a financial institution; or a technology or energy development
+      covered as national news; and (b) are not a scheduled Federal Reserve decision or monthly jobs report (B1
+      covers those); and (c) are not natural disasters, crimes, sports, entertainment or deaths of people who held
+      no office. A month with fewer than two such events keeps what it has (counts recorded). The trading day is
+      the first US trading day on which the news could be traded: the event date if it is a trading day and the
+      news was public before 16:00 New York time (or the time is unknown, recorded), otherwise the next trading
+      day; two chosen events on one trading day are scored as one day with both headlines.
+      Outcome-chosen days, scored but never used to choose anything: the seven not_modelled events of
+      data/backtests/events_2026.yaml, 2026-10-30, 2026-11-04 and 2026-11-05.
+    data: >-
+      Each day's headlines as known before the move: one neutral factual sentence per event from the chronology
+      entry and one contemporaneous report (never a sentence about market moves), with sources; FRED SP500 and
+      NASDAQ100 percent moves on the trading day and the next 4 FRED observation dates (moves only; NASDAQ100 is
+      used only to score the tech line). A coverage report lists every 2023-2025 day with an S&P 500 move of 2% or
+      more that is not a Fed or jobs day, and whether it is among the chosen days (reported, never fitted)
+    rating: >-
+      Each day's headlines typed as one prompt into the What-if parser (jahan inject --preview path, model
+      claude-sonnet-5-5, prompt hash recorded), recorded under runs/_benchmark/recordings and replayable; every
+      day rated twice (test-retest agreement of market_valence reported); the first rating is the one scored
+    score: >-
+      for each day, a world dated the day before (m1 config, 10,000 people, USA and DEU, everyday activity
+      version 2, saving off, ordinary-day movement off, no public figures acting), the parsed events injected,
+      run one day: |simulated - real| S&P 500 percent move on the trading day in units of 0.92; mean over days.
+      Also: direction right on days whose real move is 2% or more; the share of those days whose simulated move is
+      within a factor of 2 of the real one; the same for the tech line against NASDAQ100; the real moves on the next
+      4 days compared with the simulated (reversal check, reported); against "no change" and against the engine
+      without other investors (s = 0); bootstrap 95% intervals (2,000 resamples of days, seed 0)
+    pass: >-
+      on the fit days, the day-0 score with other investors is no worse than with s = 0; on the hold-out days
+      (once 20 exist) the same comparison is published, with direction and factor-of-2 shares on days of 2% or more
+    tune: s (other_investors.rule_v4 in data/global/investors.yaml)
+  B10:
+    what: ordinary-day movement (other_investors.quiet_days)
+    data: >-
+      FRED SP500 and DEXUSEU and Yahoo Finance GC=F (gold futures) daily closes, 2023-01-01 to 2025-12-31,
+      excluding Fed decision and jobs report days (only fitted coefficients are kept)
+    score: >-
+      a world with no news (3,000 people, USA and DEU, seeds 1, 2, 3, 365 days): the mean absolute daily move,
+      its 95th percentile and the median absolute 21-trading-day move of US stocks, gold and the euro rate,
+      against the same statistics of the real days
+    pass: reported; each simulated statistic within 20% of the real one, otherwise flagged
+    tune: none (the coefficients are fitted to the real days, never to this check)
 
 if_nothing_passes: >-
   decided before any run: if no kappa passes B1 and B2, kappa is 0 (people's news reactions off; saving and
-  cash-outs stay); if time passing fails B5, new questions get no time effect by default. The user is told,
-  with the numbers, and can turn either back on.
+  cash-outs stay); if time passing fails B5, new questions get no time effect by default; if no positive s beats
+  s = 0 on the B9 fit days, s is 0 (other investors' news reactions off; ordinary-day movement stays). The user is
+  told, with the numbers, and can turn any of them back on.

@@ -78,8 +78,8 @@ def registration_record(data_dir: Path | None = None) -> dict[str, Any]:
         res = subprocess.run(["git", *args], cwd=root, capture_output=True, text=True, check=False)
         return res.stdout.strip() if res.returncode == 0 else ""
 
-    commit = git("log", "-1", "--format=%H", "--", files[0])
-    dirty = bool(git("status", "--porcelain", "--", files[0]))
+    commit = git("log", "-1", "--format=%H", "--", *files)  # the rules live in both files
+    dirty = bool(git("status", "--porcelain", "--", *files))
     return {"registered_in": commit or None, "changed_since": dirty}
 
 
